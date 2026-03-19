@@ -23,8 +23,9 @@ from pathlib import Path
 DASHBOARD = Path(__file__).parent / "dashboard.html"
 DATA_FILE = Path(__file__).parent / "output" / "buques_en_ruta.json"
 
-# Matches the current line regardless of whether it's empty [] or already populated
-PATTERN = re.compile(r'const BUQUES_EN_RUTA_DATA\s*=\s*\[.*?\];', re.DOTALL)
+# Matches both the original 'const' form and the current 'let' form,
+# including any trailing inline comment on the same line.
+PATTERN = re.compile(r'(?:let|const) BUQUES_EN_RUTA_DATA\s*=\s*\[.*?\];[^\n]*', re.DOTALL)
 
 
 def embed() -> None:
@@ -48,7 +49,7 @@ def embed() -> None:
         raise SystemExit(1)
 
     minified    = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    replacement = f"const BUQUES_EN_RUTA_DATA = {minified};"
+    replacement = f"let BUQUES_EN_RUTA_DATA = {minified};  // pre-embedded; overwritten by API in init()"
     patched     = PATTERN.sub(replacement, html)
 
     DASHBOARD.write_text(patched, encoding="utf-8")

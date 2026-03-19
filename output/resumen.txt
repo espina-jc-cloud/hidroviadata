@@ -1,34 +1,34 @@
 ═══════════════════════════════════════════════════════
   RESUMEN — HidrovíaData Parser
-  Generado: 2026-03-19 11:54:08
+  Generado: 2026-03-19 13:07:35
 ═══════════════════════════════════════════════════════
 
-PDFs procesados:                  59
-Registros raw (suma todos PDFs):  2688
-Tras consolidación intra-PDF:     2424
-Duplicados inter-PDF eliminados:  1659
-REGISTROS FINALES:                765
-Toneladas totales:                4,244,742
+PDFs procesados:                  60
+Registros raw (suma todos PDFs):  2714
+Tras consolidación intra-PDF:     2449
+Duplicados inter-PDF eliminados:  1660
+REGISTROS FINALES:                789
+Toneladas totales:                4,311,313
 
 ─── Por operación ───────────────────────────────────
   DESCARGAR                        641
-  DESCARGA                          44
-  CARGA                             42
-  TRASBORDO                         38
+  DESCARGA                          64
+  CARGA                             44
+  TRASBORDO                         40
 
 ─── Por material (top 20) ───────────────────────────
-  —                                242
-  MAP                              118
+  —                                246
+  MAP                              123
   UREA                              93
   NPS                               45
-  DAP                               36
-  TSP                               33
+  DAP                               41
+  TSP                               39
   AMSUL                             21
-  SSP                               18
+  SSP                               19
   ARRABIO                           17
+  MOP                               10
   NPS+ZN                            10
   STP                                9
-  MOP                                8
   GMOP                               8
   ACEITE VEGETAL                     8
   NP                                 8
@@ -39,23 +39,23 @@ Toneladas totales:                4,244,742
   bolsones                           5
 
 ─── Por cliente (top 25) ────────────────────────────
-  CARGILL                          101
-  BUNGE                             75
+  CARGILL                          102
+  BUNGE                             79
   YPF                               75
-  LDC                               62
-  NUTRIEN                           38
+  LDC                               65
+  NUTRIEN                           40
   ACA                               38
-  COFCO                             33
+  COFCO                             36
   AFA                               26
+  AMAGGI                            25
+  YARA                              24
   AGREFERT                          24
   AMEROPA                           24
-  YARA                              22
-  AMAGGI                            22
   PROFERTIL                         18
+  LDC PARAGUAY                      16
   VETORIAL                          15
   VITERRA                           14
   PTP (ZONA FRANCA)                 13
-  LDC PARAGUAY                      12
   NITRON                            11
   MANUCHART                         10
   PTP ZONA FRANCA                   10
@@ -66,8 +66,8 @@ Toneladas totales:                4,244,742
   ABOPAR                             6
 
 ─── Por muelle ──────────────────────────────────────
-  CARGA GENERAL                    710
-  ELEVADOR                          38
+  CARGA GENERAL                    733
+  ELEVADOR                          39
   AES                               17
 
 ─── Buques únicos (top 30) ──────────────────────────
@@ -84,6 +84,7 @@ Toneladas totales:                4,244,742
   ALEXANDRA KPN                          12
   AMANI                                  11
   SEACON BANGKOK                         11
+  OCEAN INNOVATION                       10
   REM. TBC                               10
   IC PROGRESS                            10
   INTERLINK FORTUITY                     10
@@ -100,9 +101,9 @@ Toneladas totales:                4,244,742
   ARETI                                   8
   MACURU ARROW                            7
   CS CELESTE                              7
-  ARGENMAR MISTRAL                        7
 
 ─── Detalle por PDF ─────────────────────────────────
+  ✓ LINE UP PUERTO SAN NICOLAS 180326.pdf                   (2026-03-18)  raw:  26  intra:  25
   ✓ ✓_12882.pdf                                             (2025-08-22)  raw:  44  intra:  42
   ✓ ✓_12958.pdf                                             (2025-08-20)  raw:  45  intra:  42
   ✓ ✓_12975.pdf                                             (2025-08-18)  raw:  43  intra:  40

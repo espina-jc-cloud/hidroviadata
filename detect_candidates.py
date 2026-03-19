@@ -364,6 +364,29 @@ def main() -> None:
             _print_candidate(candidate, row_id=row_id)
             inserted += 1
 
+    # ── Sync output/buques_en_ruta.json from DB ──────────────────────────────
+    if not dry_run and inserted > 0:
+        con.row_factory = sqlite3.Row
+        rows = con.execute(
+            'SELECT vessel_name, last_position, last_port, ais_destination, '
+            '       eta_estimated, probable_product, probable_importer, '
+            '       probable_tonnage_range, probability_score, probability_level, '
+            '       prediction_status, scoring_reasons '
+            'FROM vessel_candidates ORDER BY probability_score DESC'
+        ).fetchall()
+        out_records = []
+        for row in rows:
+            d = dict(row)
+            d['probable_tonnage_range'] = json.loads(d['probable_tonnage_range'] or 'null')
+            d['scoring_reasons']        = json.loads(d['scoring_reasons']        or '[]')
+            out_records.append(d)
+        out_json = BASE / 'output' / 'buques_en_ruta.json'
+        out_json.write_text(
+            json.dumps(out_records, ensure_ascii=False, indent=2),
+            encoding='utf-8',
+        )
+        print(f"  output/buques_en_ruta.json synced ({len(out_records)} candidates)")
+
     con.close()
     print()
     if dry_run:

@@ -27,7 +27,12 @@
       "Bash(python3 -c \"import json; d=json.load\\(open\\(''output/data.json''\\)\\); print\\(len\\(d\\)\\)\")",
       "Bash(curl -s http://localhost:5002/api/shipments)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f''''shipments via gunicorn: {len\\(d\\)} rows''''\\)\")",
-      "Bash(pkill -f 'gunicorn app:app')"
+      "Bash(pkill -f 'gunicorn app:app')",
+      "Bash(printf \"KEN UN\\\\nLOWER COVE CANADA\\\\nSAN NICOLAS\\\\nBULK CARRIER\\\\n32000\\\\n\\\\n\")",
+      "Bash(python3 detect_candidates.py)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }

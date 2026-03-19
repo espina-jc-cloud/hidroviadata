@@ -221,13 +221,24 @@ def extract_origin(obs: str) -> str:
     'ETA RECALADA - MARRUECOS'   → 'MARRUECOS'
     'ETC NUEVA PALMIRA - CHINA'  → 'CHINA'
     'ETA SAN NICOLAS - EXPO A PARAGUAY' → 'EXPO A PARAGUAY'
+    'X\nARABIA SAUDITA'          → 'ARABIA SAUDITA'  (no-dash direct format)
+    'XARABIA SAUDITA'            → 'ARABIA SAUDITA'  (no-dash, X-glued)
     """
     if not obs:
         return ""
     obs = re.sub(r"^X\s*\n?", "", obs.strip())
     obs = obs.replace("\n", " ").strip()
+    if not obs:
+        return ""
     match = re.search(r"-\s*(.+)$", obs)
-    return match.group(1).strip() if match else ""
+    if match:
+        return match.group(1).strip()
+    # No dash: some PDFs put the origin country directly in the cell without
+    # the "ETA LOCATION - " prefix.  Return the cleaned string as-is, but
+    # skip purely numeric values (tonnage bleed from an adjacent column).
+    if re.match(r"^\d[\d.,\s]*$", obs):
+        return ""
+    return obs
 
 
 # ─── ROW CLASSIFICATION ───────────────────────────────────────────────────────
@@ -376,6 +387,15 @@ def parse_pdf(pdf_path: Path) -> tuple[str | None, list[dict]]:
                         material = vessel_ctx["last_material"]
                     elif material:
                         vessel_ctx["last_material"] = material
+
+                    # Origin forward-fill: the OBSERVACION column (col 10) sometimes
+                    # carries the origin on the first importer row rather than on the
+                    # vessel-name row.  Update vessel_ctx["origen"] whenever we find a
+                    # non-empty origin so all subsequent rows in the block inherit it.
+                    row_origin = extract_origin(str(row[10] or ""))
+                    if row_origin:
+                        vessel_ctx["origen"] = row_origin
+
                     raw_cli   = clean_cell(row[3])
                     raw_tons  = clean_cell(row[4])
                     operador  = clean_operador(str(row[5] or ""))

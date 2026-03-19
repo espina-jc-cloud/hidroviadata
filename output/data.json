@@ -23,7 +23,7 @@
     "operacion": "CARGA",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "Exportacion Paraguay"
   },
   {
     "buque": "ALEXANDROS P.",
@@ -127,7 +127,7 @@
     "operacion": "CARGA",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "Exportacion Paraguay"
   },
   {
     "buque": "AVIONA",
@@ -335,7 +335,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "ETC NUEVA PALMIRA"
   },
   {
     "buque": "SEACON BANGKOK",
@@ -348,7 +348,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "MARRUECOS"
   },
   {
     "buque": "SEACON BANGKOK",
@@ -361,7 +361,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "MARRUECOS"
   },
   {
     "buque": "SEACON BANGKOK",
@@ -374,7 +374,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "MARRUECOS"
   },
   {
     "buque": "SEACON BANGKOK",
@@ -387,7 +387,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "MARRUECOS"
   },
   {
     "buque": "SEACON BANGKOK",
@@ -400,7 +400,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "MARRUECOS"
   },
   {
     "buque": "SEACON BANGKOK",
@@ -413,7 +413,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "MARRUECOS"
   },
   {
     "buque": "SEACON BANGKOK",
@@ -426,7 +426,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "MARRUECOS"
   },
   {
     "buque": "SEACON BANGKOK",
@@ -439,7 +439,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "MARRUECOS"
   },
   {
     "buque": "NKR ALICE",
@@ -751,7 +751,7 @@
     "operacion": "CARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "ETA SAN NICOLAS"
   },
   {
     "buque": "PUNTA LOYOLA",
@@ -764,7 +764,7 @@
     "operacion": "CARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "ETA SAN NICOLAS"
   },
   {
     "buque": "REM. RIO DE LA PLATA",
@@ -816,7 +816,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ETA RECALADA -"
   },
   {
     "buque": "MIDJUR",
@@ -829,7 +829,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ETA RECALADA -"
   },
   {
     "buque": "MIDJUR",
@@ -842,7 +842,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ETA RECALADA -"
   },
   {
     "buque": "NAVA ULYSSES",
@@ -1206,7 +1206,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ETC NUEVA PALMIRA"
   },
   {
     "buque": "IVS TRADER",
@@ -1440,7 +1440,7 @@
     "operacion": "CARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "ETA SAN NICOLAS"
   },
   {
     "buque": "MIDJUR",
@@ -2142,7 +2142,7 @@
     "operacion": "CARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "ETA SAN NICOLAS"
   },
   {
     "buque": "BIWA ARROW",
@@ -2155,7 +2155,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ETA RECALADA -"
   },
   {
     "buque": "REM. TBC",
@@ -2285,7 +2285,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ETC NUEVA"
   },
   {
     "buque": "KOUROS GLORY",
@@ -2298,7 +2298,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ARABIA"
   },
   {
     "buque": "KOUROS GLORY",
@@ -2311,7 +2311,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ARABIA"
   },
   {
     "buque": "KOUROS GLORY",
@@ -2324,7 +2324,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ARABIA"
   },
   {
     "buque": "ARETI",
@@ -2571,7 +2571,7 @@
     "operacion": "DESCARGA",
     "muelle": "AES",
     "sector": "",
-    "origen": ""
+    "origen": "COLOMBIA"
   },
   {
     "buque": "REM. RUBEN H",
@@ -2753,7 +2753,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO"
   },
   {
     "buque": "REM. ZONDA I",
@@ -2870,7 +2870,7 @@
     "operacion": "DESCARGA",
     "muelle": "AES",
     "sector": "",
-    "origen": ""
+    "origen": "COLOMBIA"
   },
   {
     "buque": "STAR GREENWICH",
@@ -3000,7 +3000,7 @@
     "operacion": "DESCARGA",
     "muelle": "AES",
     "sector": "",
-    "origen": ""
+    "origen": "COLOMBIA"
   },
   {
     "buque": "BOW CAROLINE",
@@ -3143,7 +3143,7 @@
     "operacion": "DESCARGA",
     "muelle": "AES",
     "sector": "",
-    "origen": ""
+    "origen": "COLOMBIA"
   },
   {
     "buque": "REIWA",
@@ -3299,7 +3299,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ETC CAMPANA -"
   },
   {
     "buque": "TRAPEZITZA",
@@ -3312,7 +3312,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "FINLANDIA"
   },
   {
     "buque": "AP KUPARI",
@@ -3728,7 +3728,7 @@
     "operacion": "CARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "ETA SAN NICOLAS"
   },
   {
     "buque": "DAIMANOS SKY",
@@ -4170,7 +4170,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "NORTE",
-    "origen": ""
+    "origen": "FINALIZADO"
   },
   {
     "buque": "INCE POINT",
@@ -5210,7 +5210,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "ETA RECALADA"
   },
   {
     "buque": "CS CELESTE",
@@ -5223,7 +5223,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "ETA RECALADA"
   },
   {
     "buque": "CS CELESTE",
@@ -5236,7 +5236,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "ETA RECALADA"
   },
   {
     "buque": "CS CELESTE",
@@ -5249,7 +5249,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "ETA RECALADA"
   },
   {
     "buque": "CS CELESTE",
@@ -5262,7 +5262,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "ETA RECALADA"
   },
   {
     "buque": "CS CELESTE",
@@ -5275,7 +5275,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "ETA RECALADA"
   },
   {
     "buque": "CS CELESTE",
@@ -5288,7 +5288,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "ETA RECALADA"
   },
   {
     "buque": "WADOWICE II",
@@ -7186,7 +7186,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "NORTE",
-    "origen": ""
+    "origen": "ETA RECALADA MARRUECOS"
   },
   {
     "buque": "ADASUN",
@@ -7199,7 +7199,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "NORTE",
-    "origen": ""
+    "origen": "ETA RECALADA MARRUECOS"
   },
   {
     "buque": "ADASUN",
@@ -7212,7 +7212,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "NORTE",
-    "origen": ""
+    "origen": "ETA RECALADA MARRUECOS"
   },
   {
     "buque": "ULTRALAZ",
@@ -7420,7 +7420,7 @@
     "operacion": "CARGA",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ETC SAN LORENZO"
   },
   {
     "buque": "MBS ODYSSEY",
@@ -7498,7 +7498,7 @@
     "operacion": "DESCARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "ETA SAN NICOLAS"
   },
   {
     "buque": "ADASUN",
@@ -7511,7 +7511,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "NORTE",
-    "origen": ""
+    "origen": "ETC SAN LORENZO MARRUECOS"
   },
   {
     "buque": "ADASUN",
@@ -7524,7 +7524,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "NORTE",
-    "origen": ""
+    "origen": "ETC SAN LORENZO MARRUECOS"
   },
   {
     "buque": "ADASUN",
@@ -7537,7 +7537,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "NORTE",
-    "origen": ""
+    "origen": "ETC SAN LORENZO MARRUECOS"
   },
   {
     "buque": "CHESTNUT",
@@ -7550,7 +7550,7 @@
     "operacion": "CARGA",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "Cambio de buque por demora en la navegacion"
   },
   {
     "buque": "IC PROGRESS",
@@ -7680,7 +7680,7 @@
     "operacion": "CARGA",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "Cambio de buque por demora en la navegacion"
   },
   {
     "buque": "REM. JUANJO A",
@@ -7693,7 +7693,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO ULTRALAZ"
   },
   {
     "buque": "HB CENTAURUS",
@@ -7706,7 +7706,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO MBS ODYSSEY"
   },
   {
     "buque": "REM. NEPTUNO",
@@ -7719,7 +7719,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO ULTRALAZ"
   },
   {
     "buque": "REM. TBC",
@@ -7732,7 +7732,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO ULTRALAZ"
   },
   {
     "buque": "OBORISHTE",
@@ -7784,7 +7784,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ETA SAN NICOLAS"
   },
   {
     "buque": "ERTEA",
@@ -7797,7 +7797,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ETC NUEVA"
   },
   {
     "buque": "ERTEA",
@@ -7810,7 +7810,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ARGELIA"
   },
   {
     "buque": "OBORICHTE",
@@ -8031,7 +8031,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "CENTRO",
-    "origen": ""
+    "origen": "ETA SAN NICOLAS"
   },
   {
     "buque": "ERTEA",
@@ -8096,7 +8096,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "CENTRO",
-    "origen": ""
+    "origen": "ETA SAN NICOLAS"
   },
   {
     "buque": "CHAMPION EBONY",
@@ -8109,7 +8109,7 @@
     "operacion": "DESCARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "ETC NUEVA PALMIRA"
   },
   {
     "buque": "CHAMPION EBONY",
@@ -8122,7 +8122,7 @@
     "operacion": "DESCARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "ETC NUEVA PALMIRA"
   },
   {
     "buque": "AFRICAN DRAGON",
@@ -8382,7 +8382,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ETA RECALADA -"
   },
   {
     "buque": "ADASTAR",
@@ -8460,7 +8460,7 @@
     "operacion": "CARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "EXPO"
   },
   {
     "buque": "VILLA GERMANA",
@@ -8473,7 +8473,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "SUR",
-    "origen": ""
+    "origen": "EXTC SAN LORENZO"
   },
   {
     "buque": "BOMAR OSPEY",
@@ -8486,7 +8486,7 @@
     "operacion": "CARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "EXPO"
   },
   {
     "buque": "TBN",
@@ -8499,7 +8499,7 @@
     "operacion": "CARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "EXPO"
   },
   {
     "buque": "STRANDJA",
@@ -8564,7 +8564,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRABORDO STRANDJA"
   },
   {
     "buque": "STRATEGIC SYNERGY",
@@ -8577,7 +8577,7 @@
     "operacion": "CARGA",
     "muelle": "CARGA GENERAL",
     "sector": "NORTE",
-    "origen": ""
+    "origen": "ETA RECALADA"
   },
   {
     "buque": "AFRICAN PEACOCK",
@@ -8603,7 +8603,7 @@
     "operacion": "CARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "EXPORTACION"
   },
   {
     "buque": "REM. DON JUAN N",
@@ -8616,7 +8616,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2° ANDANA",
-    "origen": ""
+    "origen": "TRASBORDO B/M OCEAN INOVATION"
   },
   {
     "buque": "REM. DON JUAN N",
@@ -8629,7 +8629,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2° ANDANA",
-    "origen": ""
+    "origen": "TRASBORDO B/M OCEAN INOVATION"
   },
   {
     "buque": "GREEN YOKOHAMA",
@@ -8785,7 +8785,7 @@
     "operacion": "CARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "EXPO"
   },
   {
     "buque": "OCEAN INNOVATION",
@@ -8928,7 +8928,7 @@
     "operacion": "DESCARGA",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ARABIA SAUDITA"
   },
   {
     "buque": "SCARABE",
@@ -8941,7 +8941,7 @@
     "operacion": "DESCARGA",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ARABIA SAUDITA"
   },
   {
     "buque": "SCARABE",
@@ -8954,7 +8954,7 @@
     "operacion": "DESCARGA",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ARABIA SAUDITA"
   },
   {
     "buque": "BUNUN WISDOM",
@@ -8967,7 +8967,7 @@
     "operacion": "DESCARGA",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "MARRUECOS"
   },
   {
     "buque": "BUNUN WISDOM",
@@ -8980,7 +8980,7 @@
     "operacion": "DESCARGA",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "MARRUECOS"
   },
   {
     "buque": "KAIZAN",
@@ -9123,7 +9123,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ETA RECALADA -"
   },
   {
     "buque": "BLUE NEPTUNE",
@@ -9227,7 +9227,7 @@
     "operacion": "DESCARGAR",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "ETA RECALADA -"
   },
   {
     "buque": "DESERT HONOUR",
@@ -9370,7 +9370,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO DESERT HONOUR"
   },
   {
     "buque": "REM TBC",
@@ -9383,7 +9383,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO DESERT HONOUR"
   },
   {
     "buque": "REM TBC",
@@ -9396,7 +9396,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO DESERT HONOUR"
   },
   {
     "buque": "REM URUTAU",
@@ -9409,7 +9409,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO DESERT HONOUR"
   },
   {
     "buque": "REM. CECILIA LUJAN",
@@ -9422,7 +9422,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO BOGDAN"
   },
   {
     "buque": "REM. DOÑA CARMEN",
@@ -9461,7 +9461,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO CECILIE F"
   },
   {
     "buque": "REM. IMPALA PANTANAL",
@@ -9474,7 +9474,7 @@
     "operacion": "CARGA",
     "muelle": "ELEVADOR",
     "sector": "",
-    "origen": ""
+    "origen": "ETA SAN NICOLAS"
   },
   {
     "buque": "REM. MAURICIO G",
@@ -9526,7 +9526,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO DESERT HONOUR"
   },
   {
     "buque": "REM. SAN JOSE V",
@@ -9539,7 +9539,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO DESERT HONOUR"
   },
   {
     "buque": "REM. TBC",
@@ -9565,7 +9565,7 @@
     "operacion": "TRASBORDO",
     "muelle": "CARGA GENERAL",
     "sector": "",
-    "origen": ""
+    "origen": "TRASBORDO REIWA"
   },
   {
     "buque": "REM. TBC",
@@ -9617,7 +9617,7 @@
     "operacion": "TRASBORDO",
     "muelle": "ELEVADOR",
     "sector": "2°",
-    "origen": ""
+    "origen": "TRASBORDO GENIUS STAR IX"
   },
   {
     "buque": "SAINT VASSILIOS",

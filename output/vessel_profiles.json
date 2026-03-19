@@ -1,0 +1,3471 @@
+[
+  {
+    "vessel_name": "ADASTAR",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-12-09",
+    "last_seen_date": "2025-12-09",
+    "dominant_product": "UREA",
+    "dominant_origin": "RUSSIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 4425,
+    "min_tonnage": 3850,
+    "max_tonnage": 5000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "12": 2
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "ADASUN",
+    "visits_to_argentina": 6,
+    "fertilizer_visits": 6,
+    "first_seen_date": "2025-10-26",
+    "last_seen_date": "2025-11-02",
+    "dominant_product": "TSP",
+    "dominant_origin": null,
+    "dominant_importer": "NUTRIEN",
+    "avg_tonnage": 5133,
+    "min_tonnage": 2200,
+    "max_tonnage": 7700,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 3,
+      "11": 3
+    },
+    "confidence_inputs_available": 0.806
+  },
+  {
+    "vessel_name": "AFRICAN DRAGON",
+    "visits_to_argentina": 15,
+    "fertilizer_visits": 4,
+    "first_seen_date": "2025-07-17",
+    "last_seen_date": "2025-11-27",
+    "dominant_product": "NPS",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 4313,
+    "min_tonnage": 1900,
+    "max_tonnage": 9500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 11,
+      "11": 4
+    },
+    "confidence_inputs_available": 0.867
+  },
+  {
+    "vessel_name": "AFRICAN HARRIER",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-06-08",
+    "last_seen_date": "2025-06-10",
+    "dominant_product": "UREA",
+    "dominant_origin": "GEORGIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 5412,
+    "min_tonnage": 2700,
+    "max_tonnage": 9000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 5
+    },
+    "confidence_inputs_available": 0.9
+  },
+  {
+    "vessel_name": "AFRICAN LARK",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-10-23",
+    "last_seen_date": "2025-11-13",
+    "dominant_product": "NPS",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "PTP (ZONA FRANCA)",
+    "avg_tonnage": 8425,
+    "min_tonnage": 3300,
+    "max_tonnage": 10400,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL",
+      "AES"
+    ],
+    "seasonality_by_month": {
+      "10": 2,
+      "11": 2
+    },
+    "confidence_inputs_available": 0.875
+  },
+  {
+    "vessel_name": "AFRICAN LORIKEET",
+    "visits_to_argentina": 9,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-08-17",
+    "last_seen_date": "2025-08-23",
+    "dominant_product": "UREA",
+    "dominant_origin": "QATAR",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 5389,
+    "min_tonnage": 3600,
+    "max_tonnage": 9000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "08": 9
+    },
+    "confidence_inputs_available": 0.87
+  },
+  {
+    "vessel_name": "AFRICAN PEACOCK",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2026-01-20",
+    "last_seen_date": "2026-01-20",
+    "dominant_product": "BARITINA",
+    "dominant_origin": "MARRUECOS",
+    "dominant_importer": "MAGREB",
+    "avg_tonnage": 32300,
+    "min_tonnage": 32300,
+    "max_tonnage": 32300,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "01": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "AFRICAN SANDPIPER",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-06-21",
+    "last_seen_date": "2025-06-26",
+    "dominant_product": "UREA",
+    "dominant_origin": "QATAR",
+    "dominant_importer": "ACA",
+    "avg_tonnage": 6962,
+    "min_tonnage": 3100,
+    "max_tonnage": 10000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 4
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "AGIA EKATERINI",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-10-20",
+    "last_seen_date": "2025-10-20",
+    "dominant_product": "MAP",
+    "dominant_origin": "RUSSIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 7517,
+    "min_tonnage": 6280,
+    "max_tonnage": 9072,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 3
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "ALBATROSS",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-06-15",
+    "last_seen_date": "2025-06-15",
+    "dominant_product": "GSSP",
+    "dominant_origin": "MARRUECOS",
+    "dominant_importer": "NITRON",
+    "avg_tonnage": 10235,
+    "min_tonnage": 10235,
+    "max_tonnage": 10235,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "ALEXANDRA KPN",
+    "visits_to_argentina": 12,
+    "fertilizer_visits": 12,
+    "first_seen_date": "2025-07-15",
+    "last_seen_date": "2025-07-15",
+    "dominant_product": "NPS",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "AFA",
+    "avg_tonnage": 5875,
+    "min_tonnage": 1500,
+    "max_tonnage": 15750,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 12
+    },
+    "confidence_inputs_available": 0.986
+  },
+  {
+    "vessel_name": "ALEXANDROS P.",
+    "visits_to_argentina": 7,
+    "fertilizer_visits": 7,
+    "first_seen_date": "2025-05-06",
+    "last_seen_date": "2025-05-06",
+    "dominant_product": "NPS",
+    "dominant_origin": "FINLANDIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 5412,
+    "min_tonnage": 1940,
+    "max_tonnage": 8710,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 7
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "ALITHIA",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-06-06",
+    "last_seen_date": "2025-06-06",
+    "dominant_product": "MAP",
+    "dominant_origin": "MARRUECOS",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 6775,
+    "min_tonnage": 5850,
+    "max_tonnage": 7700,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 2
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "AMANI",
+    "visits_to_argentina": 11,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-06-10",
+    "last_seen_date": "2025-06-22",
+    "dominant_product": "UREA",
+    "dominant_origin": "QATAR",
+    "dominant_importer": "YARA (moviport)",
+    "avg_tonnage": 6055,
+    "min_tonnage": 2200,
+    "max_tonnage": 10700,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 11
+    },
+    "confidence_inputs_available": 0.848
+  },
+  {
+    "vessel_name": "AMERICAN SANDPIPER",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": null,
+    "last_seen_date": null,
+    "dominant_product": "UREA",
+    "dominant_origin": "QATAR",
+    "dominant_importer": "ACA",
+    "avg_tonnage": 10000,
+    "min_tonnage": 10000,
+    "max_tonnage": 10000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {},
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "ANDEAN",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-07-20",
+    "last_seen_date": "2025-07-26",
+    "dominant_product": "ARRABIO",
+    "dominant_origin": "TRANSITO",
+    "dominant_importer": "VETORIAL",
+    "avg_tonnage": 19998,
+    "min_tonnage": 19650,
+    "max_tonnage": 20346,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 2
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "AP KAUPARI",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-07-26",
+    "last_seen_date": "2025-07-26",
+    "dominant_product": "UREA",
+    "dominant_origin": "ARZEW",
+    "dominant_importer": "ACA",
+    "avg_tonnage": 6420,
+    "min_tonnage": 2200,
+    "max_tonnage": 11750,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 5
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "AP KUPARI",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-07-25",
+    "last_seen_date": "2025-07-25",
+    "dominant_product": "UREA",
+    "dominant_origin": "ARZEW",
+    "dominant_importer": "ACA",
+    "avg_tonnage": 6420,
+    "min_tonnage": 2200,
+    "max_tonnage": 11750,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 5
+    },
+    "confidence_inputs_available": 0.867
+  },
+  {
+    "vessel_name": "APEX",
+    "visits_to_argentina": 12,
+    "fertilizer_visits": 12,
+    "first_seen_date": "2025-09-02",
+    "last_seen_date": "2025-09-09",
+    "dominant_product": "UREA",
+    "dominant_origin": "QATAR",
+    "dominant_importer": "AFA",
+    "avg_tonnage": 3817,
+    "min_tonnage": 1000,
+    "max_tonnage": 5500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 11
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "ARETI",
+    "visits_to_argentina": 8,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-06-27",
+    "last_seen_date": "2025-07-01",
+    "dominant_product": "GMOP",
+    "dominant_origin": "CANADA",
+    "dominant_importer": "LDC PARAGUAY",
+    "avg_tonnage": 2375,
+    "min_tonnage": 1000,
+    "max_tonnage": 6000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 4,
+      "07": 4
+    },
+    "confidence_inputs_available": 0.792
+  },
+  {
+    "vessel_name": "ARETI.GR",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-10-15",
+    "last_seen_date": "2025-10-15",
+    "dominant_product": "UREA",
+    "dominant_origin": "OMAN",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 8788,
+    "min_tonnage": 3802,
+    "max_tonnage": 14850,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 4
+    },
+    "confidence_inputs_available": 0.875
+  },
+  {
+    "vessel_name": "ARGENMAR MISTRAL",
+    "visits_to_argentina": 7,
+    "fertilizer_visits": 4,
+    "first_seen_date": "2025-06-01",
+    "last_seen_date": "2025-09-30",
+    "dominant_product": "UREA",
+    "dominant_origin": "BAHIA BLANCA",
+    "dominant_importer": "PROFERTIL (DOMO)",
+    "avg_tonnage": 6571,
+    "min_tonnage": 4000,
+    "max_tonnage": 16200,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 3,
+      "07": 3,
+      "09": 1
+    },
+    "confidence_inputs_available": 0.881
+  },
+  {
+    "vessel_name": "ATHANASIA",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-11-13",
+    "last_seen_date": "2025-11-13",
+    "dominant_product": "TSP",
+    "dominant_origin": "MEXICO",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 1750,
+    "min_tonnage": 1100,
+    "max_tonnage": 2200,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 4
+    },
+    "confidence_inputs_available": 0.875
+  },
+  {
+    "vessel_name": "AVIONA",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-05-08",
+    "last_seen_date": "2025-05-08",
+    "dominant_product": "UREA",
+    "dominant_origin": "QATAR",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 9833,
+    "min_tonnage": 3500,
+    "max_tonnage": 22500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 3
+    },
+    "confidence_inputs_available": 0.889
+  },
+  {
+    "vessel_name": "BEATRICE",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-09-15",
+    "last_seen_date": "2025-09-15",
+    "dominant_product": "UREA",
+    "dominant_origin": "NIGERIA",
+    "dominant_importer": "AFA",
+    "avg_tonnage": 5940,
+    "min_tonnage": 2700,
+    "max_tonnage": 15000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 5
+    },
+    "confidence_inputs_available": 0.867
+  },
+  {
+    "vessel_name": "BERGE SNOWDON",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-09-04",
+    "last_seen_date": "2025-09-04",
+    "dominant_product": "ZAR",
+    "dominant_origin": "NORUEGA",
+    "dominant_importer": "YARA",
+    "avg_tonnage": 24502,
+    "min_tonnage": 20003,
+    "max_tonnage": 29000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 2
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "BIWA ARROW",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-06-24",
+    "last_seen_date": "2025-06-24",
+    "dominant_product": "bolsones",
+    "dominant_origin": null,
+    "dominant_importer": "MANUCHART",
+    "avg_tonnage": null,
+    "min_tonnage": null,
+    "max_tonnage": null,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 1
+    },
+    "confidence_inputs_available": 0.5
+  },
+  {
+    "vessel_name": "BLUE NEPTUNE",
+    "visits_to_argentina": 9,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-09-12",
+    "last_seen_date": "2025-09-13",
+    "dominant_product": "MAP",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 4444,
+    "min_tonnage": 2000,
+    "max_tonnage": 7000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 8
+    },
+    "confidence_inputs_available": 0.889
+  },
+  {
+    "vessel_name": "BOGDAN",
+    "visits_to_argentina": 6,
+    "fertilizer_visits": 4,
+    "first_seen_date": "2025-10-17",
+    "last_seen_date": "2025-10-17",
+    "dominant_product": "GMOP",
+    "dominant_origin": "RUSSIA",
+    "dominant_importer": "NITRON",
+    "avg_tonnage": 6597,
+    "min_tonnage": 500,
+    "max_tonnage": 12700,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 6
+    },
+    "confidence_inputs_available": 0.972
+  },
+  {
+    "vessel_name": "BOMAR OSPEY",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-12-26",
+    "last_seen_date": "2025-12-26",
+    "dominant_product": "ALCOHOL",
+    "dominant_origin": null,
+    "dominant_importer": "ACA BIO",
+    "avg_tonnage": 5000,
+    "min_tonnage": 5000,
+    "max_tonnage": 5000,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "12": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "BONNY ISLAND",
+    "visits_to_argentina": 12,
+    "fertilizer_visits": 7,
+    "first_seen_date": "2025-09-10",
+    "last_seen_date": "2025-09-21",
+    "dominant_product": "DAP",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 3633,
+    "min_tonnage": 2000,
+    "max_tonnage": 6600,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 12
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "BOW AGATHER",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": null,
+    "last_seen_date": null,
+    "dominant_product": "ACEITE",
+    "dominant_origin": null,
+    "dominant_importer": "NYNAS",
+    "avg_tonnage": 1300,
+    "min_tonnage": 1300,
+    "max_tonnage": 1300,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {},
+    "confidence_inputs_available": 0.667
+  },
+  {
+    "vessel_name": "BOW CARDINAL",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2026-01-24",
+    "last_seen_date": "2026-01-24",
+    "dominant_product": "ALCOHOL",
+    "dominant_origin": null,
+    "dominant_importer": "ACA BIO",
+    "avg_tonnage": 7900,
+    "min_tonnage": 7900,
+    "max_tonnage": 7900,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "01": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "BOW CAROLINE",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-07-19",
+    "last_seen_date": "2025-10-30",
+    "dominant_product": "ACEITE VEGETAL",
+    "dominant_origin": null,
+    "dominant_importer": "PAMSA",
+    "avg_tonnage": 2200,
+    "min_tonnage": 1300,
+    "max_tonnage": 2650,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "07": 1,
+      "08": 1,
+      "10": 1
+    },
+    "confidence_inputs_available": 0.778
+  },
+  {
+    "vessel_name": "BRIGHT IMABARI",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 4,
+    "first_seen_date": null,
+    "last_seen_date": null,
+    "dominant_product": "MAP",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 5000,
+    "min_tonnage": 5000,
+    "max_tonnage": 5000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {},
+    "confidence_inputs_available": 0.958
+  },
+  {
+    "vessel_name": "BULGARIA",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2026-03-18",
+    "last_seen_date": "2026-03-18",
+    "dominant_product": "MOP",
+    "dominant_origin": "RUSIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 500,
+    "min_tonnage": 500,
+    "max_tonnage": 500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "03": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "BUNUN WISDOM",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2026-03-30",
+    "last_seen_date": "2026-03-30",
+    "dominant_product": "TSP",
+    "dominant_origin": null,
+    "dominant_importer": "NUTRIEN",
+    "avg_tonnage": 2750,
+    "min_tonnage": 1500,
+    "max_tonnage": 4000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "03": 2
+    },
+    "confidence_inputs_available": 0.667
+  },
+  {
+    "vessel_name": "CAPITAN DIMITRIS",
+    "visits_to_argentina": 26,
+    "fertilizer_visits": 26,
+    "first_seen_date": "2025-09-27",
+    "last_seen_date": "2025-10-18",
+    "dominant_product": "NPS",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "PTP ZONA FRANCA",
+    "avg_tonnage": 2904,
+    "min_tonnage": 1000,
+    "max_tonnage": 10000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 7,
+      "10": 18
+    },
+    "confidence_inputs_available": 0.872
+  },
+  {
+    "vessel_name": "CAPTAIN DIMITRIS",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 5,
+    "first_seen_date": "2025-10-18",
+    "last_seen_date": "2025-10-18",
+    "dominant_product": "NPS",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "LDC",
+    "avg_tonnage": 3640,
+    "min_tonnage": 2000,
+    "max_tonnage": 8000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 5
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "CECILIE F",
+    "visits_to_argentina": 9,
+    "fertilizer_visits": 7,
+    "first_seen_date": "2025-09-18",
+    "last_seen_date": "2025-09-18",
+    "dominant_product": "MAP 10-50",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 3889,
+    "min_tonnage": 500,
+    "max_tonnage": 5000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 8
+    },
+    "confidence_inputs_available": 0.963
+  },
+  {
+    "vessel_name": "CELESTE",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": null,
+    "last_seen_date": null,
+    "dominant_product": "TSP",
+    "dominant_origin": "MARRUECOS",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 1500,
+    "min_tonnage": 1500,
+    "max_tonnage": 1500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {},
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "CETUS HUMPBACK",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-12-06",
+    "last_seen_date": "2025-12-06",
+    "dominant_product": "UREA",
+    "dominant_origin": "ARGELIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 8800,
+    "min_tonnage": 5500,
+    "max_tonnage": 14300,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "12": 3
+    },
+    "confidence_inputs_available": 0.889
+  },
+  {
+    "vessel_name": "CHAMPION EBONY",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-11-18",
+    "last_seen_date": "2025-11-18",
+    "dominant_product": "UAN",
+    "dominant_origin": null,
+    "dominant_importer": "YPF",
+    "avg_tonnage": 9117,
+    "min_tonnage": 9117,
+    "max_tonnage": 9117,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "11": 2
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "CHAMPION TIMUR",
+    "visits_to_argentina": 9,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-08-07",
+    "last_seen_date": "2025-08-11",
+    "dominant_product": "UAN",
+    "dominant_origin": "ESTADOS UNIDOS",
+    "dominant_importer": "LDC",
+    "avg_tonnage": 5028,
+    "min_tonnage": 3500,
+    "max_tonnage": 6050,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "08": 9
+    },
+    "confidence_inputs_available": 0.87
+  },
+  {
+    "vessel_name": "CHESTNUT",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-10-27",
+    "last_seen_date": "2025-11-05",
+    "dominant_product": "ARRABIO",
+    "dominant_origin": null,
+    "dominant_importer": "VETORIAL",
+    "avg_tonnage": 24750,
+    "min_tonnage": 19500,
+    "max_tonnage": 30000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 1,
+      "11": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "CL DENGSHA HE",
+    "visits_to_argentina": 7,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-07-25",
+    "last_seen_date": "2025-07-25",
+    "dominant_product": "UREA",
+    "dominant_origin": "FINLANDIA",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 6486,
+    "min_tonnage": 1350,
+    "max_tonnage": 9700,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 7
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "CL ZHANGJIAJIE",
+    "visits_to_argentina": 6,
+    "fertilizer_visits": 6,
+    "first_seen_date": "2025-07-28",
+    "last_seen_date": "2025-07-28",
+    "dominant_product": "MAP",
+    "dominant_origin": "MARRUECOS",
+    "dominant_importer": "COFCO",
+    "avg_tonnage": 3858,
+    "min_tonnage": 1800,
+    "max_tonnage": 5400,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 6
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "CLIPPER I-STAR",
+    "visits_to_argentina": 36,
+    "fertilizer_visits": 31,
+    "first_seen_date": "2025-09-12",
+    "last_seen_date": "2025-10-14",
+    "dominant_product": "MAP",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 3922,
+    "min_tonnage": 550,
+    "max_tonnage": 12000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 8,
+      "10": 27
+    },
+    "confidence_inputs_available": 0.949
+  },
+  {
+    "vessel_name": "COLUMBIA RIVER",
+    "visits_to_argentina": 6,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-09-23",
+    "last_seen_date": "2025-09-23",
+    "dominant_product": "UREA",
+    "dominant_origin": "NIGERIA",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 5250,
+    "min_tonnage": 3000,
+    "max_tonnage": 7800,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 6
+    },
+    "confidence_inputs_available": 0.75
+  },
+  {
+    "vessel_name": "CORELLA ARROW",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-07-26",
+    "last_seen_date": "2025-07-31",
+    "dominant_product": "bolsones",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "MANUCHART",
+    "avg_tonnage": 10382,
+    "min_tonnage": 10382,
+    "max_tonnage": 10382,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 3
+    },
+    "confidence_inputs_available": 0.708
+  },
+  {
+    "vessel_name": "CS CELESTE",
+    "visits_to_argentina": 7,
+    "fertilizer_visits": 7,
+    "first_seen_date": "2025-09-17",
+    "last_seen_date": "2025-09-17",
+    "dominant_product": "STP",
+    "dominant_origin": null,
+    "dominant_importer": "FISCAL MOVIPORT",
+    "avg_tonnage": 3979,
+    "min_tonnage": 1000,
+    "max_tonnage": 11000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 7
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "DAIMANOS SKY",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-08-03",
+    "last_seen_date": "2025-08-03",
+    "dominant_product": "CARBON",
+    "dominant_origin": null,
+    "dominant_importer": "AES",
+    "avg_tonnage": 38000,
+    "min_tonnage": 38000,
+    "max_tonnage": 38000,
+    "main_ports_in_argentina": [
+      "AES"
+    ],
+    "seasonality_by_month": {
+      "08": 1
+    },
+    "confidence_inputs_available": 0.667
+  },
+  {
+    "vessel_name": "DARYA HEERA",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-08-17",
+    "last_seen_date": "2025-08-23",
+    "dominant_product": "MAP",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "LDC",
+    "avg_tonnage": 5000,
+    "min_tonnage": 4000,
+    "max_tonnage": 6000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "08": 4
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "DESERT HONOUR",
+    "visits_to_argentina": 14,
+    "fertilizer_visits": 14,
+    "first_seen_date": "2025-09-12",
+    "last_seen_date": "2025-09-16",
+    "dominant_product": "AMSUL",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 2684,
+    "min_tonnage": 500,
+    "max_tonnage": 5000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 13
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "DRAFTDODGER",
+    "visits_to_argentina": 6,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-09-29",
+    "last_seen_date": "2025-09-29",
+    "dominant_product": "UREA",
+    "dominant_origin": "OMAN",
+    "dominant_importer": "LDC",
+    "avg_tonnage": 4176,
+    "min_tonnage": 1350,
+    "max_tonnage": 7000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 6
+    },
+    "confidence_inputs_available": 0.861
+  },
+  {
+    "vessel_name": "DSI AQUILA",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-07-30",
+    "last_seen_date": "2025-07-30",
+    "dominant_product": "CARBON",
+    "dominant_origin": null,
+    "dominant_importer": "AES",
+    "avg_tonnage": 38500,
+    "min_tonnage": 38500,
+    "max_tonnage": 38500,
+    "main_ports_in_argentina": [
+      "AES"
+    ],
+    "seasonality_by_month": {
+      "07": 1
+    },
+    "confidence_inputs_available": 0.667
+  },
+  {
+    "vessel_name": "ENDLESS HORIZON",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-09-09",
+    "last_seen_date": "2025-09-09",
+    "dominant_product": "UREA",
+    "dominant_origin": "NIGERIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 3597,
+    "min_tonnage": 2790,
+    "max_tonnage": 4000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 2
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "ERTEA",
+    "visits_to_argentina": 6,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-11-09",
+    "last_seen_date": "2025-11-20",
+    "dominant_product": "UREA",
+    "dominant_origin": "ARGELIA",
+    "dominant_importer": "PTP (ZONA FRANCA)",
+    "avg_tonnage": 4733,
+    "min_tonnage": 2580,
+    "max_tonnage": 6886,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 6
+    },
+    "confidence_inputs_available": 0.75
+  },
+  {
+    "vessel_name": "FALCON GALAXY",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-06-19",
+    "last_seen_date": "2025-06-19",
+    "dominant_product": "ACEITE VEGETAL",
+    "dominant_origin": null,
+    "dominant_importer": "ECONATURE - BIOCORBA",
+    "avg_tonnage": 3300,
+    "min_tonnage": 3300,
+    "max_tonnage": 3300,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "06": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "FEDERAL ST LAURENT",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-10-11",
+    "last_seen_date": "2025-10-11",
+    "dominant_product": "NITRODOBLE",
+    "dominant_origin": "HOLANDA",
+    "dominant_importer": "YARA",
+    "avg_tonnage": 9602,
+    "min_tonnage": 1103,
+    "max_tonnage": 22500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 5
+    },
+    "confidence_inputs_available": 0.967
+  },
+  {
+    "vessel_name": "FIRANDO",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-08-07",
+    "last_seen_date": "2025-08-07",
+    "dominant_product": "CARBON",
+    "dominant_origin": null,
+    "dominant_importer": "AES",
+    "avg_tonnage": 45000,
+    "min_tonnage": 45000,
+    "max_tonnage": 45000,
+    "main_ports_in_argentina": [
+      "AES"
+    ],
+    "seasonality_by_month": {
+      "08": 1
+    },
+    "confidence_inputs_available": 0.667
+  },
+  {
+    "vessel_name": "GENIUS STAR IX",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-06-14",
+    "last_seen_date": "2025-06-17",
+    "dominant_product": "STP",
+    "dominant_origin": "MEXICO",
+    "dominant_importer": "ABOPAR",
+    "avg_tonnage": 3284,
+    "min_tonnage": 1000,
+    "max_tonnage": 4618,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL",
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "06": 5
+    },
+    "confidence_inputs_available": 0.8
+  },
+  {
+    "vessel_name": "GINGA LEOARD",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-06-17",
+    "last_seen_date": "2025-06-17",
+    "dominant_product": "ACEITE VEGETAL",
+    "dominant_origin": null,
+    "dominant_importer": "PAMSA",
+    "avg_tonnage": 2500,
+    "min_tonnage": 2500,
+    "max_tonnage": 2500,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "06": 1
+    },
+    "confidence_inputs_available": 0.583
+  },
+  {
+    "vessel_name": "GINGA LION",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-12-22",
+    "last_seen_date": "2025-12-22",
+    "dominant_product": "ACEITE VEGETAL",
+    "dominant_origin": null,
+    "dominant_importer": "ACA BIO",
+    "avg_tonnage": 1300,
+    "min_tonnage": 1300,
+    "max_tonnage": 1300,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "12": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "GOLDEN ISLAND",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-08-11",
+    "last_seen_date": "2025-08-11",
+    "dominant_product": "UREA",
+    "dominant_origin": "OMAN",
+    "dominant_importer": "LDC",
+    "avg_tonnage": 4683,
+    "min_tonnage": 3000,
+    "max_tonnage": 6300,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "08": 3
+    },
+    "confidence_inputs_available": 0.889
+  },
+  {
+    "vessel_name": "GOLF",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-01-05",
+    "last_seen_date": "2025-01-05",
+    "dominant_product": null,
+    "dominant_origin": "NORUEGA",
+    "dominant_importer": "YARA",
+    "avg_tonnage": 27000,
+    "min_tonnage": 27000,
+    "max_tonnage": 27000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "01": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "GREEN YOKOHAMA",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2026-03-07",
+    "last_seen_date": "2026-03-07",
+    "dominant_product": "SODA ASH",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "LIEX",
+    "avg_tonnage": 30000,
+    "min_tonnage": 30000,
+    "max_tonnage": 30000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "03": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "GULLHOLMEN ISLAND",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-12-07",
+    "last_seen_date": "2025-12-07",
+    "dominant_product": null,
+    "dominant_origin": null,
+    "dominant_importer": "YARA",
+    "avg_tonnage": 28000,
+    "min_tonnage": 28000,
+    "max_tonnage": 28000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "12": 1
+    },
+    "confidence_inputs_available": 0.5
+  },
+  {
+    "vessel_name": "HANZE GENUA",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-07-14",
+    "last_seen_date": "2025-07-18",
+    "dominant_product": "CARBON",
+    "dominant_origin": null,
+    "dominant_importer": "AES",
+    "avg_tonnage": 35000,
+    "min_tonnage": 35000,
+    "max_tonnage": 35000,
+    "main_ports_in_argentina": [
+      "AES"
+    ],
+    "seasonality_by_month": {
+      "07": 2
+    },
+    "confidence_inputs_available": 0.667
+  },
+  {
+    "vessel_name": "HB CENTAURUS",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-11-07",
+    "last_seen_date": "2025-11-07",
+    "dominant_product": "ARRABIO",
+    "dominant_origin": null,
+    "dominant_importer": "VETORIAL",
+    "avg_tonnage": 17858,
+    "min_tonnage": 17858,
+    "max_tonnage": 17858,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "IC PROGRESS",
+    "visits_to_argentina": 10,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-11-05",
+    "last_seen_date": "2025-11-05",
+    "dominant_product": "UREA",
+    "dominant_origin": "QATAR",
+    "dominant_importer": "PROFERTIL",
+    "avg_tonnage": 3475,
+    "min_tonnage": 1500,
+    "max_tonnage": 5500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 10
+    },
+    "confidence_inputs_available": 0.85
+  },
+  {
+    "vessel_name": "ICARIAN SPIRE",
+    "visits_to_argentina": 8,
+    "fertilizer_visits": 8,
+    "first_seen_date": "2025-09-13",
+    "last_seen_date": "2025-09-13",
+    "dominant_product": "NPS",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "ACA",
+    "avg_tonnage": 2388,
+    "min_tonnage": 1000,
+    "max_tonnage": 4400,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 8
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "IMABARI LOGGER",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-10-29",
+    "last_seen_date": "2025-10-29",
+    "dominant_product": "SAUSOR",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "YARA",
+    "avg_tonnage": 15750,
+    "min_tonnage": 15750,
+    "max_tonnage": 15750,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "INCE POINT",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 4,
+    "first_seen_date": "2025-08-28",
+    "last_seen_date": "2025-08-28",
+    "dominant_product": "NPS",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "AFA",
+    "avg_tonnage": 5962,
+    "min_tonnage": 2750,
+    "max_tonnage": 8500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "08": 4
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "INTERLINK FORTUITY",
+    "visits_to_argentina": 10,
+    "fertilizer_visits": 9,
+    "first_seen_date": "2025-05-10",
+    "last_seen_date": "2025-08-05",
+    "dominant_product": "MAP",
+    "dominant_origin": "MARRECOS",
+    "dominant_importer": "YARA",
+    "avg_tonnage": 6048,
+    "min_tonnage": 500,
+    "max_tonnage": 27500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 8,
+      "08": 2
+    },
+    "confidence_inputs_available": 0.967
+  },
+  {
+    "vessel_name": "IVS TRADER",
+    "visits_to_argentina": 28,
+    "fertilizer_visits": 28,
+    "first_seen_date": "2025-06-04",
+    "last_seen_date": "2025-06-13",
+    "dominant_product": "DAP",
+    "dominant_origin": "ARGELIA",
+    "dominant_importer": "ACA",
+    "avg_tonnage": 1657,
+    "min_tonnage": 500,
+    "max_tonnage": 5500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 28
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "JULIA",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-08-26",
+    "last_seen_date": "2025-08-26",
+    "dominant_product": "BARITINA",
+    "dominant_origin": null,
+    "dominant_importer": "MAGGREB",
+    "avg_tonnage": 30570,
+    "min_tonnage": 30570,
+    "max_tonnage": 30570,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "08": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "KOUROS GLORY",
+    "visits_to_argentina": 8,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-06-27",
+    "last_seen_date": "2025-07-01",
+    "dominant_product": "UREA",
+    "dominant_origin": "ARABIA",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 3325,
+    "min_tonnage": 950,
+    "max_tonnage": 4750,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 4,
+      "07": 4
+    },
+    "confidence_inputs_available": 0.729
+  },
+  {
+    "vessel_name": "LOWLANDS FUTURE",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 4,
+    "first_seen_date": "2025-09-14",
+    "last_seen_date": "2025-09-14",
+    "dominant_product": "TSP",
+    "dominant_origin": "GEORGIA",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 2350,
+    "min_tonnage": 1800,
+    "max_tonnage": 3600,
+    "main_ports_in_argentina": [
+      "AES"
+    ],
+    "seasonality_by_month": {
+      "09": 4
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "LYULIN",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-10-09",
+    "last_seen_date": "2025-10-09",
+    "dominant_product": "MOP",
+    "dominant_origin": "CANADA",
+    "dominant_importer": "LDC",
+    "avg_tonnage": 1575,
+    "min_tonnage": 250,
+    "max_tonnage": 4750,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 5
+    },
+    "confidence_inputs_available": 0.867
+  },
+  {
+    "vessel_name": "MACURU ARROW",
+    "visits_to_argentina": 7,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-11-13",
+    "last_seen_date": "2025-11-13",
+    "dominant_product": "BARITINA (BIGBAG)",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "LIEX",
+    "avg_tonnage": 1371,
+    "min_tonnage": 281,
+    "max_tonnage": 5010,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 7
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "MAJESTIC VERA",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-10-09",
+    "last_seen_date": "2025-10-09",
+    "dominant_product": "UREA",
+    "dominant_origin": "NIGERIA",
+    "dominant_importer": "NEUS",
+    "avg_tonnage": 8005,
+    "min_tonnage": 5500,
+    "max_tonnage": 13015,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 3
+    },
+    "confidence_inputs_available": 0.889
+  },
+  {
+    "vessel_name": "MALTEZA",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-11-19",
+    "last_seen_date": "2025-11-19",
+    "dominant_product": "UREA",
+    "dominant_origin": "FINLANDIA",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 5370,
+    "min_tonnage": 1100,
+    "max_tonnage": 11000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 5
+    },
+    "confidence_inputs_available": 0.867
+  },
+  {
+    "vessel_name": "MANTA NIGAR",
+    "visits_to_argentina": 9,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-10-16",
+    "last_seen_date": "2025-10-29",
+    "dominant_product": "UREA",
+    "dominant_origin": "NIGERIA",
+    "dominant_importer": "VETORIAL",
+    "avg_tonnage": 7671,
+    "min_tonnage": 1000,
+    "max_tonnage": 33500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 9
+    },
+    "confidence_inputs_available": 0.87
+  },
+  {
+    "vessel_name": "MBS ODYSSEY",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-10-28",
+    "last_seen_date": "2025-11-05",
+    "dominant_product": "ARRABIO",
+    "dominant_origin": "EEUU - se aplican 5 dias por reglamento",
+    "dominant_importer": "VETORIAL",
+    "avg_tonnage": 33500,
+    "min_tonnage": 33500,
+    "max_tonnage": 33500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 1,
+      "11": 1
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "MEDI ZOUZ",
+    "visits_to_argentina": 7,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-07-20",
+    "last_seen_date": "2025-07-20",
+    "dominant_product": "UREA",
+    "dominant_origin": "FINLANDIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 2800,
+    "min_tonnage": 1800,
+    "max_tonnage": 7000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 6
+    },
+    "confidence_inputs_available": 0.857
+  },
+  {
+    "vessel_name": "MIDJUR",
+    "visits_to_argentina": 15,
+    "fertilizer_visits": 5,
+    "first_seen_date": "2025-05-31",
+    "last_seen_date": "2025-06-18",
+    "dominant_product": "MAP",
+    "dominant_origin": "RUMANIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 2463,
+    "min_tonnage": 1500,
+    "max_tonnage": 4650,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 3,
+      "06": 12
+    },
+    "confidence_inputs_available": 0.856
+  },
+  {
+    "vessel_name": "MONTEVIDEO I",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-10-23",
+    "last_seen_date": "2025-10-23",
+    "dominant_product": "UREA",
+    "dominant_origin": "FINLANDIA",
+    "dominant_importer": "ACA",
+    "avg_tonnage": 9547,
+    "min_tonnage": 4400,
+    "max_tonnage": 16240,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 3
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "NAVA ULYSSES",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 4,
+    "first_seen_date": "2025-05-31",
+    "last_seen_date": "2025-06-01",
+    "dominant_product": "MAP",
+    "dominant_origin": "MARRUECOS",
+    "dominant_importer": "NUTRIEN",
+    "avg_tonnage": 6999,
+    "min_tonnage": 3000,
+    "max_tonnage": 16000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 1,
+      "06": 3
+    },
+    "confidence_inputs_available": 0.958
+  },
+  {
+    "vessel_name": "NAXOS",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-10-09",
+    "last_seen_date": "2025-10-09",
+    "dominant_product": "UREA",
+    "dominant_origin": "GEORGIA",
+    "dominant_importer": "LDC",
+    "avg_tonnage": 4381,
+    "min_tonnage": 2000,
+    "max_tonnage": 8942,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 3
+    },
+    "confidence_inputs_available": 0.889
+  },
+  {
+    "vessel_name": "NIDA STAR",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-07-03",
+    "last_seen_date": "2025-07-03",
+    "dominant_product": "GAAS OIL",
+    "dominant_origin": null,
+    "dominant_importer": "AES",
+    "avg_tonnage": 9000,
+    "min_tonnage": 9000,
+    "max_tonnage": 9000,
+    "main_ports_in_argentina": [
+      "AES"
+    ],
+    "seasonality_by_month": {
+      "07": 1
+    },
+    "confidence_inputs_available": 0.667
+  },
+  {
+    "vessel_name": "NIKITIS",
+    "visits_to_argentina": 6,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-11-22",
+    "last_seen_date": "2025-11-22",
+    "dominant_product": "UREA",
+    "dominant_origin": "NIGERIA",
+    "dominant_importer": "COFCO",
+    "avg_tonnage": 3928,
+    "min_tonnage": 1000,
+    "max_tonnage": 8266,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 6
+    },
+    "confidence_inputs_available": 0.861
+  },
+  {
+    "vessel_name": "NING YUE HAI",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-07-16",
+    "last_seen_date": "2025-07-21",
+    "dominant_product": "CARBON",
+    "dominant_origin": null,
+    "dominant_importer": "AES",
+    "avg_tonnage": 37825,
+    "min_tonnage": 35000,
+    "max_tonnage": 40650,
+    "main_ports_in_argentina": [
+      "AES"
+    ],
+    "seasonality_by_month": {
+      "07": 2
+    },
+    "confidence_inputs_available": 0.667
+  },
+  {
+    "vessel_name": "NKR ALICE",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-05-19",
+    "last_seen_date": "2025-05-19",
+    "dominant_product": "UREA",
+    "dominant_origin": "QATAR",
+    "dominant_importer": "LDC",
+    "avg_tonnage": 4050,
+    "min_tonnage": 2200,
+    "max_tonnage": 7500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 5
+    },
+    "confidence_inputs_available": 0.867
+  },
+  {
+    "vessel_name": "NORSE IJMUIDEN",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-10-02",
+    "last_seen_date": "2025-10-02",
+    "dominant_product": "UREA",
+    "dominant_origin": "ARGELIA",
+    "dominant_importer": "ACA",
+    "avg_tonnage": 9877,
+    "min_tonnage": 3000,
+    "max_tonnage": 21130,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 3
+    },
+    "confidence_inputs_available": 0.889
+  },
+  {
+    "vessel_name": "NOURSE HOUSTON",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-08-10",
+    "last_seen_date": "2025-08-10",
+    "dominant_product": "MAP",
+    "dominant_origin": "MARRUECOS",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 2200,
+    "min_tonnage": 2200,
+    "max_tonnage": 2200,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "08": 2
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "OBORICHTE",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-11-09",
+    "last_seen_date": "2025-11-09",
+    "dominant_product": "MAP",
+    "dominant_origin": "RUMANIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 4850,
+    "min_tonnage": 550,
+    "max_tonnage": 7649,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 4
+    },
+    "confidence_inputs_available": 0.75
+  },
+  {
+    "vessel_name": "OBORISHTE",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-11-08",
+    "last_seen_date": "2025-11-08",
+    "dominant_product": "MAP",
+    "dominant_origin": "RUMANIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 3916,
+    "min_tonnage": 550,
+    "max_tonnage": 7649,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 3
+    },
+    "confidence_inputs_available": 0.889
+  },
+  {
+    "vessel_name": "OCEAN ROYAL",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-09-03",
+    "last_seen_date": "2025-09-03",
+    "dominant_product": "AMSUL",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 1500,
+    "min_tonnage": 1500,
+    "max_tonnage": 1500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "PARABOLICA",
+    "visits_to_argentina": 8,
+    "fertilizer_visits": 5,
+    "first_seen_date": "2025-10-02",
+    "last_seen_date": "2025-10-10",
+    "dominant_product": "MAP",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "ACA",
+    "avg_tonnage": 3595,
+    "min_tonnage": 1500,
+    "max_tonnage": 7700,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 7
+    },
+    "confidence_inputs_available": 0.938
+  },
+  {
+    "vessel_name": "PLUTO",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2026-03-12",
+    "last_seen_date": "2026-03-12",
+    "dominant_product": "MAP",
+    "dominant_origin": "RUSIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 11038,
+    "min_tonnage": 4500,
+    "max_tonnage": 17576,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "03": 2
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "PU AN TONG",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-05-22",
+    "last_seen_date": "2025-05-22",
+    "dominant_product": "AMSUL",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 1250,
+    "min_tonnage": 1000,
+    "max_tonnage": 2000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 4
+    },
+    "confidence_inputs_available": 0.875
+  },
+  {
+    "vessel_name": "PUNTA LOYOLA",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-05-28",
+    "last_seen_date": "2025-05-28",
+    "dominant_product": "FAME",
+    "dominant_origin": null,
+    "dominant_importer": "YPF",
+    "avg_tonnage": 3500,
+    "min_tonnage": 3500,
+    "max_tonnage": 3500,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "05": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "QANUX BENEFIT",
+    "visits_to_argentina": 9,
+    "fertilizer_visits": 6,
+    "first_seen_date": "2025-09-10",
+    "last_seen_date": "2025-09-14",
+    "dominant_product": "TSP",
+    "dominant_origin": "MEXICO",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 2467,
+    "min_tonnage": 900,
+    "max_tonnage": 4950,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL",
+      "AES"
+    ],
+    "seasonality_by_month": {
+      "09": 7
+    },
+    "confidence_inputs_available": 0.944
+  },
+  {
+    "vessel_name": "REIWA",
+    "visits_to_argentina": 10,
+    "fertilizer_visits": 4,
+    "first_seen_date": "2025-07-20",
+    "last_seen_date": "2025-07-22",
+    "dominant_product": "UREA",
+    "dominant_origin": "OMAN",
+    "dominant_importer": "ACA",
+    "avg_tonnage": 7950,
+    "min_tonnage": 1700,
+    "max_tonnage": 20898,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 7
+    },
+    "confidence_inputs_available": 0.867
+  },
+  {
+    "vessel_name": "REM HYDRA",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-09-06",
+    "last_seen_date": "2025-09-06",
+    "dominant_product": "ARRABIO",
+    "dominant_origin": "ARABIA",
+    "dominant_importer": "VETORIAL",
+    "avg_tonnage": 23162,
+    "min_tonnage": 4912,
+    "max_tonnage": 41412,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 2
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "REM TAGUATO",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": null,
+    "last_seen_date": null,
+    "dominant_product": "AMSUL",
+    "dominant_origin": null,
+    "dominant_importer": "LDC",
+    "avg_tonnage": 2200,
+    "min_tonnage": 2200,
+    "max_tonnage": 2200,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {},
+    "confidence_inputs_available": 0.5
+  },
+  {
+    "vessel_name": "REM TBC",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 2,
+    "first_seen_date": null,
+    "last_seen_date": null,
+    "dominant_product": "NP",
+    "dominant_origin": null,
+    "dominant_importer": "AMEROPA",
+    "avg_tonnage": 1440,
+    "min_tonnage": 1180,
+    "max_tonnage": 1700,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {},
+    "confidence_inputs_available": 0.5
+  },
+  {
+    "vessel_name": "REM URUTAU",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": null,
+    "last_seen_date": null,
+    "dominant_product": "AMSUL",
+    "dominant_origin": null,
+    "dominant_importer": "LDC",
+    "avg_tonnage": 2200,
+    "min_tonnage": 2200,
+    "max_tonnage": 2200,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {},
+    "confidence_inputs_available": 0.5
+  },
+  {
+    "vessel_name": "REM. 316 GOB. ARANA",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-08-24",
+    "last_seen_date": "2025-08-24",
+    "dominant_product": "SSP",
+    "dominant_origin": "EXPORTACION",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 3000,
+    "min_tonnage": 3000,
+    "max_tonnage": 3000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "08": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "REM. AQUARIUS",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-11-14",
+    "last_seen_date": "2025-11-14",
+    "dominant_product": "ARRABIO",
+    "dominant_origin": null,
+    "dominant_importer": "VETORIAL",
+    "avg_tonnage": 13456,
+    "min_tonnage": 13456,
+    "max_tonnage": 13456,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "REM. CECILIA LUJAN",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": null,
+    "last_seen_date": null,
+    "dominant_product": "GMOP",
+    "dominant_origin": null,
+    "dominant_importer": "NITRON",
+    "avg_tonnage": 12700,
+    "min_tonnage": 12700,
+    "max_tonnage": 12700,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {},
+    "confidence_inputs_available": 0.667
+  },
+  {
+    "vessel_name": "REM. DON AURELIANO",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2026-01-10",
+    "last_seen_date": "2026-01-10",
+    "dominant_product": "GMOP",
+    "dominant_origin": null,
+    "dominant_importer": "NITRON",
+    "avg_tonnage": 9600,
+    "min_tonnage": 9600,
+    "max_tonnage": 9600,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "01": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "REM. DON JUAN N",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-07-09",
+    "last_seen_date": "2025-07-09",
+    "dominant_product": "SSP",
+    "dominant_origin": "EXPO PARAGUAY",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 6000,
+    "min_tonnage": 6000,
+    "max_tonnage": 6000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "REM. DOÑA CARMEN",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-06-15",
+    "last_seen_date": "2025-06-15",
+    "dominant_product": "GSSP",
+    "dominant_origin": "EXPO A PARAGUAY",
+    "dominant_importer": "NITRON",
+    "avg_tonnage": 9868,
+    "min_tonnage": 9500,
+    "max_tonnage": 10235,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "REM. Don Antonio",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-05-11",
+    "last_seen_date": "2025-05-11",
+    "dominant_product": "ARRABIO",
+    "dominant_origin": "transito / importacion",
+    "dominant_importer": "VETORIAL (Cava Transito)",
+    "avg_tonnage": 10458,
+    "min_tonnage": 1417,
+    "max_tonnage": 19500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 2
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "REM. GUILLERMO C",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-07-10",
+    "last_seen_date": "2025-08-24",
+    "dominant_product": "SSP",
+    "dominant_origin": "EXPO PARAGUAY",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 5000,
+    "min_tonnage": 3000,
+    "max_tonnage": 6000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 2,
+      "08": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "REM. HB PERSEUS",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-06-18",
+    "last_seen_date": "2025-06-18",
+    "dominant_product": "SSP",
+    "dominant_origin": "EXPO A PARAGUAY",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 6000,
+    "min_tonnage": 6000,
+    "max_tonnage": 6000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "REM. HERKULES III",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-08-18",
+    "last_seen_date": "2025-09-30",
+    "dominant_product": "ARRABIO",
+    "dominant_origin": "TRANSITO",
+    "dominant_importer": "VETORIAL (transito)",
+    "avg_tonnage": 11411,
+    "min_tonnage": 2077,
+    "max_tonnage": 18489,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "08": 3,
+      "09": 1
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "REM. HERKULES IV",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-07-09",
+    "last_seen_date": "2025-07-09",
+    "dominant_product": "ARRABIO",
+    "dominant_origin": "DESCARGA A CAVA Y POTERIOR EMBARQUE",
+    "dominant_importer": "VETORIAL",
+    "avg_tonnage": 20346,
+    "min_tonnage": 20346,
+    "max_tonnage": 20346,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "REM. IB CONCEPCION",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": null,
+    "last_seen_date": null,
+    "dominant_product": "MOP",
+    "dominant_origin": null,
+    "dominant_importer": "LDC",
+    "avg_tonnage": 4750,
+    "min_tonnage": 4750,
+    "max_tonnage": 4750,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {},
+    "confidence_inputs_available": 0.667
+  },
+  {
+    "vessel_name": "REM. IGNACIO H",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": null,
+    "last_seen_date": null,
+    "dominant_product": "MAP",
+    "dominant_origin": null,
+    "dominant_importer": "AMEROPA",
+    "avg_tonnage": 4000,
+    "min_tonnage": 4000,
+    "max_tonnage": 4000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {},
+    "confidence_inputs_available": 0.5
+  },
+  {
+    "vessel_name": "REM. IMPALA PANTANAL",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-06-10",
+    "last_seen_date": "2025-06-23",
+    "dominant_product": "NAFTA",
+    "dominant_origin": null,
+    "dominant_importer": "PAMPA ENERGIA",
+    "avg_tonnage": 2100,
+    "min_tonnage": 2100,
+    "max_tonnage": 2100,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "06": 2
+    },
+    "confidence_inputs_available": 0.778
+  },
+  {
+    "vessel_name": "REM. JUANJO A",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-05-24",
+    "last_seen_date": "2025-11-05",
+    "dominant_product": "MAP",
+    "dominant_origin": "TRANSITO",
+    "dominant_importer": "AMEROPA",
+    "avg_tonnage": 4050,
+    "min_tonnage": 1150,
+    "max_tonnage": 9500,
+    "main_ports_in_argentina": [
+      "ELEVADOR",
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 2,
+      "11": 1
+    },
+    "confidence_inputs_available": 0.944
+  },
+  {
+    "vessel_name": "REM. MAURICIO G",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-05-05",
+    "last_seen_date": "2025-05-05",
+    "dominant_product": "SSP",
+    "dominant_origin": "TRANSITO A",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 7568,
+    "min_tonnage": 5135,
+    "max_tonnage": 10000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "REM. NEPTUNO",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-11-07",
+    "last_seen_date": "2025-11-07",
+    "dominant_product": "NP 840",
+    "dominant_origin": null,
+    "dominant_importer": "AMEROPA",
+    "avg_tonnage": 2350,
+    "min_tonnage": 2350,
+    "max_tonnage": 2350,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "REM. RIIO DE LA PLATA",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": null,
+    "last_seen_date": null,
+    "dominant_product": "AMSUL",
+    "dominant_origin": null,
+    "dominant_importer": "ABOPAR",
+    "avg_tonnage": 10000,
+    "min_tonnage": 10000,
+    "max_tonnage": 10000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {},
+    "confidence_inputs_available": 0.667
+  },
+  {
+    "vessel_name": "REM. RIO DE LA PLATA",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-05-29",
+    "last_seen_date": "2025-05-29",
+    "dominant_product": "MAP",
+    "dominant_origin": "TRANSITO",
+    "dominant_importer": "NITRON",
+    "avg_tonnage": 12750,
+    "min_tonnage": 12750,
+    "max_tonnage": 12750,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 1
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "REM. RUBEN H",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-07-14",
+    "last_seen_date": "2025-07-15",
+    "dominant_product": "NPS",
+    "dominant_origin": "EXPO PARAGUAY",
+    "dominant_importer": "AMEROPA",
+    "avg_tonnage": 10750,
+    "min_tonnage": 10000,
+    "max_tonnage": 11500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 2
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "REM. SAN JOSE V",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 5,
+    "first_seen_date": "2025-11-08",
+    "last_seen_date": "2025-12-15",
+    "dominant_product": "AMSUL",
+    "dominant_origin": "EXPO PARAGUAY",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 2279,
+    "min_tonnage": 1180,
+    "max_tonnage": 3000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 2,
+      "12": 1
+    },
+    "confidence_inputs_available": 0.733
+  },
+  {
+    "vessel_name": "REM. SARA A",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-05-07",
+    "last_seen_date": "2025-05-07",
+    "dominant_product": "SSP",
+    "dominant_origin": null,
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 5000,
+    "min_tonnage": 5000,
+    "max_tonnage": 5000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "REM. TBC",
+    "visits_to_argentina": 10,
+    "fertilizer_visits": 10,
+    "first_seen_date": "2025-06-12",
+    "last_seen_date": "2025-11-07",
+    "dominant_product": "SSP",
+    "dominant_origin": "EXPO A PARAGUAY",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 7254,
+    "min_tonnage": 1700,
+    "max_tonnage": 19490,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 2,
+      "07": 1,
+      "08": 2,
+      "11": 1
+    },
+    "confidence_inputs_available": 0.867
+  },
+  {
+    "vessel_name": "REM. URUTAU",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-07-02",
+    "last_seen_date": "2025-07-27",
+    "dominant_product": "MOP",
+    "dominant_origin": "SEGUNDA ANDANA",
+    "dominant_importer": "LDC PARAGUAY",
+    "avg_tonnage": 4900,
+    "min_tonnage": 1700,
+    "max_tonnage": 10000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 2
+    },
+    "confidence_inputs_available": 0.944
+  },
+  {
+    "vessel_name": "REM. ZONDA I",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-06-17",
+    "last_seen_date": "2025-07-15",
+    "dominant_product": "SSP",
+    "dominant_origin": "EXPO A PARAGUAY",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 6873,
+    "min_tonnage": 4618,
+    "max_tonnage": 8600,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL",
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "06": 1,
+      "07": 1
+    },
+    "confidence_inputs_available": 0.889
+  },
+  {
+    "vessel_name": "REM.CAVALIER X",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-05-29",
+    "last_seen_date": "2025-05-29",
+    "dominant_product": "SSP",
+    "dominant_origin": "EXPO A PARAGUAY",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 10000,
+    "min_tonnage": 10000,
+    "max_tonnage": 10000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "RODINA",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-05-30",
+    "last_seen_date": "2025-06-01",
+    "dominant_product": "MAP",
+    "dominant_origin": "RUSSIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 3650,
+    "min_tonnage": 2700,
+    "max_tonnage": 4600,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 1,
+      "06": 2
+    },
+    "confidence_inputs_available": 0.778
+  },
+  {
+    "vessel_name": "ReM. PARAPITI",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2026-03-15",
+    "last_seen_date": "2026-03-15",
+    "dominant_product": "SSP",
+    "dominant_origin": "EXPO",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 8000,
+    "min_tonnage": 8000,
+    "max_tonnage": 8000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "03": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "SAGA ENTERPRICE",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-06-26",
+    "last_seen_date": "2025-06-26",
+    "dominant_product": "NPK",
+    "dominant_origin": "NORUEGA",
+    "dominant_importer": "YARA",
+    "avg_tonnage": 18000,
+    "min_tonnage": 18000,
+    "max_tonnage": 18000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "SAINT DIMITRIOS",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-07-17",
+    "last_seen_date": "2025-07-17",
+    "dominant_product": "TSP",
+    "dominant_origin": "MARRUECOS",
+    "dominant_importer": "COFCO",
+    "avg_tonnage": 2144,
+    "min_tonnage": 1100,
+    "max_tonnage": 2810,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 5
+    },
+    "confidence_inputs_available": 0.933
+  },
+  {
+    "vessel_name": "SAINT VASSILIOS",
+    "visits_to_argentina": 16,
+    "fertilizer_visits": 14,
+    "first_seen_date": "2025-06-13",
+    "last_seen_date": "2025-09-14",
+    "dominant_product": "MAP",
+    "dominant_origin": "MARRUECOS",
+    "dominant_importer": "CASPORT FISCAL",
+    "avg_tonnage": 3754,
+    "min_tonnage": 1000,
+    "max_tonnage": 10500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 12,
+      "09": 3
+    },
+    "confidence_inputs_available": 0.958
+  },
+  {
+    "vessel_name": "SEA RIDER",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-06-06",
+    "last_seen_date": "2025-06-06",
+    "dominant_product": "UREA",
+    "dominant_origin": "RUSSIA",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 2100,
+    "min_tonnage": 1200,
+    "max_tonnage": 3000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 4
+    },
+    "confidence_inputs_available": 0.875
+  },
+  {
+    "vessel_name": "SEACON BANGKOK",
+    "visits_to_argentina": 11,
+    "fertilizer_visits": 11,
+    "first_seen_date": "2025-05-15",
+    "last_seen_date": "2025-05-15",
+    "dominant_product": "MAP",
+    "dominant_origin": "MARRUECOS",
+    "dominant_importer": "AMEROPA",
+    "avg_tonnage": 4001,
+    "min_tonnage": 900,
+    "max_tonnage": 11500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL",
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "05": 9
+    },
+    "confidence_inputs_available": 0.788
+  },
+  {
+    "vessel_name": "SHOVELER",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-05-13",
+    "last_seen_date": "2025-05-13",
+    "dominant_product": "ARRABIO",
+    "dominant_origin": "EEUU",
+    "dominant_importer": "VETORIAL",
+    "avg_tonnage": 19500,
+    "min_tonnage": 19500,
+    "max_tonnage": 19500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "SOFIA",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 4,
+    "first_seen_date": "2025-10-10",
+    "last_seen_date": "2025-10-10",
+    "dominant_product": "UREA",
+    "dominant_origin": "QATAR",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 5038,
+    "min_tonnage": 2090,
+    "max_tonnage": 10860,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 4
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "SOLENT",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-11-19",
+    "last_seen_date": "2025-11-19",
+    "dominant_product": "UREA",
+    "dominant_origin": "NIGERIA",
+    "dominant_importer": "PTP (ZONA FRANCA)",
+    "avg_tonnage": 7500,
+    "min_tonnage": 7500,
+    "max_tonnage": 7500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "SOUTHER PUMA",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-06-15",
+    "last_seen_date": "2025-06-15",
+    "dominant_product": "ACEITE VEGETAL",
+    "dominant_origin": null,
+    "dominant_importer": "MILO",
+    "avg_tonnage": 2200,
+    "min_tonnage": 2200,
+    "max_tonnage": 2200,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "06": 1
+    },
+    "confidence_inputs_available": 0.583
+  },
+  {
+    "vessel_name": "STAR DALMATIA",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-05-19",
+    "last_seen_date": "2025-05-19",
+    "dominant_product": "NITRODOBLE",
+    "dominant_origin": "NORUEGA",
+    "dominant_importer": "YARA",
+    "avg_tonnage": 18500,
+    "min_tonnage": 12000,
+    "max_tonnage": 25000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 2
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "STAR GREENWICH",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-07-19",
+    "last_seen_date": "2025-07-20",
+    "dominant_product": "MAP",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 5875,
+    "min_tonnage": 3000,
+    "max_tonnage": 10000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 4
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "STAR HELSINKI",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-06-08",
+    "last_seen_date": "2025-06-12",
+    "dominant_product": "DAP",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 1180,
+    "min_tonnage": 900,
+    "max_tonnage": 1540,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 3
+    },
+    "confidence_inputs_available": 0.889
+  },
+  {
+    "vessel_name": "STRANDJA",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 4,
+    "first_seen_date": "2026-01-06",
+    "last_seen_date": "2026-01-06",
+    "dominant_product": "NITRATO DE AMONIO",
+    "dominant_origin": null,
+    "dominant_importer": "AGREFERT",
+    "avg_tonnage": 6200,
+    "min_tonnage": 4500,
+    "max_tonnage": 9600,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "01": 4
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "STRATEGIC SYNERGY",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2026-01-15",
+    "last_seen_date": "2026-01-15",
+    "dominant_product": "ARRABIO",
+    "dominant_origin": null,
+    "dominant_importer": "VETORIAL",
+    "avg_tonnage": 30000,
+    "min_tonnage": 30000,
+    "max_tonnage": 30000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "01": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "SUPER SAKA",
+    "visits_to_argentina": 7,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-07-15",
+    "last_seen_date": "2025-07-15",
+    "dominant_product": "UREA",
+    "dominant_origin": "NIGERIA",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 4671,
+    "min_tonnage": 1000,
+    "max_tonnage": 10500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 7
+    },
+    "confidence_inputs_available": 0.857
+  },
+  {
+    "vessel_name": "TASSOS N",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-11-16",
+    "last_seen_date": "2025-11-16",
+    "dominant_product": "UREA",
+    "dominant_origin": "NIGERIA",
+    "dominant_importer": "MOVIPORT",
+    "avg_tonnage": 12700,
+    "min_tonnage": 11000,
+    "max_tonnage": 14399,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "11": 2
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "TBC",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-05-26",
+    "last_seen_date": "2025-05-26",
+    "dominant_product": "FAME",
+    "dominant_origin": null,
+    "dominant_importer": "YPF",
+    "avg_tonnage": 3000,
+    "min_tonnage": 2000,
+    "max_tonnage": 3500,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "05": 1
+    },
+    "confidence_inputs_available": 0.778
+  },
+  {
+    "vessel_name": "TBN",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-12-27",
+    "last_seen_date": "2025-12-27",
+    "dominant_product": "BIODIESEL",
+    "dominant_origin": null,
+    "dominant_importer": "YPF",
+    "avg_tonnage": 3500,
+    "min_tonnage": 3500,
+    "max_tonnage": 3500,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "12": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "TENCA ARROW",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-05-14",
+    "last_seen_date": "2025-10-29",
+    "dominant_product": "BOLSONES",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "MANUCHART",
+    "avg_tonnage": 3180,
+    "min_tonnage": 2700,
+    "max_tonnage": 3600,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 2,
+      "10": 3
+    },
+    "confidence_inputs_available": 0.933
+  },
+  {
+    "vessel_name": "TG CRAB",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-09-11",
+    "last_seen_date": "2025-09-11",
+    "dominant_product": "UAN",
+    "dominant_origin": "RUSSIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 10000,
+    "min_tonnage": 10000,
+    "max_tonnage": 10000,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {
+      "09": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "TG GRAB",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": null,
+    "last_seen_date": null,
+    "dominant_product": "UAN",
+    "dominant_origin": "RUSSIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": null,
+    "min_tonnage": null,
+    "max_tonnage": null,
+    "main_ports_in_argentina": [
+      "ELEVADOR"
+    ],
+    "seasonality_by_month": {},
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "THOR INSUVI",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-10-22",
+    "last_seen_date": "2025-10-22",
+    "dominant_product": "UREA",
+    "dominant_origin": "QATAR",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 16500,
+    "min_tonnage": 16500,
+    "max_tonnage": 16500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "TOMINI SHAMAL",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-07-01",
+    "last_seen_date": "2025-07-01",
+    "dominant_product": "MOP",
+    "dominant_origin": "CANADA",
+    "dominant_importer": "LDC PARAGUAY",
+    "avg_tonnage": 3000,
+    "min_tonnage": 2000,
+    "max_tonnage": 4000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 2
+    },
+    "confidence_inputs_available": 0.917
+  },
+  {
+    "vessel_name": "TOMINI SYMPHONY",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-05-21",
+    "last_seen_date": "2025-05-21",
+    "dominant_product": "DAP",
+    "dominant_origin": "ARABIA",
+    "dominant_importer": "YPF",
+    "avg_tonnage": 5850,
+    "min_tonnage": 2000,
+    "max_tonnage": 9900,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 4
+    },
+    "confidence_inputs_available": 0.875
+  },
+  {
+    "vessel_name": "TRAPEZITZA",
+    "visits_to_argentina": 5,
+    "fertilizer_visits": 5,
+    "first_seen_date": "2025-07-24",
+    "last_seen_date": "2025-07-29",
+    "dominant_product": "UREA",
+    "dominant_origin": "FINLANDIA",
+    "dominant_importer": "AGREFERT",
+    "avg_tonnage": 4395,
+    "min_tonnage": 1595,
+    "max_tonnage": 5190,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "07": 5
+    },
+    "confidence_inputs_available": 0.867
+  },
+  {
+    "vessel_name": "ULTRALAZ",
+    "visits_to_argentina": 16,
+    "fertilizer_visits": 14,
+    "first_seen_date": "2025-10-24",
+    "last_seen_date": "2025-10-26",
+    "dominant_product": "NP 1240",
+    "dominant_origin": "CHINA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 1578,
+    "min_tonnage": 500,
+    "max_tonnage": 3000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 16
+    },
+    "confidence_inputs_available": 0.948
+  },
+  {
+    "vessel_name": "UNI BLOSSOM",
+    "visits_to_argentina": 6,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-05-21",
+    "last_seen_date": "2025-05-21",
+    "dominant_product": "MAP",
+    "dominant_origin": "MARRUECOS",
+    "dominant_importer": "NITRON",
+    "avg_tonnage": 5083,
+    "min_tonnage": 1000,
+    "max_tonnage": 12750,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "05": 6
+    },
+    "confidence_inputs_available": 0.861
+  },
+  {
+    "vessel_name": "UNI HARMONY",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 0,
+    "first_seen_date": "2025-06-16",
+    "last_seen_date": "2025-06-16",
+    "dominant_product": "BARTINA",
+    "dominant_origin": "MARRUECOS",
+    "dominant_importer": "MAGHREB",
+    "avg_tonnage": 29500,
+    "min_tonnage": 29500,
+    "max_tonnage": 29500,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "06": 1
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "UNIGALAXY",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2026-03-10",
+    "last_seen_date": "2026-03-10",
+    "dominant_product": "UREA",
+    "dominant_origin": "ARGELIA",
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 5338,
+    "min_tonnage": 4000,
+    "max_tonnage": 6300,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "03": 4
+    },
+    "confidence_inputs_available": 0.875
+  },
+  {
+    "vessel_name": "VEGA",
+    "visits_to_argentina": 4,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-10-07",
+    "last_seen_date": "2025-10-07",
+    "dominant_product": "UREA",
+    "dominant_origin": "NIGERIA",
+    "dominant_importer": "ACA",
+    "avg_tonnage": 5917,
+    "min_tonnage": 3084,
+    "max_tonnage": 10000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "10": 4
+    },
+    "confidence_inputs_available": 0.875
+  },
+  {
+    "vessel_name": "VILLA GERMANA",
+    "visits_to_argentina": 1,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2025-12-23",
+    "last_seen_date": "2025-12-23",
+    "dominant_product": "AMSUL",
+    "dominant_origin": null,
+    "dominant_importer": "ABOPAR",
+    "avg_tonnage": 19490,
+    "min_tonnage": 19490,
+    "max_tonnage": 19490,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "12": 1
+    },
+    "confidence_inputs_available": 0.833
+  },
+  {
+    "vessel_name": "VITOSHA",
+    "visits_to_argentina": 2,
+    "fertilizer_visits": 2,
+    "first_seen_date": "2025-12-11",
+    "last_seen_date": "2025-12-11",
+    "dominant_product": "MOP",
+    "dominant_origin": "RUSSIA",
+    "dominant_importer": "CNA",
+    "avg_tonnage": 5700,
+    "min_tonnage": 1100,
+    "max_tonnage": 10300,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "12": 2
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "WADOWICE II",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-09-13",
+    "last_seen_date": "2025-09-17",
+    "dominant_product": "UREA",
+    "dominant_origin": "ARGELIA",
+    "dominant_importer": "BUNGE",
+    "avg_tonnage": 10000,
+    "min_tonnage": 10000,
+    "max_tonnage": 10000,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 2
+    },
+    "confidence_inputs_available": 1.0
+  },
+  {
+    "vessel_name": "YASA MOON",
+    "visits_to_argentina": 6,
+    "fertilizer_visits": 3,
+    "first_seen_date": "2025-09-02",
+    "last_seen_date": "2025-09-12",
+    "dominant_product": "UREA",
+    "dominant_origin": "ARABIA",
+    "dominant_importer": "PROFERTIL",
+    "avg_tonnage": 8417,
+    "min_tonnage": 3300,
+    "max_tonnage": 17350,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "09": 6
+    },
+    "confidence_inputs_available": 0.861
+  },
+  {
+    "vessel_name": "oNkORD KAIZAN",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2026-04-03",
+    "last_seen_date": "2026-04-03",
+    "dominant_product": "MOP",
+    "dominant_origin": null,
+    "dominant_importer": "NUTRIEN",
+    "avg_tonnage": 867,
+    "min_tonnage": 500,
+    "max_tonnage": 1100,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "04": 3
+    },
+    "confidence_inputs_available": 0.722
+  },
+  {
+    "vessel_name": "oSkCARABE",
+    "visits_to_argentina": 3,
+    "fertilizer_visits": 1,
+    "first_seen_date": "2026-03-22",
+    "last_seen_date": "2026-03-22",
+    "dominant_product": "DAP",
+    "dominant_origin": null,
+    "dominant_importer": "CARGIL",
+    "avg_tonnage": 1900,
+    "min_tonnage": 1500,
+    "max_tonnage": 2200,
+    "main_ports_in_argentina": [
+      "CARGA GENERAL"
+    ],
+    "seasonality_by_month": {
+      "03": 3
+    },
+    "confidence_inputs_available": 0.722
+  }
+]

@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# PDFs — large, not needed on Railway (parser runs locally)
+pdfs/
+
+# Temp / OS
+.DS_Store
+*.tmp
+/tmp/

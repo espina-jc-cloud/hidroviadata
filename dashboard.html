@@ -1,0 +1,2698 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HidrovíaData — Inteligencia de Fertilizantes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ── RESET & BASE ─────────────────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:       #0a0f1e;
+      --panel:    #0d1626;
+      --panel2:   #0f1b30;
+      --border:   #1a2744;
+      --border2:  #243560;
+      --primary:  #1e3a8a;
+      --cyan:     #00d4ff;
+      --cyan-dim: rgba(0,212,255,0.12);
+      --green:    #00ff88;
+      --green-dim:rgba(0,255,136,0.12);
+      --orange:   #ff6b35;
+      --orange-dim:rgba(255,107,53,0.12);
+      --red:      #ff4455;
+      --yellow:   #fbbf24;
+      --text:     #e8f2ff;
+      --text2:    #a8bdd4;
+      --text3:    #6b7f99;
+      --font:     'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── SCROLLBAR ────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--panel); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+    /* ── TOPBAR ───────────────────────────────────────────────────── */
+    #topbar {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 0 24px;
+      backdrop-filter: blur(8px);
+    }
+
+    /* Logo */
+    #logo {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 170px;
+      flex-shrink: 0;
+    }
+    #logo-name {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      background: linear-gradient(125deg, var(--cyan) 0%, #60a5fa 60%, var(--green) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    #logo-sub {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    /* Topbar KPIs */
+    #topbar-kpis {
+      display: flex;
+      gap: 10px;
+      flex: 1;
+    }
+    .tb-kpi {
+      background: rgba(30,58,138,0.18);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 14px;
+      display: flex;
+      flex-direction: column;
+      min-width: 120px;
+      cursor: default;
+      transition: border-color 0.15s;
+    }
+    .tb-kpi:hover { border-color: var(--border2); }
+    .tb-kpi .v {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--cyan);
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .tb-kpi .l {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-top: 1px;
+    }
+
+    /* Filters */
+    #topbar-filters {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    select {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 5px;
+      padding: 6px 28px 6px 10px;
+      font-size: 12px;
+      font-family: var(--font);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7f99'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      transition: border-color 0.15s;
+    }
+    select:hover, select:focus { border-color: var(--cyan); }
+    option { background: #0d1626; color: var(--text); }
+
+    /* ── TAB NAV ──────────────────────────────────────────────────── */
+    #tab-nav {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      padding: 0 20px;
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+    #tab-nav::-webkit-scrollbar { height: 0; }
+
+    .tab-btn {
+      padding: 13px 18px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text3);
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+      letter-spacing: 0.2px;
+    }
+    .tab-btn:hover { color: var(--text2); border-bottom-color: var(--border2); }
+    .tab-btn.active {
+      color: var(--cyan);
+      border-bottom-color: var(--cyan);
+      font-weight: 600;
+    }
+
+    /* ── MAIN LAYOUT ──────────────────────────────────────────────── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    #content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+    }
+
+    /* ── TAB PANELS ───────────────────────────────────────────────── */
+    .tab-panel { display: none; }
+    .tab-panel.active {
+      display: block;
+      animation: fadeIn 0.12s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(3px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── CARDS ────────────────────────────────────────────────────── */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+    .card + .card { margin-top: 16px; }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .card-sub { font-size: 11px; color: var(--text3); }
+
+    /* ── KPI GRIDS ────────────────────────────────────────────────── */
+    .kpi-grid { display: grid; gap: 12px; margin-bottom: 16px; }
+    .kpi-4 { grid-template-columns: repeat(4, 1fr); }
+    .kpi-6 { grid-template-columns: repeat(6, 1fr); }
+    .kpi-3 { grid-template-columns: repeat(3, 1fr); }
+
+    .kpi-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      transition: border-color 0.15s;
+    }
+    .kpi-card:hover { border-color: var(--border2); }
+    .kpi-card .kv {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--cyan);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .kpi-card .kl {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-top: 3px;
+    }
+    .kpi-card .ks { font-size: 11px; color: var(--text3); margin-top: 3px; }
+    .kpi-card.accent-green .kv { color: var(--green); }
+    .kpi-card.accent-orange .kv { color: var(--orange); }
+    .kpi-card.accent-yellow .kv { color: var(--yellow); }
+
+    /* ── LAYOUT GRIDS ─────────────────────────────────────────────── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .grid-7030 { display: grid; grid-template-columns: 70% 1fr; gap: 16px; }
+    .grid-3070 { display: grid; grid-template-columns: 1fr 70%; gap: 16px; }
+    .mb16 { margin-bottom: 16px; }
+
+    /* ── TABLES ───────────────────────────────────────────────────── */
+    .tbl-wrap { overflow-x: auto; }
+    .scroll-tbl { max-height: 480px; overflow-y: auto; }
+
+    .dtbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .dtbl thead th {
+      background: rgba(30,58,138,0.35);
+      color: var(--cyan);
+      padding: 8px 11px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      user-select: none;
+    }
+    .dtbl thead th.sortable { cursor: pointer; }
+    .dtbl thead th.sortable:hover { background: rgba(30,58,138,0.55); }
+    .dtbl thead th.sort-asc::after  { content: ' ↑'; color: var(--cyan); }
+    .dtbl thead th.sort-desc::after { content: ' ↓'; color: var(--cyan); }
+
+    .dtbl tbody td {
+      padding: 7px 11px;
+      border-bottom: 1px solid rgba(26,39,68,0.45);
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .dtbl tbody tr:hover td { background: rgba(0,212,255,0.04); }
+    .dtbl tbody tr.row-today td { background: rgba(0,255,136,0.06); }
+    .dtbl tbody tr.row-week  td { background: rgba(30,100,255,0.05); }
+    .dtbl .right { text-align: right; }
+    .dtbl .muted { color: var(--text3); }
+    .dtbl .bold  { font-weight: 600; }
+
+    /* ── BADGES ───────────────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      border: 1px solid transparent;
+    }
+    .bd-descarga, .bd-descargar {
+      background: var(--green-dim);
+      color: var(--green);
+      border-color: rgba(0,255,136,0.25);
+    }
+    .bd-carga {
+      background: rgba(96,165,250,0.12);
+      color: #60a5fa;
+      border-color: rgba(96,165,250,0.25);
+    }
+    .bd-trasbordo {
+      background: var(--orange-dim);
+      color: var(--orange);
+      border-color: rgba(255,107,53,0.25);
+    }
+
+    /* ── BUQUES EN RUTA STATUS BADGES ────────────────────────────── */
+    .bd-estimated {
+      background: rgba(96,165,250,0.12);
+      color: #60a5fa;
+      border-color: rgba(96,165,250,0.25);
+    }
+    .bd-probable {
+      background: var(--orange-dim);
+      color: var(--orange);
+      border-color: rgba(255,107,53,0.25);
+    }
+    .bd-confirmed {
+      background: var(--green-dim);
+      color: var(--green);
+      border-color: rgba(0,255,136,0.25);
+    }
+    .score-bar-wrap { display:flex; align-items:center; gap:6px; }
+    .score-bar {
+      height: 4px;
+      border-radius: 2px;
+      flex: 1;
+      background: rgba(26,39,68,0.8);
+      min-width: 50px;
+      position: relative;
+    }
+    .score-fill { height: 4px; border-radius: 2px; }
+    .score-fill.high   { background: var(--green); }
+    .score-fill.medium { background: var(--orange); }
+    .score-fill.low    { background: var(--text3); }
+    .reason-row td { background: rgba(0,0,0,0.06) !important; }
+
+    /* ── PROGRESS BAR ─────────────────────────────────────────────── */
+    .prog-wrap {
+      height: 5px;
+      background: rgba(26,39,68,0.8);
+      border-radius: 3px;
+      min-width: 60px;
+    }
+    .prog-bar {
+      height: 5px;
+      border-radius: 3px;
+      background: var(--cyan);
+      transition: width 0.4s ease;
+    }
+
+    /* ── CHART CONTAINERS ─────────────────────────────────────────── */
+    .ch-sm { position: relative; height: 200px; }
+    .ch-md { position: relative; height: 280px; }
+    .ch-lg { position: relative; height: 340px; }
+
+    /* ── MISC COMPONENTS ──────────────────────────────────────────── */
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(26,39,68,0.4);
+      font-size: 12px;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-row .sname { color: var(--text2); }
+    .stat-row .sval  { color: var(--text); font-weight: 600; }
+
+    .mat-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      vertical-align: middle;
+      margin-right: 5px;
+      flex-shrink: 0;
+    }
+
+    .no-data {
+      text-align: center;
+      color: var(--text3);
+      padding: 48px 20px;
+      font-size: 13px;
+    }
+
+    .up   { color: var(--green); }
+    .down { color: var(--red); }
+
+    /* ── SEARCH / FILTER BAR ──────────────────────────────────────── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .search-input {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 5px;
+      padding: 6px 11px;
+      font-size: 12px;
+      font-family: var(--font);
+      width: 190px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-input:focus { border-color: var(--cyan); }
+    .toggle-btn {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      color: var(--text3);
+      border-radius: 5px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .toggle-btn.on {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      border-color: rgba(0,212,255,0.3);
+    }
+
+    /* ── PAGINATION ───────────────────────────────────────────────── */
+    .pagination {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+      align-items: center;
+      padding: 14px 0 6px;
+    }
+    .pg-btn {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      font-family: var(--font);
+      transition: all 0.12s;
+    }
+    .pg-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .pg-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--cyan);
+      font-weight: 600;
+    }
+    .pg-info { font-size: 11px; color: var(--text3); padding: 0 6px; }
+
+    /* ── TIMELINE TOGGLES ─────────────────────────────────────────── */
+    .timeline-toggle {
+      padding: 4px 10px;
+      border-radius: 12px;
+      border: 1px solid;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: opacity 0.15s;
+    }
+    .timeline-toggle.off { opacity: 0.3; }
+
+    /* ── ALERT BANNER ─────────────────────────────────────────────── */
+    .alert-banner {
+      background: rgba(255,107,53,0.08);
+      border: 1px solid rgba(255,107,53,0.25);
+      border-radius: 6px;
+      padding: 10px 16px;
+      margin-bottom: 14px;
+      font-size: 12px;
+      color: var(--orange);
+    }
+
+    /* ── IMPORTER BAR ROW ─────────────────────────────────────────── */
+    .imp-bar-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 80px;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(26,39,68,0.4);
+      font-size: 12px;
+    }
+    .imp-bar-row:last-child { border-bottom: none; }
+    .imp-bar-name { color: var(--text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .imp-bar-tons { color: var(--text3); text-align: right; white-space: nowrap; }
+
+    /* ── LOADING OVERLAY ──────────────────────────────────────────── */
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      gap: 16px;
+    }
+    #loading-logo {
+      font-size: 24px;
+      font-weight: 800;
+      background: linear-gradient(125deg, var(--cyan), #60a5fa, var(--green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    #loading-msg { font-size: 12px; color: var(--text3); }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--cyan);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── ERROR SCREEN ─────────────────────────────────────────────── */
+    #error-screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 9999;
+    }
+    #error-screen h2 { color: var(--red); font-size: 18px; }
+    #error-screen pre { color: var(--text3); font-size: 11px; background: var(--panel); padding: 12px; border-radius: 6px; max-width: 540px; white-space: pre-wrap; }
+    #error-screen p { color: var(--text2); font-size: 12px; max-width: 480px; text-align: center; line-height: 1.6; }
+
+    /* ── FOOTER ───────────────────────────────────────────────────── */
+    #dashboard-footer {
+      padding: 9px 24px;
+      border-top: 1px solid var(--border);
+      font-size: 10px;
+      color: var(--text3);
+      text-align: center;
+      flex-shrink: 0;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── RESPONSIVE ───────────────────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .kpi-6 { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .kpi-4 { grid-template-columns: repeat(2, 1fr); }
+      .grid-2, .grid-7030, .grid-3070 { grid-template-columns: 1fr; }
+      #topbar-kpis { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── LOADING ─────────────────────────────────────────────────────── -->
+<div id="loading">
+  <div id="loading-logo">HidrovíaData</div>
+  <div class="spinner"></div>
+  <div id="loading-msg">Cargando datos del lineup…</div>
+</div>
+
+<!-- ── ERROR ───────────────────────────────────────────────────────── -->
+<div id="error-screen">
+  <h2>⚠ Error al cargar datos</h2>
+  <p>No se pudo cargar <code>output/data.json</code>. Asegurate de servir el dashboard desde un servidor local:</p>
+  <pre>cd /Users/juancruzespina/Desktop/hidroviadata
+python3 -m http.server 8080
+# Luego abrí: http://localhost:8080/dashboard.html</pre>
+  <p id="error-detail" style="color:var(--red)"></p>
+</div>
+
+<!-- ── APP ─────────────────────────────────────────────────────────── -->
+<div id="app" style="display:none">
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div id="logo">
+      <div id="logo-name">HidrovíaData</div>
+      <div id="logo-sub">Inteligencia de Fertilizantes — Hidrovía Argentina</div>
+    </div>
+
+    <div id="topbar-kpis">
+      <div class="tb-kpi">
+        <span class="v" id="tb-tons">—</span>
+        <span class="l">Toneladas fertilizantes</span>
+      </div>
+      <div class="tb-kpi">
+        <span class="v" id="tb-buques">—</span>
+        <span class="l">Buques únicos</span>
+      </div>
+      <div class="tb-kpi">
+        <span class="v" id="tb-paises">—</span>
+        <span class="l">Países de origen</span>
+      </div>
+      <div class="tb-kpi">
+        <span class="v" id="tb-updated" style="font-size:13px">—</span>
+        <span class="l">Último dato</span>
+      </div>
+    </div>
+
+    <div id="topbar-filters">
+      <select id="f-period" onchange="onFilterChange()">
+        <option value="1">Último mes</option>
+        <option value="3">3 meses</option>
+        <option value="6">6 meses</option>
+        <option value="12" selected>1 año</option>
+        <option value="0">Todo el período</option>
+      </select>
+      <select id="f-material" onchange="onFilterChange()">
+        <option value="">Todos los materiales</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- TAB NAV -->
+  <div id="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('semana')">📅 ESTA SEMANA</button>
+    <button class="tab-btn" onclick="switchTab('mercado')">📊 MERCADO</button>
+    <button class="tab-btn" onclick="switchTab('importadores')">🏢 IMPORTADORES</button>
+    <button class="tab-btn" onclick="switchTab('buques')">🚢 BUQUES &amp; FLOTA</button>
+    <button class="tab-btn" onclick="switchTab('origenes')">🌍 ORÍGENES</button>
+    <button class="tab-btn" onclick="switchTab('timeline')">📈 TIMELINE</button>
+    <button class="tab-btn" onclick="switchTab('datos')">🔍 DATOS COMPLETOS</button>
+    <button class="tab-btn" onclick="switchTab('oferta')">📦 OFERTA PRÓXIMA</button>
+    <button class="tab-btn" onclick="switchTab('buquesruta')">🛰 BUQUES EN RUTA</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- TAB 1: ESTA SEMANA -->
+    <div id="tab-semana" class="tab-panel active">
+      <div class="no-data">Cargando datos…</div>
+    </div>
+
+    <!-- TAB 2: MERCADO -->
+    <div id="tab-mercado" class="tab-panel">
+      <div class="no-data">Cargando datos…</div>
+    </div>
+
+    <!-- TAB 3: IMPORTADORES -->
+    <div id="tab-importadores" class="tab-panel">
+      <div class="no-data">Cargando datos…</div>
+    </div>
+
+    <!-- TAB 4: BUQUES & FLOTA -->
+    <div id="tab-buques" class="tab-panel">
+      <div class="no-data">Cargando datos…</div>
+    </div>
+
+    <!-- TAB 5: ORÍGENES -->
+    <div id="tab-origenes" class="tab-panel">
+      <div class="no-data">Cargando datos…</div>
+    </div>
+
+    <!-- TAB 6: TIMELINE -->
+    <div id="tab-timeline" class="tab-panel">
+      <div class="no-data">Cargando datos…</div>
+    </div>
+
+    <!-- TAB 7: DATOS COMPLETOS -->
+    <div id="tab-datos" class="tab-panel">
+      <div class="no-data">Cargando datos…</div>
+    </div>
+
+    <!-- TAB 8: OFERTA PRÓXIMA -->
+    <div id="tab-oferta" class="tab-panel">
+      <div class="no-data">Cargando datos…</div>
+    </div>
+
+    <!-- TAB 9: BUQUES EN RUTA -->
+    <div id="tab-buquesruta" class="tab-panel">
+      <div class="no-data">Cargando datos…</div>
+    </div>
+
+  </div><!-- /#content -->
+
+  <footer id="dashboard-footer">
+    HidrovíaData © 2025 — Puerto San Nicolás — Datos actualizados al <span id="footer-date">—</span>
+  </footer>
+</div><!-- /#app -->
+
+
+<script>
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+const FERTILIZER_SET = new Set([
+  'UREA','MAP','DAP','MOP','TSP','NPS','UAN','AMSUL','NP','NPK',
+  'SSP','STP','GMOP','FERTILIZANTE','NPS+ZN','MAP 10-50','NP 1240',
+  'NPS 1240','NPS 840','NP 840','NITRODOBLE','NITROBOR','NITROCOMPLEX',
+  'GSSP','CAN','AMIDAS','NITRATO DE AMONIO','DAP','MAP10-50',
+  'GMOP','AMSUL','SSP'
+]);
+
+const MAT_COLORS = {
+  'UREA':     '#00d4ff',
+  'MAP':      '#00ff88',
+  'DAP':      '#ff6b35',
+  'MOP':      '#fbbf24',
+  'TSP':      '#c084fc',
+  'NPS':      '#f472b6',
+  'UAN':      '#34d399',
+  'AMSUL':    '#60a5fa',
+  'NPK':      '#a78bfa',
+  'SSP':      '#fb923c',
+  'STP':      '#e879f9',
+  'GMOP':     '#facc15',
+  'NPS+ZN':   '#67e8f9',
+  'FERTILIZANTE': '#86efac',
+  'NP':       '#93c5fd',
+  'OTROS':    '#4b5a72',
+  'default':  '#6b7f99'
+};
+
+const IMP_PALETTE = [
+  '#00d4ff','#00ff88','#ff6b35','#fbbf24','#c084fc',
+  '#f472b6','#34d399','#60a5fa','#a78bfa','#fb923c'
+];
+
+const MONTH_NAMES = ['Ene','Feb','Mar','Abr','May','Jun',
+                     'Jul','Ago','Sep','Oct','Nov','Dic'];
+
+// =============================================================================
+// STATE
+// =============================================================================
+
+let ALL_DATA    = [];   // all records from data.json
+let activeTab   = 'semana';
+let chartReg    = {};   // Chart.js instances  { id: Chart }
+let datosPage   = 0;
+let datosSort   = { col: null, dir: 'asc' };
+let soloFert    = false;
+let impSort     = { col: 'tons', dir: 'desc' };
+let vesselSort  = { col: 'viajes', dir: 'desc' };
+let ofertaWindow = 7;  // active window in days: 7 | 14 | 30 | 60
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+function fmt(n) {
+  if (n == null) return '—';
+  return n.toLocaleString('es-AR');
+}
+
+function fmtK(n) {
+  if (n == null || n === 0) return '—';
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000)    return (n / 1000).toFixed(0) + 'k';
+  return String(n);
+}
+
+function parseETA(s) {
+  if (!s || typeof s !== 'string') return null;
+  if (!/^\d{4}-\d{2}-\d{2}/.test(s)) return null;
+  const d = new Date(s + 'T00:00:00');
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function fmtDate(s) {
+  if (!s) return '—';
+  const d = parseETA(s);
+  if (!d) return s;
+  return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
+}
+
+function fmtDateFull(s) {
+  if (!s) return '—';
+  const d = parseETA(s);
+  if (!d) return s;
+  return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function monthKey(s) {
+  // Returns 'YYYY-MM' for sorting and grouping
+  if (!s || !/^\d{4}-\d{2}/.test(s)) return null;
+  return s.slice(0, 7);
+}
+
+function monthLabel(key) {
+  if (!key) return '—';
+  const [y, m] = key.split('-');
+  return `${MONTH_NAMES[parseInt(m) - 1]} ${String(y).slice(2)}`;
+}
+
+function isFert(r) {
+  const m = (r.material || '').trim().toUpperCase();
+  return FERTILIZER_SET.has(m) || m.includes('FERTILIZ') || m.includes('NITRO');
+}
+
+function normOp(op) {
+  const o = (op || '').toUpperCase().trim();
+  if (o.includes('DESCARG')) return 'DESCARGA';
+  if (o.includes('TRASBORD')) return 'TRASBORDO';
+  if (o === 'CARGA') return 'CARGA';
+  return op || '';
+}
+
+function matColor(mat) {
+  return MAT_COLORS[mat] || MAT_COLORS['default'];
+}
+
+function opBadge(op) {
+  const n = normOp(op);
+  const cls = `bd-${n.toLowerCase()}`;
+  return `<span class="badge ${cls}">${n || '—'}</span>`;
+}
+
+function destroyChart(id) {
+  if (chartReg[id]) {
+    chartReg[id].destroy();
+    delete chartReg[id];
+  }
+}
+
+// Chart.js global defaults for dark theme
+function darkDefaults() {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        labels: {
+          color: '#8899aa',
+          font: { size: 11, family: "'Inter', system-ui" },
+          boxWidth: 10, boxHeight: 10,
+          padding: 14
+        }
+      },
+      tooltip: {
+        backgroundColor: '#0d1626',
+        borderColor: '#1a2744',
+        borderWidth: 1,
+        titleColor: '#00d4ff',
+        bodyColor: '#e8f2ff',
+        padding: 10,
+        callbacks: {
+          label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y ?? ctx.parsed)}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(26,39,68,0.6)' },
+        ticks: { color: '#6b7f99', font: { size: 11 } }
+      },
+      y: {
+        grid: { color: 'rgba(26,39,68,0.6)' },
+        ticks: { color: '#6b7f99', font: { size: 11 },
+          callback: v => fmtK(v)
+        }
+      }
+    }
+  };
+}
+
+// =============================================================================
+// FILTER HELPERS
+// =============================================================================
+
+function getStartDate() {
+  const months = parseInt(document.getElementById('f-period').value);
+  if (!months) return null;
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setMonth(d.getMonth() - months);
+  return d;
+}
+
+function getFiltered() {
+  const startDate = getStartDate();
+  const material  = document.getElementById('f-material').value;
+  return ALL_DATA.filter(r => {
+    const d = parseETA(r.eta);
+    if (!d) return false;
+    if (startDate && d < startDate) return false;
+    if (material && r.material !== material) return false;
+    return true;
+  });
+}
+
+function getFertFiltered() {
+  return getFiltered().filter(isFert);
+}
+
+// =============================================================================
+// TOPBAR KPIs
+// =============================================================================
+
+function renderTopbarKPIs() {
+  const fert = getFertFiltered();
+
+  // Tons
+  const tons = fert.reduce((s, r) => s + (r.tons || 0), 0);
+  document.getElementById('tb-tons').textContent = fmtK(tons);
+
+  // Buques únicos
+  const buques = new Set(fert.map(r => r.buque)).size;
+  document.getElementById('tb-buques').textContent = buques;
+
+  // Países
+  const paises = new Set(
+    fert.map(r => r.origen).filter(o => o && o.trim())
+  ).size;
+  document.getElementById('tb-paises').textContent = paises;
+
+  // Última fecha
+  const allDates = ALL_DATA
+    .map(r => parseETA(r.eta))
+    .filter(Boolean);
+  if (allDates.length) {
+    const maxD    = new Date(Math.max(...allDates));
+    const dateStr = `${maxD.getDate()} ${MONTH_NAMES[maxD.getMonth()]} ${maxD.getFullYear()}`;
+    document.getElementById('tb-updated').textContent = dateStr;
+    const footerDate = document.getElementById('footer-date');
+    if (footerDate) footerDate.textContent = dateStr;
+  }
+}
+
+// =============================================================================
+// TAB SWITCHING
+// =============================================================================
+
+function switchTab(name) {
+  if (activeTab === name) return;
+
+  // Update buttons
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+
+  // Update panels
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+
+  activeTab = name;
+  renderActiveTab();
+}
+
+function renderActiveTab() {
+  switch (activeTab) {
+    case 'semana':      renderSemana();      break;
+    case 'mercado':     renderMercado();     break;
+    case 'importadores':renderImportadores();break;
+    case 'buques':      renderBuques();      break;
+    case 'origenes':    renderOrigenes();    break;
+    case 'timeline':    renderTimeline();    break;
+    case 'datos':       renderDatos();       break;
+    case 'oferta':      renderOferta();      break;
+    case 'buquesruta':  renderBuquesEnRuta(); break;
+  }
+}
+
+// =============================================================================
+// FILTER CHANGE
+// =============================================================================
+
+function onFilterChange() {
+  renderTopbarKPIs();
+  renderActiveTab();
+}
+
+// =============================================================================
+// TAB RENDER STUBS (to be filled in subsequent parts)
+// =============================================================================
+
+// =============================================================================
+// TAB 1 — ESTA SEMANA
+// =============================================================================
+
+function renderSemana() {
+  const panel = document.getElementById('tab-semana');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const in14 = new Date(today);
+  in14.setDate(in14.getDate() + 14);
+
+  const fert = getFertFiltered();
+
+  // Try next 14 days first
+  let lineupRecs = fert.filter(r => {
+    const d = parseETA(r.eta);
+    return d && d >= today && d <= in14;
+  }).sort((a, b) => parseETA(a.eta) - parseETA(b.eta));
+
+  let fallback = false;
+  let banner = '';
+
+  if (lineupRecs.length < 3) {
+    fallback = true;
+    const allDates = fert.map(r => parseETA(r.eta)).filter(Boolean);
+    if (allDates.length === 0) {
+      panel.innerHTML = '<div class="no-data">Sin datos disponibles para el período seleccionado</div>';
+      return;
+    }
+    const maxDate = new Date(Math.max(...allDates));
+    const from14  = new Date(maxDate);
+    from14.setDate(from14.getDate() - 14);
+    lineupRecs = fert.filter(r => {
+      const d = parseETA(r.eta);
+      return d && d >= from14 && d <= maxDate;
+    }).sort((a, b) => parseETA(a.eta) - parseETA(b.eta));
+    banner = `<div class="alert-banner">⚠ Sin datos suficientes para los próximos 14 días. Mostrando los últimos registros disponibles (hasta ${fmtDateFull(maxDate.toISOString().slice(0,10))}).</div>`;
+  }
+
+  // KPIs
+  const kpiTons   = lineupRecs.reduce((s, r) => s + (r.tons || 0), 0);
+  const kpiBuques = new Set(lineupRecs.map(r => r.buque)).size;
+
+  const matTons = {};
+  lineupRecs.forEach(r => {
+    matTons[r.material] = (matTons[r.material] || 0) + (r.tons || 0);
+  });
+  const topMat = Object.entries(matTons).sort((a, b) => b[1] - a[1])[0];
+
+  const impTons = {};
+  lineupRecs.forEach(r => {
+    const c = r.cliente;
+    if (c) impTons[c] = (impTons[c] || 0) + (r.tons || 0);
+  });
+  const topImp = Object.entries(impTons).sort((a, b) => b[1] - a[1])[0];
+
+  const kpiHtml = `
+    <div class="kpi-grid kpi-4 mb16">
+      <div class="kpi-card">
+        <div class="kv">${kpiBuques}</div>
+        <div class="kl">Buques en lineup</div>
+        <div class="ks">${fallback ? 'Últimos disponibles' : 'Próximos 14 días'}</div>
+      </div>
+      <div class="kpi-card accent-green">
+        <div class="kv">${fmtK(kpiTons)}</div>
+        <div class="kl">Toneladas esperadas</div>
+        <div class="ks">${fmt(kpiTons)} t</div>
+      </div>
+      <div class="kpi-card accent-orange">
+        <div class="kv">${topMat ? topMat[0] : '—'}</div>
+        <div class="kl">Material dominante</div>
+        <div class="ks">${topMat ? fmtK(topMat[1]) + ' t' : ''}</div>
+      </div>
+      <div class="kpi-card accent-yellow">
+        <div class="kv" style="font-size:16px;overflow:hidden;text-overflow:ellipsis">${topImp ? topImp[0] : '—'}</div>
+        <div class="kl">Top importador</div>
+        <div class="ks">${topImp ? fmtK(topImp[1]) + ' t' : ''}</div>
+      </div>
+    </div>`;
+
+  // Context cards (above the table)
+  const now = new Date();
+  const thisStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lyStart   = new Date(now.getFullYear() - 1, now.getMonth() - 1, 1);
+  const lyEnd     = new Date(now.getFullYear() - 1, now.getMonth() + 1, 1);
+
+  const tyFert = getFertFiltered().filter(r => {
+    const d = parseETA(r.eta); return d && d >= thisStart;
+  });
+  const lyFert = ALL_DATA.filter(isFert).filter(r => {
+    const d = parseETA(r.eta); return d && d >= lyStart && d < lyEnd;
+  });
+  const tyTons = tyFert.reduce((s, r) => s + (r.tons || 0), 0);
+  const lyTons = lyFert.reduce((s, r) => s + (r.tons || 0), 0);
+  const yoyPct = lyTons > 0 ? ((tyTons - lyTons) / lyTons * 100).toFixed(1) : null;
+  const yoyCls = yoyPct !== null ? (parseFloat(yoyPct) >= 0 ? 'up' : 'down') : '';
+  const yoyStr = yoyPct !== null
+    ? `<span class="${yoyCls}">${parseFloat(yoyPct) >= 0 ? '+' : ''}${yoyPct}% vs año ant.</span>`
+    : '—';
+
+  const top3mats = Object.entries(matTons).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const top3matsHtml = top3mats.length ? top3mats.map(([m, t]) => `
+    <div class="stat-row">
+      <span class="sname"><span class="mat-dot" style="background:${matColor(m)}"></span>${m}</span>
+      <span class="sval">${fmtK(t)} t</span>
+    </div>`).join('') : '<div style="padding:8px 0;font-size:11px;color:var(--text3)">Sin datos</div>';
+
+  const top3imps = Object.entries(impTons).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const top3impsHtml = top3imps.length ? top3imps.map(([c, t]) => `
+    <div class="stat-row">
+      <span class="sname">${c}</span>
+      <span class="sval">${fmtK(t)} t</span>
+    </div>`).join('') : '<div style="padding:8px 0;font-size:11px;color:var(--text3)">Sin datos</div>';
+
+  const contextHtml = `
+    <div class="grid-3 mb16">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Contexto de Mercado</span></div>
+        <div class="stat-row"><span class="sname">Tons en período activo</span><span class="sval">${fmtK(tyTons)} t</span></div>
+        <div class="stat-row"><span class="sname">Variación anual</span><span class="sval">${yoyStr}</span></div>
+        <div class="stat-row"><span class="sname">Importadores en lineup</span><span class="sval">${new Set(lineupRecs.map(r => r.cliente).filter(Boolean)).size}</span></div>
+        <div class="stat-row"><span class="sname">Orígenes distintos</span><span class="sval">${new Set(lineupRecs.map(r => r.origen).filter(Boolean)).size}</span></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Top Materiales</span></div>
+        ${top3matsHtml}
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Top Importadores</span></div>
+        ${top3impsHtml}
+      </div>
+    </div>`;
+
+  // Lineup table
+  const oneWeek = new Date(today);
+  oneWeek.setDate(oneWeek.getDate() + 7);
+
+  const rows = lineupRecs.map(r => {
+    const d = parseETA(r.eta);
+    let rowCls = '';
+    if (d && !fallback) {
+      const ms = d - today;
+      if (ms >= 0 && ms < 86400000) rowCls = 'row-today';
+      else if (d <= oneWeek)        rowCls = 'row-week';
+    }
+    const sector = r.sector ? ` <span class="muted">(${r.sector})</span>` : '';
+    return `<tr class="${rowCls}">
+      <td class="bold">${fmtDate(r.eta)}</td>
+      <td class="bold">${r.buque || '—'}</td>
+      <td><span class="mat-dot" style="background:${matColor(r.material)}"></span>${r.material || '—'}</td>
+      <td>${r.cliente || '—'}</td>
+      <td class="right">${r.tons ? fmt(r.tons) + ' t' : '—'}</td>
+      <td class="muted">${r.operador || '—'}</td>
+      <td class="muted">${r.origen || '—'}</td>
+      <td class="muted">${r.muelle ? r.muelle.replace('MUELLE ','') : '—'}${sector}</td>
+      <td>${opBadge(r.operacion)}</td>
+    </tr>`;
+  }).join('');
+
+  const tableHtml = `
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Lineup Activo — Fertilizantes</span>
+        <span class="card-sub">${lineupRecs.length} buques · ${fmtK(kpiTons)} t</span>
+      </div>
+      <div class="tbl-wrap scroll-tbl">
+        <table class="dtbl">
+          <thead>
+            <tr>
+              <th>ETA</th><th>Buque</th><th>Material</th><th>Importador</th>
+              <th class="right">Toneladas</th><th>Operador</th><th>Origen</th>
+              <th>Muelle</th><th>Operación</th>
+            </tr>
+          </thead>
+          <tbody>${rows || '<tr><td colspan="9" class="no-data" style="padding:32px">Sin registros</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  panel.innerHTML = banner + kpiHtml + contextHtml + tableHtml;
+}
+
+// =============================================================================
+// MARKET SIGNALS ENGINE
+// =============================================================================
+
+function computeMarketSignals(fert) {
+  if (fert.length < 10) return '';
+
+  const signals = [];
+
+  // ── YoY period definition ─────────────────────────────────────────────────
+  // current  = last 90 days ending today
+  // previous = exact same calendar window one year ago
+  // e.g. today = 16 Mar 2026 → current:  16 Dec 2025 – 16 Mar 2026
+  //                            previous: 16 Dec 2024 – 16 Mar 2025
+  const today   = new Date(); today.setHours(0, 0, 0, 0);
+  const daysAgo = n => { const d = new Date(today); d.setDate(d.getDate() - n); return d; };
+
+  const mn = d => MONTH_NAMES[d.getMonth()].slice(0, 3).toLowerCase();
+
+  // Always build from full fertilizer data, respecting only the material filter,
+  // so the comparison can reach back beyond the topbar date gate.
+  const activeMat = document.getElementById('f-material').value;
+  const allFert   = ALL_DATA.filter(r => isFert(r) && (!activeMat || r.material === activeMat));
+
+  // ── Tier 1: strict same-period YoY (90d current vs same 90d one year ago) ─
+  const curStart      = daysAgo(90);
+  const yoyPrevEnd    = new Date(today);    yoyPrevEnd.setFullYear(yoyPrevEnd.getFullYear() - 1);
+  const yoyPrevStart  = new Date(curStart); yoyPrevStart.setFullYear(yoyPrevStart.getFullYear() - 1);
+
+  const current = allFert.filter(r => { const d = parseETA(r.eta); return d && d >= curStart && d < today; });
+  const yoyPrev = allFert.filter(r => { const d = parseETA(r.eta); return d && d >= yoyPrevStart && d < yoyPrevEnd; });
+
+  // ── Tier 2: within-dataset period comparison (most recent 120d vs preceding 120d) ─
+  // Used when strict YoY is impossible because the dataset doesn't reach back one year.
+  const fallbackEnd   = daysAgo(120);
+  const fallbackStart = daysAgo(240);
+  const fallbackPrev  = allFert.filter(r => { const d = parseETA(r.eta); return d && d >= fallbackStart && d < fallbackEnd; });
+
+  // Choose which comparison to use
+  let previous, compLabel, isYoY;
+  if (yoyPrev.length >= 5) {
+    previous   = yoyPrev;
+    isYoY      = true;
+    compLabel  = `${mn(yoyPrevStart)} ${yoyPrevStart.getFullYear()}–${mn(new Date(yoyPrevEnd - 1))} ${new Date(yoyPrevEnd - 1).getFullYear()}`;
+  } else if (fallbackPrev.length >= 5) {
+    previous   = fallbackPrev;
+    isYoY      = false;
+    compLabel  = `${mn(fallbackStart)} ${fallbackStart.getFullYear()}–${mn(new Date(fallbackEnd - 1))} ${new Date(fallbackEnd - 1).getFullYear()}`;
+  } else {
+    return '';   // insufficient data depth for any meaningful comparison
+  }
+
+  if (current.length < 5) return '';
+
+  const sumTons = arr => arr.reduce((s, r) => s + (Number(r.tons) || 0), 0);
+  const topBy   = (arr, key) => {
+    const acc = {};
+    arr.forEach(r => { const k = r[key]; if (k) acc[k] = (acc[k] || 0) + (Number(r.tons) || 0); });
+    return Object.entries(acc).sort((a, b) => b[1] - a[1]);
+  };
+  const pctChg = (cur, prev) => prev === 0 ? null : Math.round((cur - prev) / prev * 100);
+
+  // ── Signal 1 (YoY): Volume change for top 3 materials ────────────────────
+  const matCur  = Object.fromEntries(topBy(current,  'material'));
+  const matPrev = Object.fromEntries(topBy(previous, 'material'));
+  const top3    = Object.entries(matCur).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([m]) => m);
+
+  for (const mat of top3) {
+    const c = matCur[mat]  || 0;
+    const p = matPrev[mat] || 0;
+    if (p === 0) continue;           // no prior-year data for this material → skip
+    const chg = pctChg(c, p);
+    if (chg === null || Math.abs(chg) < 10) continue;
+    signals.push({
+      dir:  chg > 0 ? 'up' : 'down',
+      icon: chg > 0 ? '↑' : '↓',
+      text: `<strong>${mat}</strong> inbound <strong>${chg > 0 ? '+' : ''}${chg}%</strong> vs ${isYoY ? 'mismo período año anterior' : 'período previo'}`,
+      sub:  `${Math.round(c/1000)}k t actuales · ${Math.round(p/1000)}k t en ${compLabel}`,
+    });
+  }
+
+  // ── Signal 2 (YoY): Top importer market share shift ──────────────────────
+  const impCur  = topBy(current,  'cliente');
+  const impPrev = topBy(previous, 'cliente');
+  if (impCur.length > 0 && impPrev.length > 0) {
+    const [topName, topTonsCur] = impCur[0];
+    const totalCur  = sumTons(current);
+    const totalPrev = sumTons(previous);
+    const shareCur  = totalCur  > 0 ? topTonsCur / totalCur * 100 : 0;
+    const prevTons  = Object.fromEntries(impPrev)[topName] || 0;
+    const sharePrev = totalPrev > 0 ? prevTons / totalPrev * 100 : 0;
+    const diff      = Math.round((shareCur - sharePrev) * 10) / 10;
+    if (Math.abs(diff) >= 3) {
+      signals.push({
+        dir:  diff > 0 ? 'up' : 'down',
+        icon: diff > 0 ? '↑' : '↓',
+        text: `<strong>${topName}</strong> ${diff > 0 ? 'aumentó' : 'redujo'} participación <strong>${diff > 0 ? '+' : ''}${diff}pp</strong> vs ${isYoY ? 'mismo período año anterior' : 'período previo'}`,
+        sub:  `${shareCur.toFixed(1)}% actuales · ${sharePrev.toFixed(1)}% en ${compLabel}`,
+      });
+    }
+  }
+
+  // ── Signal 3 (YoY): Origin dominance shift for top material ──────────────
+  if (top3[0]) {
+    const matRec   = r => r.material === top3[0] && r.origen;
+    const origCur  = topBy(current.filter(matRec),  'origen');
+    const origPrev = topBy(previous.filter(matRec), 'origen');
+    const topOC = origCur[0]?.[0], topOP = origPrev[0]?.[0];
+    if (topOC && topOP && topOC !== topOP && origCur.length >= 2 && origPrev.length >= 2) {
+      signals.push({
+        dir:  'neutral',
+        icon: '⇄',
+        text: `<strong>${topOC}</strong> reemplazó a <strong>${topOP}</strong> como principal origen de <strong>${top3[0]}</strong>`,
+        sub:  `Cambio detectado vs ${compLabel}`,
+      });
+    }
+  }
+
+  // ── Signal 4: Forward 30-day supply vs historical monthly average ─────────
+  // Suppressed when fewer than 10 forward records exist (thin data → unreliable)
+  const allDates = fert.map(r => parseETA(r.eta)).filter(Boolean);
+  if (allDates.length > 20) {
+    const minD = new Date(Math.min(...allDates.map(d => d.getTime())));
+    const maxD = new Date(Math.max(...allDates.map(d => d.getTime())));
+    const spanMonths = (maxD - minD) / (30.44 * 86400000);
+    if (spanMonths >= 3) {
+      const fwdEnd  = new Date(today); fwdEnd.setDate(fwdEnd.getDate() + 30);
+      const fwdRecs = ALL_DATA.filter(r => {
+        const d = parseETA(r.eta); return d && d >= today && d < fwdEnd && isFert(r);
+      });
+      if (fwdRecs.length >= 10) {          // safety gate: suppress when forward coverage is thin
+        const avgMonth = sumTons(fert) / spanMonths;
+        const fwdTons  = sumTons(fwdRecs);
+        const chg      = pctChg(fwdTons, avgMonth);
+        if (chg !== null && Math.abs(chg) >= 15) {
+          signals.push({
+            dir:  chg > 0 ? 'up' : 'down',
+            icon: chg > 0 ? '↑' : '↓',
+            text: `Oferta próximos <strong>30 días</strong>: <strong>${Math.round(fwdTons/1000)}k t</strong> — <strong>${chg > 0 ? '+' : ''}${chg}%</strong> vs promedio mensual histórico`,
+            sub:  `Promedio mensual histórico (${Math.round(spanMonths)} meses): ${Math.round(avgMonth/1000)}k t · ${fwdRecs.length} registros confirmados`,
+          });
+        }
+      }
+    }
+  }
+
+  if (signals.length === 0) return '';
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  const COLOR = { up:'var(--green)', down:'#ff5555', neutral:'var(--cyan)' };
+  const BG    = { up:'rgba(0,255,136,0.06)', down:'rgba(255,85,85,0.06)', neutral:'rgba(0,212,255,0.06)' };
+  const BDR   = { up:'rgba(0,255,136,0.18)', down:'rgba(255,85,85,0.18)', neutral:'rgba(0,212,255,0.18)' };
+
+  const items = signals.map(s => `
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 13px;background:${BG[s.dir]};border:1px solid ${BDR[s.dir]};border-radius:7px;flex:1;min-width:200px;max-width:420px">
+      <span style="font-size:18px;font-weight:700;color:${COLOR[s.dir]};flex-shrink:0;line-height:1.3">${s.icon}</span>
+      <div>
+        <div style="font-size:12px;color:var(--text);line-height:1.55">${s.text}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px">${s.sub}</div>
+      </div>
+    </div>`).join('');
+
+  return `
+    <div style="margin-bottom:20px">
+      <div style="font-size:10px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+        🔔 Market Signals
+        <span style="font-weight:400;color:var(--text3);font-size:9px;text-transform:none;letter-spacing:0">${isYoY ? 'año sobre año' : 'período reciente vs previo'} · vs ${compLabel} · ${signals.length} señal${signals.length !== 1 ? 'es' : ''} activa${signals.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">${items}</div>
+    </div>`;
+}
+
+// =============================================================================
+// TAB 2 — MERCADO
+// =============================================================================
+
+function renderMercado() {
+  const panel = document.getElementById('tab-mercado');
+  const fert  = getFertFiltered();
+
+  if (fert.length === 0) {
+    panel.innerHTML = '<div class="no-data">Sin datos para el período seleccionado</div>';
+    return;
+  }
+
+  // ── KPIs ──────────────────────────────────────────────────────────────
+  const tons         = fert.reduce((s, r) => s + (r.tons || 0), 0);
+  const buquesUnicos = new Set(fert.map(r => r.buque)).size;
+  const viajesTotal  = fert.length;
+  const importadores = new Set(fert.map(r => r.cliente).filter(Boolean)).size;
+  const origenes     = new Set(fert.map(r => r.origen).filter(Boolean)).size;
+
+  const impTons = {};
+  fert.forEach(r => { if (r.cliente) impTons[r.cliente] = (impTons[r.cliente] || 0) + (r.tons || 0); });
+  const sortedImps = Object.entries(impTons).sort((a, b) => b[1] - a[1]);
+  const cr3Tons    = sortedImps.slice(0, 3).reduce((s, [, t]) => s + t, 0);
+  const cr3Pct     = tons > 0 ? (cr3Tons / tons * 100).toFixed(1) : 0;
+
+  const kpiHtml = `
+    <div class="kpi-grid kpi-6 mb16">
+      <div class="kpi-card">
+        <div class="kv">${fmtK(tons)}</div>
+        <div class="kl">Toneladas totales</div>
+        <div class="ks">${fmt(tons)} t</div>
+      </div>
+      <div class="kpi-card accent-green">
+        <div class="kv">${buquesUnicos}</div>
+        <div class="kl">Buques únicos</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kv">${viajesTotal}</div>
+        <div class="kl">Viajes totales</div>
+      </div>
+      <div class="kpi-card accent-orange">
+        <div class="kv">${importadores}</div>
+        <div class="kl">Importadores activos</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kv">${origenes}</div>
+        <div class="kl">Países de origen</div>
+      </div>
+      <div class="kpi-card accent-yellow">
+        <div class="kv">${cr3Pct}%</div>
+        <div class="kl">Concentración CR3</div>
+        <div class="ks">${sortedImps.slice(0,3).map(([c]) => c).join(', ')}</div>
+      </div>
+    </div>`;
+
+  // ── Monthly stacked bar ───────────────────────────────────────────────
+  const monthMatTons = {};
+  const matTotals    = {};
+  fert.forEach(r => {
+    const mk = monthKey(r.eta);
+    if (!mk) return;
+    const m = r.material || 'OTROS';
+    if (!monthMatTons[mk]) monthMatTons[mk] = {};
+    monthMatTons[mk][m] = (monthMatTons[mk][m] || 0) + (r.tons || 0);
+    matTotals[m] = (matTotals[m] || 0) + (r.tons || 0);
+  });
+
+  const months   = Object.keys(monthMatTons).sort();
+  const top8mats = Object.entries(matTotals).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([m]) => m);
+
+  const barDatasets = top8mats.map(mat => ({
+    label: mat,
+    data: months.map(mk => monthMatTons[mk][mat] || 0),
+    backgroundColor: matColor(mat),
+    stack: 'total'
+  }));
+
+  // ── Doughnut ──────────────────────────────────────────────────────────
+  const top10Mats  = Object.entries(matTotals).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const doughData  = top10Mats.map(([, t]) => t);
+  const doughLabels = top10Mats.map(([m]) => m);
+  const doughColors = top10Mats.map(([m]) => matColor(m));
+
+  // ── Top importers list ────────────────────────────────────────────────
+  const maxImpTons = sortedImps[0]?.[1] || 1;
+  const impsHtml = sortedImps.slice(0, 8).map(([name, t], i) => `
+    <div class="imp-bar-row">
+      <div class="imp-bar-name">${name}</div>
+      <div class="prog-wrap">
+        <div class="prog-bar" style="width:${(t/maxImpTons*100).toFixed(1)}%;background:${IMP_PALETTE[i % IMP_PALETTE.length]}"></div>
+      </div>
+      <div class="imp-bar-tons">${fmtK(t)} t</div>
+    </div>`).join('');
+
+  const signalsHtml = computeMarketSignals(fert);
+  panel.innerHTML = signalsHtml + kpiHtml + `
+    <div class="grid-7030 mb16">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Toneladas por Mes y Material</span>
+          <span class="card-sub">${months.length} meses</span>
+        </div>
+        <div class="ch-lg"><canvas id="ch-merc-bar"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Mix de Materiales</span></div>
+        <div class="ch-md"><canvas id="ch-merc-donut"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Top Importadores</span>
+        <span class="card-sub">Por toneladas totales en el período</span>
+      </div>
+      ${impsHtml}
+    </div>`;
+
+  // Draw stacked bar
+  destroyChart('merc-bar');
+  const dd = darkDefaults();
+  dd.plugins.tooltip.callbacks.label = ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)} t`;
+  chartReg['merc-bar'] = new Chart(document.getElementById('ch-merc-bar').getContext('2d'), {
+    type: 'bar',
+    data: { labels: months.map(monthLabel), datasets: barDatasets },
+    options: {
+      ...dd,
+      scales: {
+        x: { ...dd.scales.x, stacked: true },
+        y: { ...dd.scales.y, stacked: true }
+      }
+    }
+  });
+
+  // Draw doughnut
+  destroyChart('merc-donut');
+  chartReg['merc-donut'] = new Chart(document.getElementById('ch-merc-donut').getContext('2d'), {
+    type: 'doughnut',
+    data: { labels: doughLabels, datasets: [{ data: doughData, backgroundColor: doughColors, borderWidth: 1, borderColor: '#0a0f1e' }] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '62%',
+      plugins: {
+        legend: { position: 'right', labels: { color: '#8899aa', font: { size: 10 }, boxWidth: 8, boxHeight: 8, padding: 10 } },
+        tooltip: {
+          backgroundColor: '#0d1626', borderColor: '#1a2744', borderWidth: 1,
+          titleColor: '#00d4ff', bodyColor: '#e8f2ff', padding: 10,
+          callbacks: { label: ctx => ` ${ctx.label}: ${fmtK(ctx.parsed)} t (${(ctx.parsed / tons * 100).toFixed(1)}%)` }
+        }
+      }
+    }
+  });
+}
+// =============================================================================
+// TAB 3 — IMPORTADORES
+// =============================================================================
+
+function renderImportadores() {
+  const panel = document.getElementById('tab-importadores');
+  const fert  = getFertFiltered();
+
+  if (fert.length === 0) {
+    panel.innerHTML = '<div class="no-data">Sin datos para el período seleccionado</div>';
+    return;
+  }
+
+  // Aggregate by importer
+  const impData = {};
+  fert.forEach(r => {
+    const c = r.cliente;
+    if (!c) return;
+    if (!impData[c]) impData[c] = { tons: 0, viajes: 0, mats: {}, origenes: {} };
+    impData[c].tons   += (r.tons || 0);
+    impData[c].viajes += 1;
+    const m = r.material || 'OTROS';
+    impData[c].mats[m] = (impData[c].mats[m] || 0) + (r.tons || 0);
+    const o = (r.origen || '').trim();
+    if (o) impData[c].origenes[o] = (impData[c].origenes[o] || 0) + 1;
+  });
+
+  const totalTons  = fert.reduce((s, r) => s + (r.tons || 0), 0);
+  const sortedImps = Object.entries(impData).sort((a, b) => b[1].tons - a[1].tons);
+
+  // KPIs
+  const cr3Tons = sortedImps.slice(0, 3).reduce((s, [, d]) => s + d.tons, 0);
+  const cr3Pct  = totalTons > 0 ? (cr3Tons / totalTons * 100).toFixed(1) : 0;
+  const avgTons = fert.length > 0 ? Math.round(totalTons / fert.length) : 0;
+  const matTotals = {};
+  fert.forEach(r => { const m = r.material || 'OTROS'; matTotals[m] = (matTotals[m] || 0) + (r.tons || 0); });
+  const topMat = Object.entries(matTotals).sort((a, b) => b[1] - a[1])[0];
+
+  const kpiHtml = `
+    <div class="kpi-grid kpi-4 mb16">
+      <div class="kpi-card">
+        <div class="kv">${sortedImps.length}</div>
+        <div class="kl">Importadores activos</div>
+      </div>
+      <div class="kpi-card accent-yellow">
+        <div class="kv">${cr3Pct}%</div>
+        <div class="kl">Concentración CR3</div>
+        <div class="ks">${sortedImps.slice(0,3).map(([c]) => c).join(', ')}</div>
+      </div>
+      <div class="kpi-card accent-green">
+        <div class="kv">${fmtK(avgTons)}</div>
+        <div class="kl">Tons promedio / viaje</div>
+        <div class="ks">${fmt(avgTons)} t</div>
+      </div>
+      <div class="kpi-card accent-orange">
+        <div class="kv">${topMat ? topMat[0] : '—'}</div>
+        <div class="kl">Material más importado</div>
+        <div class="ks">${topMat ? fmtK(topMat[1]) + ' t' : ''}</div>
+      </div>
+    </div>`;
+
+  // Ranking table
+  const maxImpTons = sortedImps[0]?.[1].tons || 1;
+  const tableRows = sortedImps.map(([name, d], i) => {
+    const share    = (d.tons / totalTons * 100).toFixed(1);
+    const topM     = Object.entries(d.mats).sort((a, b) => b[1] - a[1])[0];
+    const topO     = Object.entries(d.origenes).sort((a, b) => b[1] - a[1])[0];
+    const tonViaje = Math.round(d.tons / d.viajes);
+    return `<tr>
+      <td class="muted">${i + 1}</td>
+      <td class="bold">${name}</td>
+      <td class="right">${fmt(d.tons)} t</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="prog-wrap" style="min-width:80px">
+            <div class="prog-bar" style="width:${(d.tons/maxImpTons*100).toFixed(1)}%;background:${IMP_PALETTE[i % IMP_PALETTE.length]}"></div>
+          </div>
+          <span style="font-size:11px;color:var(--text3)">${share}%</span>
+        </div>
+      </td>
+      <td class="right">${d.viajes}</td>
+      <td class="right muted">${fmtK(tonViaje)}</td>
+      <td><span class="mat-dot" style="background:${matColor(topM?.[0])}"></span>${topM?.[0] || '—'}</td>
+      <td class="muted">${topO?.[0] || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  const rankingHtml = `
+    <div class="card mb16">
+      <div class="card-header">
+        <span class="card-title">Ranking de Importadores</span>
+        <span class="card-sub">${sortedImps.length} activos · ${fmtK(totalTons)} t totales</span>
+      </div>
+      <div class="tbl-wrap scroll-tbl">
+        <table class="dtbl">
+          <thead>
+            <tr>
+              <th>#</th><th>Importador</th>
+              <th class="right">Toneladas</th>
+              <th style="min-width:160px">Market Share</th>
+              <th class="right">Viajes</th>
+              <th class="right">Ton/Viaje</th>
+              <th>Mat. principal</th>
+              <th>Origen principal</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  // Profile panel
+  const dropdownOpts = sortedImps.map(([n]) => `<option value="${n}">${n}</option>`).join('');
+  const profileHtml = `
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Perfil de Importador</span>
+        <select id="imp-selector" onchange="renderImpProfile()" style="font-size:12px">
+          ${dropdownOpts}
+        </select>
+      </div>
+      <div id="imp-profile-body">
+        <div class="grid-2 mb16">
+          <div>
+            <div class="section-label" style="margin-bottom:8px">Evolución mensual (toneladas)</div>
+            <div class="ch-md"><canvas id="ch-imp-monthly"></canvas></div>
+          </div>
+          <div>
+            <div class="section-label" style="margin-bottom:8px">Mix de materiales</div>
+            <div class="ch-md"><canvas id="ch-imp-mats"></canvas></div>
+          </div>
+        </div>
+        <div class="section-label" style="margin-bottom:8px">Orígenes principales</div>
+        <div id="imp-origs-list"></div>
+      </div>
+    </div>`;
+
+  panel.innerHTML = kpiHtml + rankingHtml + profileHtml;
+  renderImpProfile();
+}
+
+function renderImpProfile() {
+  const sel = document.getElementById('imp-selector');
+  if (!sel) return;
+  const name = sel.value;
+  const fert = getFertFiltered().filter(r => r.cliente === name);
+
+  // Monthly bar
+  const monthTons = {};
+  fert.forEach(r => {
+    const mk = monthKey(r.eta);
+    if (mk) monthTons[mk] = (monthTons[mk] || 0) + (r.tons || 0);
+  });
+  const months = Object.keys(monthTons).sort();
+
+  destroyChart('imp-monthly');
+  const ctxBar = document.getElementById('ch-imp-monthly');
+  if (ctxBar) {
+    const dd = darkDefaults();
+    chartReg['imp-monthly'] = new Chart(ctxBar.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: months.map(monthLabel),
+        datasets: [{ data: months.map(mk => monthTons[mk] || 0), backgroundColor: '#00d4ff', borderRadius: 3 }]
+      },
+      options: { ...dd, plugins: { ...dd.plugins, legend: { display: false } } }
+    });
+  }
+
+  // Materials doughnut
+  const matTons = {};
+  fert.forEach(r => { const m = r.material || 'OTROS'; matTons[m] = (matTons[m] || 0) + (r.tons || 0); });
+  const matEntries   = Object.entries(matTons).sort((a, b) => b[1] - a[1]);
+  const totalImpTons = fert.reduce((s, r) => s + (r.tons || 0), 0);
+
+  destroyChart('imp-mats');
+  const ctxDonut = document.getElementById('ch-imp-mats');
+  if (ctxDonut) {
+    chartReg['imp-mats'] = new Chart(ctxDonut.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: matEntries.map(([m]) => m),
+        datasets: [{ data: matEntries.map(([, t]) => t), backgroundColor: matEntries.map(([m]) => matColor(m)), borderWidth: 1, borderColor: '#0a0f1e' }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '62%',
+        plugins: {
+          legend: { position: 'right', labels: { color: '#8899aa', font: { size: 10 }, boxWidth: 8, padding: 8 } },
+          tooltip: {
+            backgroundColor: '#0d1626', borderColor: '#1a2744', borderWidth: 1,
+            titleColor: '#00d4ff', bodyColor: '#e8f2ff', padding: 10,
+            callbacks: { label: ctx => ` ${ctx.label}: ${fmtK(ctx.parsed)} t (${(ctx.parsed / totalImpTons * 100).toFixed(1)}%)` }
+          }
+        }
+      }
+    });
+  }
+
+  // Origins list
+  const origTons = {};
+  fert.forEach(r => { if (r.origen) origTons[r.origen.trim()] = (origTons[r.origen.trim()] || 0) + (r.tons || 0); });
+  const maxO    = Math.max(...Object.values(origTons), 1);
+  const origList = document.getElementById('imp-origs-list');
+  if (origList) {
+    origList.innerHTML = Object.entries(origTons).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([o, t]) => `
+      <div class="imp-bar-row">
+        <div class="imp-bar-name">${o}</div>
+        <div class="prog-wrap"><div class="prog-bar" style="width:${(t/maxO*100).toFixed(1)}%"></div></div>
+        <div class="imp-bar-tons">${fmtK(t)} t</div>
+      </div>`).join('') || '<div style="padding:8px 0;font-size:11px;color:var(--text3)">Sin orígenes registrados</div>';
+  }
+}
+
+// =============================================================================
+// TAB 4 — BUQUES & FLOTA
+// =============================================================================
+
+function renderBuques() {
+  const panel = document.getElementById('tab-buques');
+  const fert  = getFertFiltered();
+
+  if (fert.length === 0) {
+    panel.innerHTML = '<div class="no-data">Sin datos para el período seleccionado</div>';
+    return;
+  }
+
+  // Aggregate by vessel
+  const vesData = {};
+  fert.forEach(r => {
+    const b = r.buque;
+    if (!b) return;
+    if (!vesData[b]) vesData[b] = { tons: 0, viajes: 0, mats: {}, origenes: {}, operadores: {}, lastEta: null };
+    vesData[b].tons   += (r.tons || 0);
+    vesData[b].viajes += 1;
+    const m = r.material || 'OTROS';
+    vesData[b].mats[m] = (vesData[b].mats[m] || 0) + 1;
+    const o = (r.origen || '').trim();
+    if (o) vesData[b].origenes[o] = (vesData[b].origenes[o] || 0) + 1;
+    const op = r.operador || '';
+    if (op) vesData[b].operadores[op] = (vesData[b].operadores[op] || 0) + 1;
+    const d = parseETA(r.eta);
+    if (d && (!vesData[b].lastEta || d > vesData[b].lastEta)) vesData[b].lastEta = d;
+  });
+
+  const sortCol = vesselSort.col || 'viajes';
+  const sortDir = vesselSort.dir || 'desc';
+  const sortedVes = Object.entries(vesData).sort((a, b) => {
+    const va = a[1][sortCol] ?? 0;
+    const vb = b[1][sortCol] ?? 0;
+    return sortDir === 'desc' ? vb - va : va - vb;
+  });
+
+  // KPIs
+  const totalViajes = fert.length;
+  const totalTons   = fert.reduce((s, r) => s + (r.tons || 0), 0);
+  const avgTons     = totalViajes > 0 ? Math.round(totalTons / totalViajes) : 0;
+  const topVes      = Object.entries(vesData).sort((a, b) => b[1].viajes - a[1].viajes)[0];
+
+  const kpiHtml = `
+    <div class="kpi-grid kpi-4 mb16">
+      <div class="kpi-card">
+        <div class="kv">${sortedVes.length}</div>
+        <div class="kl">Buques únicos</div>
+      </div>
+      <div class="kpi-card accent-green">
+        <div class="kv">${totalViajes}</div>
+        <div class="kl">Total viajes</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kv">${fmtK(avgTons)}</div>
+        <div class="kl">Tons promedio / viaje</div>
+        <div class="ks">${fmt(avgTons)} t</div>
+      </div>
+      <div class="kpi-card accent-orange">
+        <div class="kv" style="font-size:15px;overflow:hidden;text-overflow:ellipsis">${topVes ? topVes[0] : '—'}</div>
+        <div class="kl">Buque más activo</div>
+        <div class="ks">${topVes ? topVes[1].viajes + ' viajes · ' + fmtK(topVes[1].tons) + ' t' : ''}</div>
+      </div>
+    </div>`;
+
+  function sortTh(col, label, alignRight) {
+    const isCurr = vesselSort.col === col;
+    const cls    = isCurr ? (vesselSort.dir === 'desc' ? 'sort-desc' : 'sort-asc') : 'sortable';
+    const extra  = alignRight ? ' style="text-align:right"' : '';
+    return `<th class="${cls}"${extra} onclick="sortBuques('${col}')">${label}</th>`;
+  }
+
+  const tableRows = sortedVes.map(([name, d]) => {
+    const topM     = Object.entries(d.mats).sort((a, b) => b[1] - a[1])[0];
+    const topO     = Object.entries(d.origenes).sort((a, b) => b[1] - a[1])[0];
+    const topOp    = Object.entries(d.operadores).sort((a, b) => b[1] - a[1])[0];
+    const tonViaje = d.viajes > 0 ? Math.round(d.tons / d.viajes) : 0;
+    const lastVisit = d.lastEta
+      ? `${d.lastEta.getDate()} ${MONTH_NAMES[d.lastEta.getMonth()]} ${d.lastEta.getFullYear()}`
+      : '—';
+    return `<tr>
+      <td class="bold">${name}</td>
+      <td class="right bold">${d.viajes}</td>
+      <td class="right">${fmt(d.tons)} t</td>
+      <td class="right muted">${fmtK(tonViaje)}</td>
+      <td><span class="mat-dot" style="background:${matColor(topM?.[0])}"></span>${topM?.[0] || '—'}</td>
+      <td class="muted">${topO?.[0] || '—'}</td>
+      <td class="muted">${lastVisit}</td>
+      <td class="muted">${topOp?.[0] || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  panel.innerHTML = kpiHtml + `
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Flota de Fertilizantes</span>
+        <span class="card-sub">${sortedVes.length} buques · ${totalViajes} viajes registrados</span>
+      </div>
+      <div class="tbl-wrap scroll-tbl">
+        <table class="dtbl">
+          <thead>
+            <tr>
+              <th>Buque</th>
+              ${sortTh('viajes','Viajes',true)}
+              ${sortTh('tons','Toneladas',true)}
+              <th class="right">Ton/Viaje</th>
+              <th>Materiales</th>
+              <th>Origen frecuente</th>
+              <th>Última visita</th>
+              <th>Operador frecuente</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function sortBuques(col) {
+  if (vesselSort.col === col) {
+    vesselSort.dir = vesselSort.dir === 'desc' ? 'asc' : 'desc';
+  } else {
+    vesselSort.col = col;
+    vesselSort.dir = 'desc';
+  }
+  renderBuques();
+}
+
+// =============================================================================
+// TAB 5 — ORÍGENES
+// =============================================================================
+
+function renderOrigenes() {
+  const panel = document.getElementById('tab-origenes');
+  const fert  = getFertFiltered();
+
+  if (fert.length === 0) {
+    panel.innerHTML = '<div class="no-data">Sin datos para el período seleccionado</div>';
+    return;
+  }
+
+  const totalTons = fert.reduce((s, r) => s + (r.tons || 0), 0);
+
+  // Aggregate by origin
+  const origData = {};
+  fert.forEach(r => {
+    const o   = (r.origen || '').trim();
+    const key = o || 'Sin datos';
+    if (!origData[key]) origData[key] = { tons: 0, viajes: 0, mats: {}, importadores: new Set() };
+    origData[key].tons   += (r.tons || 0);
+    origData[key].viajes += 1;
+    const m = r.material || 'OTROS';
+    origData[key].mats[m] = (origData[key].mats[m] || 0) + (r.tons || 0);
+    if (r.cliente) origData[key].importadores.add(r.cliente);
+  });
+
+  const sortedOrig = Object.entries(origData)
+    .filter(([k]) => k !== 'Sin datos')
+    .sort((a, b) => b[1].tons - a[1].tons);
+
+  // KPIs
+  const topPais    = sortedOrig[0];
+  const topPaisPct = topPais && totalTons > 0 ? (topPais[1].tons / totalTons * 100).toFixed(1) : 0;
+  const trasCount  = fert.filter(r => normOp(r.operacion) === 'TRASBORDO').length;
+  const trasPct    = fert.length > 0 ? (trasCount / fert.length * 100).toFixed(1) : 0;
+
+  const kpiHtml = `
+    <div class="kpi-grid kpi-3 mb16">
+      <div class="kpi-card">
+        <div class="kv">${sortedOrig.length}</div>
+        <div class="kl">Países de origen únicos</div>
+      </div>
+      <div class="kpi-card accent-green">
+        <div class="kv" style="font-size:18px">${topPais ? topPais[0] : '—'}</div>
+        <div class="kl">País dominante</div>
+        <div class="ks">${fmtK(topPais?.[1].tons)} t · ${topPaisPct}% del total</div>
+      </div>
+      <div class="kpi-card accent-orange">
+        <div class="kv">${trasPct}%</div>
+        <div class="kl">Vía trasbordo</div>
+        <div class="ks">${trasCount} de ${fert.length} viajes</div>
+      </div>
+    </div>`;
+
+  // Ranking table
+  const maxOrigTons = sortedOrig[0]?.[1].tons || 1;
+  const tableRows = sortedOrig.map(([pais, d], i) => {
+    const share   = (d.tons / totalTons * 100).toFixed(1);
+    const topMats = Object.entries(d.mats).sort((a, b) => b[1] - a[1]).slice(0, 3)
+      .map(([m]) => `<span class="mat-dot" style="background:${matColor(m)}"></span>${m}`).join(' ');
+    const impsArr = [...d.importadores].slice(0, 3);
+    const impsStr = impsArr.join(', ') + (d.importadores.size > 3 ? ` <span class="muted">+${d.importadores.size - 3}</span>` : '');
+    return `<tr>
+      <td class="bold">${pais}</td>
+      <td class="right">${fmt(d.tons)} t</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="prog-wrap" style="min-width:100px">
+            <div class="prog-bar" style="width:${(d.tons/maxOrigTons*100).toFixed(1)}%;background:${IMP_PALETTE[i % IMP_PALETTE.length]}"></div>
+          </div>
+          <span style="font-size:11px;color:var(--text3)">${share}%</span>
+        </div>
+      </td>
+      <td style="font-size:11px">${topMats}</td>
+      <td class="muted" style="font-size:11px">${impsStr}</td>
+    </tr>`;
+  }).join('');
+
+  const rankingHtml = `
+    <div class="card mb16">
+      <div class="card-header">
+        <span class="card-title">Ranking por País de Origen</span>
+        <span class="card-sub">${sortedOrig.length} países · ${fmtK(totalTons)} t totales</span>
+      </div>
+      <div class="tbl-wrap scroll-tbl">
+        <table class="dtbl">
+          <thead>
+            <tr>
+              <th>País</th>
+              <th class="right">Toneladas</th>
+              <th style="min-width:160px">% del total</th>
+              <th>Materiales principales</th>
+              <th>Importadores</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  // Top 10 commercial routes: Origen → Material → Importador → Tons
+  const routes = {};
+  fert.forEach(r => {
+    const o = (r.origen || '').trim();
+    if (!o) return;
+    const key = `${o}||${r.material || 'OTROS'}||${r.cliente || '—'}`;
+    routes[key] = (routes[key] || 0) + (r.tons || 0);
+  });
+  const top10 = Object.entries(routes).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+  const routeRows = top10.map(([key, t], i) => {
+    const [o, m, c] = key.split('||');
+    return `<tr>
+      <td class="muted">${i + 1}</td>
+      <td class="bold">${o}</td>
+      <td><span class="mat-dot" style="background:${matColor(m)}"></span>${m}</td>
+      <td>${c}</td>
+      <td class="right">${fmt(t)} t</td>
+    </tr>`;
+  }).join('');
+
+  panel.innerHTML = kpiHtml + rankingHtml + `
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Top Rutas Comerciales</span>
+        <span class="card-sub">Origen → Material → Importador · por toneladas</span>
+      </div>
+      <div class="tbl-wrap">
+        <table class="dtbl">
+          <thead>
+            <tr>
+              <th>#</th><th>Origen</th><th>Material</th><th>Importador</th>
+              <th class="right">Toneladas</th>
+            </tr>
+          </thead>
+          <tbody>${routeRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+// =============================================================================
+// TAB 6 — TIMELINE
+// =============================================================================
+
+function renderTimeline() {
+  const panel = document.getElementById('tab-timeline');
+  const fert  = getFertFiltered();
+
+  if (fert.length === 0) {
+    panel.innerHTML = '<div class="no-data">Sin datos para el período seleccionado</div>';
+    return;
+  }
+
+  // Top 6 materials by tons
+  const matTotals = {};
+  fert.forEach(r => { const m = r.material; if (m) matTotals[m] = (matTotals[m] || 0) + (r.tons || 0); });
+  const top6mats = Object.entries(matTotals).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([m]) => m);
+
+  // YoY detection
+  const years    = [...new Set(fert.map(r => r.eta?.slice(0,4)).filter(Boolean))].sort();
+  const hasYoY   = years.length >= 2;
+  const yearCurr = years[years.length - 1];
+  const yearPrev = years[years.length - 2];
+  const allMonths = [...new Set(fert.map(r => monthKey(r.eta)).filter(Boolean))].sort();
+
+  // Monthly material totals
+  const monthMatTons = {};
+  fert.forEach(r => {
+    const mk = monthKey(r.eta);
+    if (!mk || !r.material || !top6mats.includes(r.material)) return;
+    if (!monthMatTons[mk]) monthMatTons[mk] = {};
+    monthMatTons[mk][r.material] = (monthMatTons[mk][r.material] || 0) + (r.tons || 0);
+  });
+
+  // Top 5 importers monthly
+  const impTotals = {};
+  fert.forEach(r => { if (r.cliente) impTotals[r.cliente] = (impTotals[r.cliente] || 0) + (r.tons || 0); });
+  const top5imps = Object.entries(impTotals).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([c]) => c);
+  const monthImpTons = {};
+  fert.forEach(r => {
+    const mk = monthKey(r.eta);
+    if (!mk || !r.cliente || !top5imps.includes(r.cliente)) return;
+    if (!monthImpTons[mk]) monthImpTons[mk] = {};
+    monthImpTons[mk][r.cliente] = (monthImpTons[mk][r.cliente] || 0) + (r.tons || 0);
+  });
+
+  // Checkbox bar
+  const cbsHtml = top6mats.map(m => `
+    <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);cursor:pointer;user-select:none">
+      <input type="checkbox" class="tl-cb" data-mat="${m}" checked onchange="updateTimelineVisibility()" style="accent-color:${matColor(m)};cursor:pointer">
+      <span class="mat-dot" style="background:${matColor(m)}"></span>${m}
+    </label>`).join('');
+
+  panel.innerHTML = `
+    <div class="card mb16">
+      <div class="card-header" style="flex-wrap:wrap;gap:10px">
+        <span class="card-title">Evolución Mensual por Material</span>
+        <div style="display:flex;gap:14px;flex-wrap:wrap">${cbsHtml}</div>
+      </div>
+      ${hasYoY ? `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.18);border-radius:6px;font-size:11px;color:var(--cyan)">Línea sólida = ${yearCurr} &nbsp;·&nbsp; Línea punteada = ${yearPrev} (comparación interanual)</div>` : ''}
+      <div class="ch-lg"><canvas id="ch-tl-main"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Top 5 Importadores — Evolución Mensual</span>
+        <span class="card-sub">${top5imps.join(' · ')}</span>
+      </div>
+      <div class="ch-lg"><canvas id="ch-tl-imps"></canvas></div>
+    </div>`;
+
+  // ── Main chart (materials) ─────────────────────────────────────────────
+  destroyChart('tl-main');
+  let mainLabels, mainDatasets;
+
+  if (hasYoY) {
+    const mos   = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+    mainLabels  = mos.map(mm => MONTH_NAMES[parseInt(mm) - 1]);
+    mainDatasets = [];
+    top6mats.forEach(mat => {
+      const col = matColor(mat);
+      mainDatasets.push({
+        label: `${mat} ${yearCurr}`,
+        data: mos.map(mm => monthMatTons[`${yearCurr}-${mm}`]?.[mat] || 0),
+        borderColor: col, backgroundColor: col + '18',
+        borderWidth: 2, pointRadius: 3, tension: 0.3, fill: false
+      });
+      mainDatasets.push({
+        label: `${mat} ${yearPrev}`,
+        data: mos.map(mm => monthMatTons[`${yearPrev}-${mm}`]?.[mat] || 0),
+        borderColor: col, backgroundColor: col + '0a',
+        borderWidth: 1.5, pointRadius: 2, tension: 0.3, fill: false,
+        borderDash: [5, 4]
+      });
+    });
+  } else {
+    mainLabels   = allMonths.map(monthLabel);
+    mainDatasets = top6mats.map(mat => ({
+      label: mat,
+      data: allMonths.map(mk => monthMatTons[mk]?.[mat] || 0),
+      borderColor: matColor(mat), backgroundColor: matColor(mat) + '18',
+      borderWidth: 2, pointRadius: 3, tension: 0.3, fill: false
+    }));
+  }
+
+  const ddMain = darkDefaults();
+  ddMain.plugins.tooltip.callbacks.label = ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)} t`;
+  chartReg['tl-main'] = new Chart(document.getElementById('ch-tl-main').getContext('2d'), {
+    type: 'line',
+    data: { labels: mainLabels, datasets: mainDatasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: ddMain.plugins,
+      scales: {
+        x: { grid: { color: 'rgba(26,39,68,0.6)' }, ticks: { color: '#6b7f99', font: { size: 11 } } },
+        y: { beginAtZero: true, grid: { color: 'rgba(26,39,68,0.6)' }, ticks: { color: '#6b7f99', font: { size: 11 }, callback: v => fmtK(v) } }
+      }
+    }
+  });
+
+  // ── Importers chart ────────────────────────────────────────────────────
+  destroyChart('tl-imps');
+  const impDatasets = top5imps.map((imp, i) => ({
+    label: imp,
+    data: allMonths.map(mk => monthImpTons[mk]?.[imp] || 0),
+    borderColor: IMP_PALETTE[i], backgroundColor: IMP_PALETTE[i] + '18',
+    borderWidth: 2, pointRadius: 3, tension: 0.3, fill: false
+  }));
+
+  const ddImps = darkDefaults();
+  ddImps.plugins.tooltip.callbacks.label = ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)} t`;
+  chartReg['tl-imps'] = new Chart(document.getElementById('ch-tl-imps').getContext('2d'), {
+    type: 'line',
+    data: { labels: allMonths.map(monthLabel), datasets: impDatasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: ddImps.plugins,
+      scales: {
+        x: { grid: { color: 'rgba(26,39,68,0.6)' }, ticks: { color: '#6b7f99', font: { size: 11 } } },
+        y: { beginAtZero: true, grid: { color: 'rgba(26,39,68,0.6)' }, ticks: { color: '#6b7f99', font: { size: 11 }, callback: v => fmtK(v) } }
+      }
+    }
+  });
+}
+
+function updateTimelineVisibility() {
+  const chart = chartReg['tl-main'];
+  if (!chart) return;
+  document.querySelectorAll('.tl-cb').forEach(cb => {
+    const mat = cb.dataset.mat;
+    chart.data.datasets.forEach((ds, i) => {
+      if (ds.label === mat || ds.label.startsWith(mat + ' ')) {
+        chart.getDatasetMeta(i).hidden = !cb.checked;
+      }
+    });
+  });
+  chart.update();
+}
+
+// =============================================================================
+// TAB 7 — DATOS COMPLETOS
+// =============================================================================
+
+function renderDatos() {
+  const panel = document.getElementById('tab-datos');
+
+  // Build filter bar only once — preserve user's filter values across onFilterChange() calls
+  if (!document.getElementById('d-buque')) {
+    const uniq    = key => [...new Set(ALL_DATA.map(r => r[key]).filter(Boolean))].sort();
+    const selOpts = arr => arr.map(v => `<option value="${v}">${v}</option>`).join('');
+    const ops     = [...new Set(ALL_DATA.map(r => normOp(r.operacion)).filter(Boolean))].sort();
+
+    panel.innerHTML = `
+      <div class="filter-bar">
+        <input type="text" class="search-input" id="d-buque" placeholder="Buscar buque…" oninput="datosPage=0;renderDatosTable()">
+        <select id="d-material" onchange="datosPage=0;renderDatosTable()">
+          <option value="">Todos los materiales</option>
+          ${selOpts(uniq('material'))}
+        </select>
+        <select id="d-importador" onchange="datosPage=0;renderDatosTable()">
+          <option value="">Todos los importadores</option>
+          ${selOpts(uniq('cliente'))}
+        </select>
+        <select id="d-operador" onchange="datosPage=0;renderDatosTable()">
+          <option value="">Todos los operadores</option>
+          ${selOpts(uniq('operador'))}
+        </select>
+        <select id="d-operacion" onchange="datosPage=0;renderDatosTable()">
+          <option value="">Todas las operaciones</option>
+          ${selOpts(ops)}
+        </select>
+        <select id="d-muelle" onchange="datosPage=0;renderDatosTable()">
+          <option value="">Todos los muelles</option>
+          ${selOpts(uniq('muelle'))}
+        </select>
+        <button class="toggle-btn" id="d-fert-btn" onclick="toggleDatosFert()">Solo fertilizantes</button>
+      </div>
+      <div id="datos-table-wrap"></div>`;
+  }
+
+  renderDatosTable();
+}
+
+function toggleDatosFert() {
+  soloFert = !soloFert;
+  const btn = document.getElementById('d-fert-btn');
+  if (btn) btn.classList.toggle('on', soloFert);
+  datosPage = 0;
+  renderDatosTable();
+}
+
+function renderDatosTable() {
+  const wrap = document.getElementById('datos-table-wrap');
+  if (!wrap) return;
+
+  const buqueQ  = (document.getElementById('d-buque')?.value    || '').toUpperCase().trim();
+  const matQ    =  document.getElementById('d-material')?.value  || '';
+  const impQ    =  document.getElementById('d-importador')?.value|| '';
+  const opQ     =  document.getElementById('d-operador')?.value  || '';
+  const opnQ    =  document.getElementById('d-operacion')?.value || '';
+  const muelleQ =  document.getElementById('d-muelle')?.value    || '';
+
+  let data = ALL_DATA.filter(r => {
+    if (buqueQ  && !(r.buque    || '').toUpperCase().includes(buqueQ)) return false;
+    if (matQ    &&   r.material !== matQ)                              return false;
+    if (impQ    &&   r.cliente  !== impQ)                              return false;
+    if (opQ     &&   r.operador !== opQ)                               return false;
+    if (opnQ    &&   normOp(r.operacion) !== opnQ)                     return false;
+    if (muelleQ &&   r.muelle   !== muelleQ)                           return false;
+    if (soloFert && !isFert(r))                                        return false;
+    return true;
+  });
+
+  // Sort by ETA desc
+  data = [...data].sort((a, b) => {
+    const da = parseETA(a.eta), db = parseETA(b.eta);
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    return db - da;
+  });
+
+  const PAGE    = 50;
+  const total   = data.length;
+  const totalPg = Math.max(1, Math.ceil(total / PAGE));
+  if (datosPage >= totalPg) datosPage = totalPg - 1;
+  const pageData = data.slice(datosPage * PAGE, (datosPage + 1) * PAGE);
+
+  const rows = pageData.map(r => {
+    const pdfName = r.pdf_source || '—';
+    return `<tr>
+      <td>${fmtDate(r.eta)}</td>
+      <td class="bold">${r.buque    || '—'}</td>
+      <td><span class="mat-dot" style="background:${matColor(r.material)}"></span>${r.material || '—'}</td>
+      <td>${r.cliente   || '—'}</td>
+      <td class="right">${r.tons ? fmt(r.tons) + ' t' : '—'}</td>
+      <td class="muted">${r.operador || '—'}</td>
+      <td>${opBadge(r.operacion)}</td>
+      <td class="muted">${r.muelle ? r.muelle.replace('MUELLE ', '') : '—'}</td>
+      <td class="muted">${r.agencia  || '—'}</td>
+      <td class="muted">${r.origen   || '—'}</td>
+      <td class="muted" style="font-size:10px;max-width:90px;overflow:hidden;text-overflow:ellipsis" title="${pdfName}">${pdfName}</td>
+    </tr>`;
+  }).join('');
+
+  // Pagination controls
+  const pgs = [];
+  pgs.push(`<button class="pg-btn" onclick="goPage(${datosPage-1})" ${datosPage===0?'disabled':''}>←</button>`);
+  const s = Math.max(0, datosPage - 2);
+  const e = Math.min(totalPg - 1, datosPage + 2);
+  if (s > 0) pgs.push(`<button class="pg-btn" onclick="goPage(0)">1</button>`);
+  if (s > 1) pgs.push(`<span class="pg-info">…</span>`);
+  for (let i = s; i <= e; i++)
+    pgs.push(`<button class="pg-btn ${i===datosPage?'active':''}" onclick="goPage(${i})">${i+1}</button>`);
+  if (e < totalPg - 2) pgs.push(`<span class="pg-info">…</span>`);
+  if (e < totalPg - 1) pgs.push(`<button class="pg-btn" onclick="goPage(${totalPg-1})">${totalPg}</button>`);
+  pgs.push(`<button class="pg-btn" onclick="goPage(${datosPage+1})" ${datosPage>=totalPg-1?'disabled':''}>→</button>`);
+
+  wrap.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:11px;color:var(--text3)">${total.toLocaleString('es-AR')} registros · mostrando ${pageData.length}</span>
+      <span style="font-size:11px;color:var(--text3)">Página ${datosPage+1} de ${totalPg}</span>
+    </div>
+    <div class="tbl-wrap scroll-tbl" style="max-height:560px">
+      <table class="dtbl">
+        <thead>
+          <tr>
+            <th>ETA</th><th>Buque</th><th>Material</th><th>Cliente</th>
+            <th class="right">Tons</th><th>Operador</th><th>Operación</th>
+            <th>Muelle</th><th>Agencia</th><th>Origen</th><th>PDF</th>
+          </tr>
+        </thead>
+        <tbody>${rows || '<tr><td colspan="11" class="no-data" style="padding:32px">Sin resultados</td></tr>'}</tbody>
+      </table>
+    </div>
+    <div class="pagination">${pgs.join('')}</div>`;
+}
+
+function goPage(n) {
+  datosPage = Math.max(0, n);
+  renderDatosTable();
+}
+
+// =============================================================================
+// TAB 8 — OFERTA PRÓXIMA (Forward Supply View)
+// =============================================================================
+
+function setOfertaWindow(w) {
+  ofertaWindow = w;
+  renderOferta();
+}
+
+function renderOferta() {
+  const panel = document.getElementById('tab-oferta');
+
+  // ── Reference date: use real today if dataset has future data; else use maxETA ──
+  const realToday = new Date(); realToday.setHours(0, 0, 0, 0);
+  const allDates  = ALL_DATA.map(r => parseETA(r.eta)).filter(Boolean);
+  const maxETA    = allDates.length ? new Date(Math.max(...allDates.map(d => d.getTime()))) : realToday;
+  const refDate   = realToday <= maxETA ? realToday : new Date(maxETA);
+  const isSimulated = realToday > maxETA;
+
+  // ── Window end ──
+  const winEnd = new Date(refDate);
+  winEnd.setDate(winEnd.getDate() + ofertaWindow);
+
+  // ── Filter: all records (not just fertilizers) within [refDate, winEnd) ──
+  const inWindow = ALL_DATA.filter(r => {
+    const d = parseETA(r.eta);
+    return d && d >= refDate && d < winEnd;
+  }).sort((a, b) => parseETA(a.eta) - parseETA(b.eta));
+
+  // ── KPI aggregates ──
+  const totalTons = inWindow.reduce((s, r) => s + (Number(r.tons) || 0), 0);
+  const uniqueVessels = new Set(inWindow.map(r => r.buque).filter(Boolean)).size;
+
+  const matTons = {}, impTons = {};
+  inWindow.forEach(r => {
+    if (r.material) matTons[r.material] = (matTons[r.material] || 0) + (Number(r.tons) || 0);
+    if (r.cliente)  impTons[r.cliente]  = (impTons[r.cliente]  || 0) + (Number(r.tons) || 0);
+  });
+  const topMat = Object.entries(matTons).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+  const topImp = Object.entries(impTons).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+
+  // ── Data confidence helpers ──
+  const CONF_FIELDS = ['eta', 'buque', 'material', 'cliente', 'tons', 'origen'];
+  function dataConf(r) {
+    return CONF_FIELDS.filter(f => r[f] !== undefined && r[f] !== null && r[f] !== '').length / CONF_FIELDS.length;
+  }
+  function estadoBadge(r) {
+    const f = CONF_FIELDS.filter(k => r[k] !== undefined && r[k] !== null && r[k] !== '').length;
+    if (f === CONF_FIELDS.length) return `<span class="badge bd-confirmed">Completo</span>`;
+    if (f >= 4)                   return `<span class="badge bd-estimated">Parcial</span>`;
+    return `<span class="badge" style="background:rgba(255,255,255,0.04);color:var(--text3);border-color:var(--border)">Mínimo</span>`;
+  }
+  function confBadge(r) {
+    const c = dataConf(r);
+    if (c >= 5/6) return `<span class="badge bd-confirmed">${Math.round(c*100)}%</span>`;
+    if (c >= 3/6) return `<span class="badge bd-estimated">${Math.round(c*100)}%</span>`;
+    return `<span class="badge" style="background:rgba(255,255,255,0.04);color:var(--text3);border-color:var(--border)">${Math.round(c*100)}%</span>`;
+  }
+
+  // ── Table rows ──
+  const rows = inWindow.length
+    ? inWindow.map(r => `<tr>
+        <td style="white-space:nowrap">${fmtDate(r.eta)}</td>
+        <td class="bold">${r.buque || '—'}</td>
+        <td>${r.material || '<span class="muted">—</span>'}</td>
+        <td class="right">${r.tons ? Number(r.tons).toLocaleString('es-AR') : '—'}</td>
+        <td>${r.cliente || '<span class="muted">—</span>'}</td>
+        <td>${r.origen  || '<span class="muted">—</span>'}</td>
+        <td>${r.muelle  || '<span class="muted">—</span>'}</td>
+        <td>${estadoBadge(r)}</td>
+        <td>${confBadge(r)}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">
+         No hay registros programados en este período
+       </td></tr>`;
+
+  // ── Simulation banner ──
+  const simBanner = isSimulated
+    ? `<div style="background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.2);border-radius:6px;padding:9px 14px;margin-bottom:16px;font-size:11px;color:var(--orange)">
+        ⚠ Vista simulada — referencia al último registro disponible: ${fmtDateFull(maxETA.toISOString().slice(0,10))}. Con datos AIS en tiempo real se usará la fecha de hoy.
+       </div>`
+    : '';
+
+  // ── Window selector labels ──
+  const winLabels = {7:'7 días', 14:'14 días', 30:'30 días', 60:'60 días'};
+
+  panel.innerHTML = `
+  <div style="padding:24px">
+
+    ${simBanner}
+
+    <!-- Window selector -->
+    <div style="display:flex;gap:8px;margin-bottom:20px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-right:4px">Próximos:</span>
+      ${[7,14,30,60].map(w =>
+        `<button class="toggle-btn${ofertaWindow===w?' on':''}" onclick="setOfertaWindow(${w})">${winLabels[w]}</button>`
+      ).join('')}
+      <span style="font-size:11px;color:var(--text3);margin-left:8px">
+        ${fmtDate(refDate.toISOString().slice(0,10))} → ${fmtDate(winEnd.toISOString().slice(0,10))}
+      </span>
+    </div>
+
+    <!-- KPIs -->
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px">
+      <div class="kv-card">
+        <div class="kv-label">TONELADAS ESPERADAS</div>
+        <div class="kv-val">${totalTons ? (totalTons/1000).toFixed(0)+'k t' : '—'}</div>
+      </div>
+      <div class="kv-card">
+        <div class="kv-label">BUQUES</div>
+        <div class="kv-val">${uniqueVessels || '—'}</div>
+      </div>
+      <div class="kv-card">
+        <div class="kv-label">MATERIAL PRINCIPAL</div>
+        <div class="kv-val" style="font-size:15px">${topMat}</div>
+      </div>
+      <div class="kv-card">
+        <div class="kv-label">IMPORTADOR PRINCIPAL</div>
+        <div class="kv-val" style="font-size:15px;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${topImp}</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="panel" style="padding:0">
+      <div class="tbl-wrap scroll-tbl">
+        <table class="dtbl">
+          <thead>
+            <tr>
+              <th>ETA</th>
+              <th>Buque</th>
+              <th>Material</th>
+              <th class="right">Tons</th>
+              <th>Importador</th>
+              <th>Origen</th>
+              <th>Puerto</th>
+              <th>Estado del dato</th>
+              <th>Confianza</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Footer note -->
+    <div style="margin-top:10px;font-size:10px;color:var(--text3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px">
+      <span>${inWindow.length} registro${inWindow.length !== 1 ? 's' : ''} en ventana · Fuente: lineup oficial Puerto San Nicolás</span>
+      <span>Confianza = % de campos clave disponibles (ETA · buque · material · cliente · tons · origen)</span>
+    </div>
+
+  </div>`;
+}
+
+// =============================================================================
+// TAB 9 — BUQUES EN RUTA (Predictive Intelligence)
+// =============================================================================
+
+function renderBuquesEnRuta() {
+  const panel = document.getElementById('tab-buquesruta');
+  const data  = (typeof BUQUES_EN_RUTA_DATA !== 'undefined') ? BUQUES_EN_RUTA_DATA : [];
+
+  /* ── KPI counts ── */
+  const nHigh = data.filter(d => d.probability_level === 'high').length;
+  const nMed  = data.filter(d => d.probability_level === 'medium').length;
+  const nConf = data.filter(d => d.prediction_status === 'confirmed').length;
+
+  /* ── Status badge helper ── */
+  function statusBadge(status) {
+    const labels = { estimated:'Estimado', probable:'Probable', confirmed:'Confirmado' };
+    const cls    = { estimated:'bd-estimated', probable:'bd-probable', confirmed:'bd-confirmed' };
+    return `<span class="badge ${cls[status]||''}">${labels[status]||status}</span>`;
+  }
+
+  /* ── Score bar helper ── */
+  function scoreBar(score, level) {
+    const pct = Math.min(score, 100);
+    return `<div class="score-bar-wrap">
+      <span style="font-weight:600;font-size:12px;min-width:28px;color:var(--text)">${score}</span>
+      <div class="score-bar"><div class="score-fill ${level}" style="width:${pct}%"></div></div>
+    </div>`;
+  }
+
+  /* ── Tonnage range helper ── */
+  function fmtTons(range) {
+    if (!range || !range[0]) return '—';
+    return `${Math.round(range[0]/1000)}k–${Math.round(range[1]/1000)}k t`;
+  }
+
+  /* ── Empty state ── */
+  if (!data.length) {
+    panel.innerHTML = `
+    <div style="padding:24px">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px">
+        <div class="kv-card"><div class="kv-label">EN SEGUIMIENTO</div><div class="kv-val">—</div></div>
+        <div class="kv-card"><div class="kv-label">PROB. ALTA</div><div class="kv-val">—</div></div>
+        <div class="kv-card"><div class="kv-label">PROB. MEDIA</div><div class="kv-val">—</div></div>
+        <div class="kv-card"><div class="kv-label">CONFIRMADOS</div><div class="kv-val">—</div></div>
+      </div>
+      <div class="panel" style="text-align:center;padding:60px 24px">
+        <div style="font-size:52px;margin-bottom:18px;opacity:0.25">🛰</div>
+        <div style="font-size:15px;font-weight:600;color:var(--text2);margin-bottom:8px">Sin datos de inteligencia predictiva</div>
+        <div style="font-size:12px;color:var(--text3);max-width:400px;margin:0 auto;line-height:1.8">
+          Este módulo mostrará buques detectados vía AIS antes de aparecer en la programación oficial de San Nicolás.<br>
+          La integración con el proveedor AIS está pendiente.
+        </div>
+        <div style="margin-top:26px;display:inline-flex;gap:10px;align-items:center;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);border-radius:7px;padding:10px 18px">
+          <span style="color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:0.5px">PRÓXIMAMENTE</span>
+          <span style="color:var(--text3);font-size:11px">Scoring automático · Perfiles históricos · Alertas tempranas</span>
+        </div>
+      </div>
+    </div>`;
+    return;
+  }
+
+  /* ── Table rows ── */
+  const rows = data.map(d => {
+    const reasonRow = (d.scoring_reasons && d.scoring_reasons.length)
+      ? `<tr class="reason-row">
+          <td colspan="9" style="padding:4px 11px 10px 28px;color:var(--text3);font-size:10.5px;white-space:normal;line-height:1.7">
+            ${d.scoring_reasons.map(r => `<span style="margin-right:14px">${r}</span>`).join('')}
+          </td>
+        </tr>`
+      : '';
+    return `<tr>
+      <td class="bold">${d.vessel_name}</td>
+      <td>${d.last_port || '—'}</td>
+      <td>${d.ais_destination || '—'}</td>
+      <td>${d.eta_estimated || '—'}</td>
+      <td>${d.probable_product || '<span class="muted">—</span>'}</td>
+      <td>${d.probable_importer || '<span class="muted">—</span>'}</td>
+      <td class="right">${fmtTons(d.probable_tonnage_range)}</td>
+      <td>${scoreBar(d.probability_score, d.probability_level)}</td>
+      <td>${statusBadge(d.prediction_status)}</td>
+    </tr>${reasonRow}`;
+  }).join('');
+
+  panel.innerHTML = `
+  <div style="padding:24px">
+
+    <!-- KPIs -->
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px">
+      <div class="kv-card">
+        <div class="kv-label">EN SEGUIMIENTO</div>
+        <div class="kv-val">${data.length}</div>
+      </div>
+      <div class="kv-card">
+        <div class="kv-label">PROB. ALTA</div>
+        <div class="kv-val" style="color:var(--green)">${nHigh}</div>
+      </div>
+      <div class="kv-card">
+        <div class="kv-label">PROB. MEDIA</div>
+        <div class="kv-val" style="color:var(--orange)">${nMed}</div>
+      </div>
+      <div class="kv-card">
+        <div class="kv-label">CONFIRMADOS</div>
+        <div class="kv-val" style="color:var(--cyan)">${nConf}</div>
+      </div>
+    </div>
+
+    <!-- Legend banner -->
+    <div style="background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.1);border-radius:6px;padding:10px 16px;margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+      <span style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Estado:</span>
+      <span class="badge bd-estimated">Estimado</span><span style="font-size:11px;color:var(--text3)">AIS detectado, sin confirmar</span>
+      <span class="badge bd-probable">Probable</span><span style="font-size:11px;color:var(--text3)">Señales fuertes, alta confianza</span>
+      <span class="badge bd-confirmed">Confirmado</span><span style="font-size:11px;color:var(--text3)">En programación oficial</span>
+    </div>
+
+    <!-- Table -->
+    <div class="panel" style="padding:0">
+      <div class="tbl-wrap scroll-tbl">
+        <table class="dtbl">
+          <thead>
+            <tr>
+              <th>Buque</th>
+              <th>Último puerto</th>
+              <th>Destino AIS</th>
+              <th>ETA estimado</th>
+              <th>Producto probable</th>
+              <th>Importador probable</th>
+              <th class="right">Toneladas prob.</th>
+              <th>Score</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Source note -->
+    <div style="margin-top:10px;font-size:10px;color:var(--text3);text-align:right">
+      Datos predictivos generados por <strong style="color:var(--text2)">vessel_scorer.py</strong>
+      &nbsp;·&nbsp; Score 0–100: ≥65 = Alta · 35–64 = Media · &lt;35 = Baja
+    </div>
+
+  </div>`;
+}
+
+// =============================================================================
+// DATA LOADING & INIT
+// =============================================================================
+
+// ── DATA LOADED FROM BACKEND API ──────────────────────────────────────
+// Shipments and vessel candidates are fetched from the Flask API in init().
+// Endpoints: GET /api/shipments  |  GET /api/vessel_candidates
+// Run: python3 app.py  (requires hidroviadata.db — see migrate.py)
+let BUQUES_EN_RUTA_DATA = [];  // populated by init() fetch
+
+async function init() {
+  // ── Fetch data from Flask API ─────────────────────────────────────────────
+  try {
+    const [shipmentsRes, candidatesRes] = await Promise.all([
+      fetch('/api/shipments'),
+      fetch('/api/vessel_candidates'),
+    ]);
+    if (!shipmentsRes.ok)  throw new Error('/api/shipments returned ' + shipmentsRes.status);
+    if (!candidatesRes.ok) throw new Error('/api/vessel_candidates returned ' + candidatesRes.status);
+    ALL_DATA            = await shipmentsRes.json();
+    BUQUES_EN_RUTA_DATA = await candidatesRes.json();
+  } catch (err) {
+    console.error('API fetch failed:', err);
+    document.getElementById('loading').innerHTML =
+      '<div style="color:#f87171;padding:2rem;font-family:monospace">' +
+      '<strong>Error loading data from backend.</strong><br>' +
+      'Make sure app.py is running: <code>python3 app.py</code><br><br>' +
+      err.message + '</div>';
+    return;
+  }
+
+  // Console diagnostics
+  const withETA  = ALL_DATA.filter(r => parseETA(r.eta));
+  const fertCore = ALL_DATA.filter(isFert);
+  const dates    = withETA.map(r => r.eta).sort();
+  console.log(`%c HidrovíaData `, 'background:#1e3a8a;color:#00d4ff;font-weight:bold;padding:2px 6px');
+  console.log(`Total registros:          ${ALL_DATA.length}`);
+  console.log(`Registros con ETA válida: ${withETA.length}`);
+  console.log(`Registros fertilizantes:  ${fertCore.length}`);
+  console.log(`Rango de fechas:          ${dates[0]} → ${dates[dates.length - 1]}`);
+
+  // Populate material filter (fertilizers only, sorted by frequency)
+  const matCount = {};
+  ALL_DATA.forEach(r => {
+    if (r.material && isFert(r)) matCount[r.material] = (matCount[r.material] || 0) + 1;
+  });
+  const matSelect = document.getElementById('f-material');
+  Object.entries(matCount)
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([m]) => {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = m;
+      matSelect.appendChild(opt);
+    });
+
+  // Populate Tab 7 filter dropdowns
+  populateDatosFilters();
+
+  // First render
+  renderTopbarKPIs();
+  renderSemana();
+
+  // Show app
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+}
+
+function populateDatosFilters() {
+  // Filter dropdowns are built lazily inside renderDatos() on first call
+}
+
+// Kick off
+init();
+</script>
+</body>
+</html>

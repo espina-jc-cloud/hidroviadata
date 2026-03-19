@@ -8788,45 +8788,6 @@
     "origen": ""
   },
   {
-    "buque": "CARABE",
-    "agencia": "X",
-    "eta": "2026-03-22",
-    "material": "DAP",
-    "cliente": "CARGILL",
-    "tons": 2200,
-    "operador": "CASPORT",
-    "operacion": "DESCARGA",
-    "muelle": "CARGA GENERAL",
-    "sector": "",
-    "origen": ""
-  },
-  {
-    "buque": "CARABE",
-    "agencia": "X",
-    "eta": "2026-03-22",
-    "material": "DAP",
-    "cliente": "BUNGE",
-    "tons": 2000,
-    "operador": "PTP",
-    "operacion": "DESCARGA",
-    "muelle": "CARGA GENERAL",
-    "sector": "",
-    "origen": ""
-  },
-  {
-    "buque": "CARABE",
-    "agencia": "X",
-    "eta": "2026-03-22",
-    "material": "DAP",
-    "cliente": "YARA",
-    "tons": 1500,
-    "operador": "SEPOR",
-    "operacion": "DESCARGA",
-    "muelle": "CARGA GENERAL",
-    "sector": "",
-    "origen": ""
-  },
-  {
     "buque": "OCEAN INNOVATION",
     "agencia": "MARSA",
     "eta": "2026-03-22",

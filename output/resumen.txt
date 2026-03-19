@@ -1,18 +1,18 @@
 ═══════════════════════════════════════════════════════
   RESUMEN — HidrovíaData Parser
-  Generado: 2026-03-19 16:29:52
+  Generado: 2026-03-19 16:37:53
 ═══════════════════════════════════════════════════════
 
 PDFs procesados:                  60
 Registros raw (suma todos PDFs):  2714
 Tras consolidación intra-PDF:     2391
-Duplicados inter-PDF eliminados:  1641
-REGISTROS FINALES:                750
-Toneladas totales:                4,211,416
+Duplicados inter-PDF eliminados:  1644
+REGISTROS FINALES:                747
+Toneladas totales:                4,205,716
 
 ─── Por operación ───────────────────────────────────
   DESCARGAR                        605
-  DESCARGA                          61
+  DESCARGA                          58
   CARGA                             44
   TRASBORDO                         40
 
@@ -20,7 +20,7 @@ Toneladas totales:                4,211,416
   UREA                             207
   MAP                              157
   NPS                               53
-  DAP                               50
+  DAP                               47
   TSP                               45
   AMSUL                             23
   ARRABIO                           20
@@ -39,17 +39,17 @@ Toneladas totales:                4,211,416
   bolsones                           5
 
 ─── Por cliente (top 25) ────────────────────────────
-  CARGILL                           87
-  BUNGE                             76
+  CARGILL                           86
+  BUNGE                             75
   YPF                               73
   LDC                               55
   NUTRIEN                           39
   ACA                               35
   COFCO                             34
   AMAGGI                            25
-  YARA                              24
   AFA                               24
   AMEROPA                           24
+  YARA                              23
   AGREFERT                          23
   PROFERTIL                         18
   LDC PARAGUAY                      16
@@ -66,7 +66,7 @@ Toneladas totales:                4,211,416
   ABOPAR                             6
 
 ─── Por muelle ──────────────────────────────────────
-  CARGA GENERAL                    696
+  CARGA GENERAL                    693
   ELEVADOR                          37
   AES                               17
 

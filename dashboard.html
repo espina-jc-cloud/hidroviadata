@@ -623,10 +623,8 @@
 <!-- ── ERROR ───────────────────────────────────────────────────────── -->
 <div id="error-screen">
   <h2>⚠ Error al cargar datos</h2>
-  <p>No se pudo cargar <code>output/data.json</code>. Asegurate de servir el dashboard desde un servidor local:</p>
-  <pre>cd /Users/juancruzespina/Desktop/hidroviadata
-python3 -m http.server 8080
-# Luego abrí: http://localhost:8080/dashboard.html</pre>
+  <p>No se pudo conectar con el servidor Flask (<code>/api/shipments</code>).<br>
+  Local: <code>python3 app.py</code> &nbsp;·&nbsp; Railway: verificá que el deploy esté activo.</p>
   <p id="error-detail" style="color:var(--red)"></p>
 </div>
 
@@ -2642,11 +2640,10 @@ async function init() {
     BUQUES_EN_RUTA_DATA = await candidatesRes.json();
   } catch (err) {
     console.error('API fetch failed:', err);
-    document.getElementById('loading').innerHTML =
-      '<div style="color:#f87171;padding:2rem;font-family:monospace">' +
-      '<strong>Error loading data from backend.</strong><br>' +
-      'Make sure app.py is running: <code>python3 app.py</code><br><br>' +
-      err.message + '</div>';
+    document.getElementById('loading').style.display = 'none';
+    const es = document.getElementById('error-screen');
+    es.style.display = 'flex';
+    document.getElementById('error-detail').textContent = err.message;
     return;
   }
 

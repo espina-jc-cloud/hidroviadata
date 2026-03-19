@@ -82,6 +82,10 @@ def clean_vessel_name(raw: str) -> str:
     # Fix mixed-case OCR artifacts in the vessel name body (suffix position)
     name = re.sub(r"\boSk\b", "OSK", name)
     name = re.sub(r"\boNk\b", "ONK", name)
+    # SCARABE: the 'oSk' artifact consumed the leading S in single-line PDFs,
+    # leaving 'CARABE'. Restore the correct name.
+    if name == 'CARABE':
+        name = 'SCARABE'
     return name.strip()
 
 

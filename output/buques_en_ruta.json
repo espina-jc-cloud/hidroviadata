@@ -24,6 +24,25 @@
     ]
   },
   {
+    "vessel_name": "KEN UN",
+    "last_position": null,
+    "last_port": "LOWER COVE CANADA",
+    "ais_destination": "SAN NICOLAS",
+    "eta_estimated": "2026-04-02",
+    "probable_product": "MOP",
+    "probable_importer": null,
+    "probable_tonnage_range": null,
+    "probability_score": 55,
+    "probability_level": "low",
+    "prediction_status": "predicted",
+    "scoring_reasons": [
+      "+20 — Last port 'LOWER COVE CANADA' matches known fertilizer origin corridor",
+      "+15 — AIS destination 'SAN NICOLAS' matches Argentina / River Plate pattern",
+      "+10 — Vessel type 'BULK CARRIER' matches bulk fertilizer carrier",
+      "+10 — DWT 32,000 within target range (25,000–60,000 t)"
+    ]
+  },
+  {
     "vessel_name": "LUCKY STAR",
     "last_position": "25.4°S 44.1°W",
     "last_port": "ARZEW (ARGELIA)",

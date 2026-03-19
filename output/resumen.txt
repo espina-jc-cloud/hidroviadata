@@ -1,56 +1,56 @@
 ═══════════════════════════════════════════════════════
   RESUMEN — HidrovíaData Parser
-  Generado: 2026-03-19 13:07:35
+  Generado: 2026-03-19 16:29:52
 ═══════════════════════════════════════════════════════
 
 PDFs procesados:                  60
 Registros raw (suma todos PDFs):  2714
-Tras consolidación intra-PDF:     2449
-Duplicados inter-PDF eliminados:  1660
-REGISTROS FINALES:                789
-Toneladas totales:                4,311,313
+Tras consolidación intra-PDF:     2391
+Duplicados inter-PDF eliminados:  1641
+REGISTROS FINALES:                750
+Toneladas totales:                4,211,416
 
 ─── Por operación ───────────────────────────────────
-  DESCARGAR                        641
-  DESCARGA                          64
+  DESCARGAR                        605
+  DESCARGA                          61
   CARGA                             44
   TRASBORDO                         40
 
 ─── Por material (top 20) ───────────────────────────
-  —                                246
-  MAP                              123
-  UREA                              93
-  NPS                               45
-  DAP                               41
-  TSP                               39
-  AMSUL                             21
+  UREA                             207
+  MAP                              157
+  NPS                               53
+  DAP                               50
+  TSP                               45
+  AMSUL                             23
+  ARRABIO                           20
+  MOP                               19
   SSP                               19
-  ARRABIO                           17
-  MOP                               10
+  GMOP                              15
+  UAN                               11
+  STP                               11
   NPS+ZN                            10
-  STP                                9
-  GMOP                               8
+  —                                  9
   ACEITE VEGETAL                     8
   NP                                 8
-  UAN                                7
   MAP 10-50                          7
   CARBON                             7
   NP 1240                            5
   bolsones                           5
 
 ─── Por cliente (top 25) ────────────────────────────
-  CARGILL                          102
-  BUNGE                             79
-  YPF                               75
-  LDC                               65
-  NUTRIEN                           40
-  ACA                               38
-  COFCO                             36
-  AFA                               26
+  CARGILL                           87
+  BUNGE                             76
+  YPF                               73
+  LDC                               55
+  NUTRIEN                           39
+  ACA                               35
+  COFCO                             34
   AMAGGI                            25
   YARA                              24
-  AGREFERT                          24
+  AFA                               24
   AMEROPA                           24
+  AGREFERT                          23
   PROFERTIL                         18
   LDC PARAGUAY                      16
   VETORIAL                          15
@@ -66,100 +66,100 @@ Toneladas totales:                4,311,313
   ABOPAR                             6
 
 ─── Por muelle ──────────────────────────────────────
-  CARGA GENERAL                    733
-  ELEVADOR                          39
+  CARGA GENERAL                    696
+  ELEVADOR                          37
   AES                               17
 
 ─── Buques únicos (top 30) ──────────────────────────
-  CLIPPER I-STAR                         36
+  CLIPPER I-STAR                         35
   IVS TRADER                             28
   CAPITAN DIMITRIS                       26
   ULTRALAZ                               16
-  SAINT VASSILIOS                        16
-  AFRICAN DRAGON                         15
-  MIDJUR                                 15
+  SAINT VASSILIOS                        15
   DESERT HONOUR                          14
-  BONNY ISLAND                           12
+  MIDJUR                                 14
+  AFRICAN DRAGON                         12
   APEX                                   12
   ALEXANDRA KPN                          12
   AMANI                                  11
   SEACON BANGKOK                         11
   OCEAN INNOVATION                       10
   REM. TBC                               10
-  IC PROGRESS                            10
   INTERLINK FORTUITY                     10
-  MANTA NIGAR                             9
+  IC PROGRESS                             9
+  BONNY ISLAND                            9
   CECILIE F                               9
-  QANUX BENEFIT                           9
-  BLUE NEPTUNE                            9
-  AFRICAN LORIKEET                        9
-  CHAMPION TIMUR                          9
-  REIWA                                   9
-  PARABOLICA                              8
   ICARIAN SPIRE                           8
+  QANUX BENEFIT                           8
   KOUROS GLORY                            8
   ARETI                                   8
   MACURU ARROW                            7
+  MANTA NIGAR                             7
   CS CELESTE                              7
+  ARGENMAR MISTRAL                        7
+  BLUE NEPTUNE                            7
+  AFRICAN LORIKEET                        7
+  CHAMPION TIMUR                          7
+  REIWA                                   7
 
 ─── Detalle por PDF ─────────────────────────────────
   ✓ LINE UP PUERTO SAN NICOLAS 180326.pdf                   (2026-03-18)  raw:  26  intra:  25
-  ✓ ✓_12882.pdf                                             (2025-08-22)  raw:  44  intra:  42
-  ✓ ✓_12958.pdf                                             (2025-08-20)  raw:  45  intra:  42
-  ✓ ✓_12975.pdf                                             (2025-08-18)  raw:  43  intra:  40
-  ✓ ✓_12991.pdf                                             (2025-08-15)  raw:  39  intra:  37
-  ✓ ✓_13034.pdf                                             (2025-08-13)  raw:  42  intra:  40
-  ✓ ✓_13057.pdf                                             (2025-08-11)  raw:  47  intra:  46
-  ✓ ✓_13072.pdf                                             (2025-08-08)  raw:  35  intra:  34
+  ✓ ✓_12882.pdf                                             (2025-08-22)  raw:  44  intra:  40
+  ✓ ✓_12958.pdf                                             (2025-08-20)  raw:  45  intra:  40
+  ✓ ✓_12975.pdf                                             (2025-08-18)  raw:  43  intra:  38
+  ✓ ✓_12991.pdf                                             (2025-08-15)  raw:  39  intra:  35
+  ✓ ✓_13034.pdf                                             (2025-08-13)  raw:  42  intra:  38
+  ✓ ✓_13057.pdf                                             (2025-08-11)  raw:  47  intra:  44
+  ✓ ✓_13072.pdf                                             (2025-08-08)  raw:  35  intra:  33
   ✓ ✓_13104.pdf                                             (2025-08-06)  raw:  38  intra:  35
   ✓ ✓_13119.pdf                                             (2025-08-04)  raw:  33  intra:  30
   ✓ ✓_13129.pdf                                             (2025-08-01)  raw:  32  intra:  29
-  ✓ ✓_13153.pdf                                             (2025-07-30)  raw:  46  intra:  40
-  ✓ ✓_13157.pdf                                             (2025-07-28)  raw:  51  intra:  44
-  ✓ ✓_13192.pdf                                             (2025-07-25)  raw:  50  intra:  44
-  ✓ ✓_13202.pdf                                             (2025-07-23)  raw:  58  intra:  53
+  ✓ ✓_13153.pdf                                             (2025-07-30)  raw:  46  intra:  39
+  ✓ ✓_13157.pdf                                             (2025-07-28)  raw:  51  intra:  43
+  ✓ ✓_13192.pdf                                             (2025-07-25)  raw:  50  intra:  43
+  ✓ ✓_13202.pdf                                             (2025-07-23)  raw:  58  intra:  51
   ✓ ✓_15389.pdf                                             (2025-08-29)  raw:  32  intra:  31
   ✓ ✓_15412.pdf                                             (2025-09-01)  raw:  28  intra:  27
   ✓ ✓_15433.pdf                                             (2025-09-03)  raw:  30  intra:  29
   ✓ ✓_15528.pdf                                             (2025-09-05)  raw:  28  intra:  25
   ✓ ✓_15627.pdf                                             (2025-09-08)  raw:  55  intra:  52
-  ✓ ✓_15662.pdf                                             (2025-09-15)  raw:  72  intra:  60
-  ✓ ✓_15674.pdf                                             (2025-09-12)  raw:  66  intra:  54
+  ✓ ✓_15662.pdf                                             (2025-09-15)  raw:  72  intra:  58
+  ✓ ✓_15674.pdf                                             (2025-09-12)  raw:  66  intra:  53
   ✓ ✓_15716.pdf                                             (2025-09-10)  raw:  60  intra:  56
-  ✓ ✓_15793.pdf                                             (2025-09-17)  raw:  87  intra:  73
-  ✓ ✓_15813.pdf                                             (2025-09-24)  raw:  83  intra:  72
-  ✓ ✓_15858.pdf                                             (2025-09-22)  raw:  79  intra:  67
-  ✓ ✓_15915.pdf                                             (2025-09-19)  raw:  83  intra:  73
-  ✓ ✓_15919.pdf                                             (2025-09-20)  raw:  83  intra:  73
-  ✓ ✓_16143.pdf                                             (2025-10-09)  raw:  50  intra:  46
-  ✓ ✓_16223.pdf                                             (2025-10-15)  raw:  47  intra:  45
-  ✓ ✓_16333.pdf                                             (2025-10-24)  raw:  67  intra:  49
-  ✓ ✓_16398.pdf                                             (2025-10-24)  raw:  60  intra:  48
-  ✓ ✓_16421.pdf                                             (2025-10-29)  raw:  59  intra:  47
-  ✓ ✓_16440.pdf                                             (2025-10-31)  raw:  56  intra:  43
+  ✓ ✓_15793.pdf                                             (2025-09-17)  raw:  87  intra:  71
+  ✓ ✓_15813.pdf                                             (2025-09-24)  raw:  83  intra:  70
+  ✓ ✓_15858.pdf                                             (2025-09-22)  raw:  79  intra:  65
+  ✓ ✓_15915.pdf                                             (2025-09-19)  raw:  83  intra:  71
+  ✓ ✓_15919.pdf                                             (2025-09-20)  raw:  83  intra:  71
+  ✓ ✓_16143.pdf                                             (2025-10-09)  raw:  50  intra:  43
+  ✓ ✓_16223.pdf                                             (2025-10-15)  raw:  47  intra:  44
+  ✓ ✓_16333.pdf                                             (2025-10-24)  raw:  67  intra:  47
+  ✓ ✓_16398.pdf                                             (2025-10-24)  raw:  60  intra:  46
+  ✓ ✓_16421.pdf                                             (2025-10-29)  raw:  59  intra:  45
+  ✓ ✓_16440.pdf                                             (2025-10-31)  raw:  56  intra:  42
   ✓ ✓_16487.pdf                                             (2025-11-03)  raw:  39  intra:  36
   ✓ ✓_16520.pdf                                             (2025-11-05)  raw:  46  intra:  42
   ✓ ✓_16559.pdf                                             (2025-11-07)  raw:  44  intra:  40
   ✓ ✓_16751.pdf                                             (2025-11-14)  raw:  37  intra:  36
   ✓ ✓_16765.pdf                                             (2025-11-17)  raw:  42  intra:  41
-  ✓ ✓_16817.pdf                                             (2025-11-19)  raw:  43  intra:  43
-  ✓ ✓_16872.pdf                                             (2025-11-20)  raw:  35  intra:  35
-  ✓ ✓_17444.pdf                                             (2025-12-15)  raw:  15  intra:  12
+  ✓ ✓_16817.pdf                                             (2025-11-19)  raw:  43  intra:  42
+  ✓ ✓_16872.pdf                                             (2025-11-20)  raw:  35  intra:  34
+  ✓ ✓_17444.pdf                                             (2025-12-15)  raw:  15  intra:  11
   ✓ ✓_17482.pdf                                             (2025-12-17)  raw:   9  intra:   9
   ✓ ✓_17491.pdf                                             (2025-12-19)  raw:  10  intra:  10
   ✓ ✓_17738.pdf                                             (2026-01-12)  raw:   8  intra:   8
-  ✓ ✓_LINE UP PUERTO SAN NICOLAS 0603.pdf                   (2025-06-06)  raw:  55  intra:  54
+  ✓ ✓_LINE UP PUERTO SAN NICOLAS 0603.pdf                   (2025-06-06)  raw:  55  intra:  53
   ✓ ✓_LINE UP PUERTO SAN NICOLAS 108.pdf                    (2025-08-01)  raw:  32  intra:  29
-  ✓ ✓_LINE UP PUERTO SAN NICOLAS 110326.pdf                 (2026-03-11)  raw:  22  intra:  17
-  ✓ ✓_LINE UP PUERTO SAN NICOLAS 1107.pdf                   (2025-07-11)  raw:  36  intra:  34
-  ✓ ✓_LINE UP PUERTO SAN NICOLAS 1305.pdf                   (2025-05-12)  raw:  55  intra:  48
+  ✓ ✓_LINE UP PUERTO SAN NICOLAS 110326.pdf                 (2026-03-11)  raw:  22  intra:  16
+  ✓ ✓_LINE UP PUERTO SAN NICOLAS 1107.pdf                   (2025-07-11)  raw:  36  intra:  33
+  ✓ ✓_LINE UP PUERTO SAN NICOLAS 1305.pdf                   (2025-05-12)  raw:  55  intra:  47
   ✓ ✓_LINE UP PUERTO SAN NICOLAS 1306.pdf                   (2025-06-13)  raw:  55  intra:  52
-  ✓ ✓_LINE UP PUERTO SAN NICOLAS 1508.pdf                   (2025-08-15)  raw:  39  intra:  37
-  ✓ ✓_LINE UP PUERTO SAN NICOLAS 1807.pdf                   (2025-07-18)  raw:  59  intra:  57
-  ✓ ✓_LINE UP PUERTO SAN NICOLAS 1906.pdf                   (2025-06-19)  raw:  52  intra:  45
+  ✓ ✓_LINE UP PUERTO SAN NICOLAS 1508.pdf                   (2025-08-15)  raw:  39  intra:  35
+  ✓ ✓_LINE UP PUERTO SAN NICOLAS 1807.pdf                   (2025-07-18)  raw:  59  intra:  55
+  ✓ ✓_LINE UP PUERTO SAN NICOLAS 1906.pdf                   (2025-06-19)  raw:  52  intra:  44
   ✓ ✓_LINE UP PUERTO SAN NICOLAS 2305.pdf                   (2025-05-23)  raw:  60  intra:  54
-  ✓ ✓_LINE UP PUERTO SAN NICOLAS 2507.pdf                   (2025-07-25)  raw:  50  intra:  44
-  ✓ ✓_LINE UP PUERTO SAN NICOLAS 3005.pdf                   (2025-05-30)  raw:  49  intra:  49
+  ✓ ✓_LINE UP PUERTO SAN NICOLAS 2507.pdf                   (2025-07-25)  raw:  50  intra:  43
+  ✓ ✓_LINE UP PUERTO SAN NICOLAS 3005.pdf                   (2025-05-30)  raw:  49  intra:  47
   ✓ ✓_LINE UP PUERTO SAN NICOLAS 407.pdf                    (2025-07-04)  raw:  33  intra:  32
-  ✓ ✓_LINE UP PUERTO SAN NICOLAS 808.pdf                    (2025-08-08)  raw:  35  intra:  34
+  ✓ ✓_LINE UP PUERTO SAN NICOLAS 808.pdf                    (2025-08-08)  raw:  35  intra:  33
   ✓ 16279.PDF                                               (None)  raw:   0  intra:   0

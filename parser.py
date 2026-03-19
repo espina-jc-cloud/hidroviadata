@@ -41,20 +41,45 @@ def clean_vessel_name(raw: str) -> str:
     'X\nBEATRICE 180 MTS. TYS MTR' → 'BEATRICE'
     'XUNIGALAXY\n180 Mts.'        → 'UNIGALAXY'
     'REM. DOÑA CARMEN\nBarc. ...'  → 'REM. DOÑA CARMEN'
+    'oSk\nSCARABE\n180 Mts.'      → 'SCARABE'   (Bug 1: skip artifact first line)
+    'oSk SCARABE'                 → 'SCARABE'   (Bug 1: strip space-separated prefix)
+    'oSkSCARABE'                  → 'SCARABE'   (Bug 1: strip glued prefix)
     """
     if not raw:
         return ""
     # Strip leading X-separator prefix (with or without newline: 'X\nNAME' or 'XNAME')
     raw = re.sub(r"^X\s*\n?", "", raw.strip())
-    # Take only the first line (dims / barge info are always on later lines)
-    name = raw.split("\n")[0].strip()
+
+    # ── Bug 1 fix: find the first line that begins with an uppercase letter ──
+    # Some PDF cells start with a separator artifact on line 0 ('oSk', 'oNk').
+    # A real vessel name always begins with an uppercase letter.
+    name = ""
+    for line in raw.split("\n"):
+        line = line.strip()
+        if not line or re.match(r"^[Xx]+$", line):   # skip pure-X separator lines
+            continue
+        if line[0].isupper():
+            name = line
+            break
+    if not name:
+        name = raw.split("\n")[0].strip()             # fallback: first line as before
+
     # Remove trailing dimension patterns: 180 Mts. / 180 MTS / 180 MTR
     name = re.sub(r"\s+\d+\s*[Mm][Tt][Ss]?\.?\s*$", "", name)
     # Remove trailing unit-like tokens left over: TYS, MTR, MTR.
     name = re.sub(r"\s+(TYS|MTR\.?)\s*$", "", name, flags=re.IGNORECASE)
     # Strip 'CALADO X,X' / 'CALADO X.X' draft suffix (PDF artifact)
     name = re.sub(r"\s+CALADO\s+[\d,\.]+\s*$", "", name, flags=re.IGNORECASE)
-    # Fix mixed-case OCR artifacts in vessel name suffixes
+
+    # ── Bug 1 fix continued: strip artifact prefix if it survived line selection ─
+    # Case A: leading lowercase word + space  →  'oSk SCARABE' → 'SCARABE'
+    name = re.sub(r"^[a-z]\S*\s+", "", name)
+    # Case B: lowercase-start artifact glued to name  →  'oSkSCARABE' → 'SCARABE'
+    name = re.sub(r"^[a-z][A-Za-z]{0,2}(?=[A-Z]{2})", "", name)
+    # Case C: any remaining leading non-uppercase characters
+    name = re.sub(r"^[^A-Z]+", "", name)
+
+    # Fix mixed-case OCR artifacts in the vessel name body (suffix position)
     name = re.sub(r"\boSk\b", "OSK", name)
     name = re.sub(r"\boNk\b", "ONK", name)
     return name.strip()
@@ -322,15 +347,16 @@ def parse_pdf(pdf_path: Path) -> tuple[str | None, list[dict]]:
                             vessel_name = clean_vessel_name(col0)
                             if vessel_name:
                                 vessel_ctx = {
-                                    "buque":     vessel_name,
-                                    "agencia":   clean_agency(str(row[1] or "")),
-                                    "operacion": normalize_operacion(clean_cell(row[6])),
-                                    "eta":       parse_date(clean_cell(row[7])),
-                                    "sector":    clean_cell(row[8]).split("\n")[0],
-                                    "etb":       parse_date(clean_cell(row[9])),
+                                    "buque":         vessel_name,
+                                    "agencia":       clean_agency(str(row[1] or "")),
+                                    "operacion":     normalize_operacion(clean_cell(row[6])),
+                                    "eta":           parse_date(clean_cell(row[7])),
+                                    "sector":        clean_cell(row[8]).split("\n")[0],
+                                    "etb":           parse_date(clean_cell(row[9])),
                                     # Pass raw cell (with newlines) so 'BAHIA\nBLANCA' → 'BAHIA BLANCA'
-                                    "origen":    extract_origin(str(row[10] or "")),
-                                    "muelle":    current_muelle,
+                                    "origen":        extract_origin(str(row[10] or "")),
+                                    "muelle":        current_muelle,
+                                    "last_material": None,   # Bug 2: forward-fill seed
                                 }
 
                     # ── No vessel context yet, skip ────────────────────────
@@ -339,6 +365,13 @@ def parse_pdf(pdf_path: Path) -> tuple[str | None, list[dict]]:
 
                     # ── Extract material / client / tons for this line ─────
                     material  = clean_cell(row[2])
+                    # Bug 2 fix: forward-fill material within the same vessel block.
+                    # In the PDF, only the first importer row carries the material;
+                    # continuation rows leave that cell blank.
+                    if not material and vessel_ctx.get("last_material"):
+                        material = vessel_ctx["last_material"]
+                    elif material:
+                        vessel_ctx["last_material"] = material
                     raw_cli   = clean_cell(row[3])
                     raw_tons  = clean_cell(row[4])
                     operador  = clean_operador(str(row[5] or ""))

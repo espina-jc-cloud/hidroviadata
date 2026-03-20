@@ -41,52 +41,87 @@ def clean_vessel_name(raw: str) -> str:
     'X\nBEATRICE 180 MTS. TYS MTR' → 'BEATRICE'
     'XUNIGALAXY\n180 Mts.'        → 'UNIGALAXY'
     'REM. DOÑA CARMEN\nBarc. ...'  → 'REM. DOÑA CARMEN'
-    'oSk\nSCARABE\n180 Mts.'      → 'SCARABE'   (Bug 1: skip artifact first line)
-    'oSk SCARABE'                 → 'SCARABE'   (Bug 1: strip space-separated prefix)
-    'oSkSCARABE'                  → 'SCARABE'   (Bug 1: strip glued prefix)
+    'oSk\nSCARABE\n180 Mts.'      → 'SCARABE'   (line-selection skips artifact line)
+    'oSk SCARABE'                 → 'SCARABE'   (Case A: space-separated artifact ≤3 chars)
+    'oSkSCARABE'                  → 'SCARABE'   (Case B: glued, first [A-Z]{2} at pos 3)
+    'oNkNORD KAIZAN'              → 'NORD KAIZAN'  (Case B: first [A-Z]{2} at pos 3)
+    'oNkORD KAIZAN'               → 'NORD KAIZAN'  (Case B + correction dict)
     """
     if not raw:
         return ""
     # Strip leading X-separator prefix (with or without newline: 'X\nNAME' or 'XNAME')
     raw = re.sub(r"^X\s*\n?", "", raw.strip())
 
-    # ── Bug 1 fix: find the first line that begins with an uppercase letter ──
-    # Some PDF cells start with a separator artifact on line 0 ('oSk', 'oNk').
-    # A real vessel name always begins with an uppercase letter.
+    # ── Line selection: first line that looks like a real vessel name ──────────
+    # Criteria: starts with uppercase, ≥ 4 chars, not a dimension-only line.
+    # Skips artifact-only lines like 'oSk', 'oNk', '190 Mts.'.
     name = ""
     for line in raw.split("\n"):
         line = line.strip()
-        if not line or re.match(r"^[Xx]+$", line):   # skip pure-X separator lines
+        if not line or re.match(r"^[Xx]+$", line):
             continue
-        if line[0].isupper():
+        if is_dimension_only(line):
+            continue
+        if line[0].isupper() and len(line) >= 4:
             name = line
             break
     if not name:
-        name = raw.split("\n")[0].strip()             # fallback: first line as before
+        # Fallback: first non-empty, non-pure-X line (may be lowercase — cleaned below)
+        for line in raw.split("\n"):
+            line = line.strip()
+            if line and not re.match(r"^[Xx]+$", line):
+                name = line
+                break
+    if not name:
+        name = raw.split("\n")[0].strip()
 
-    # Remove trailing dimension patterns: 180 Mts. / 180 MTS / 180 MTR
+    # Remove trailing dimension / unit / draft suffixes.
+    # Unit tokens (TYS, MTR) are stripped first because they sometimes follow
+    # the dimension number: 'BEATRICE 180 MTS. TYS MTR' → remove ' TYS MTR' first,
+    # then ' 180 MTS.' — the order matters.
+    name = re.sub(r"(\s+(TYS|MTR\.?))+\s*$", "", name, flags=re.IGNORECASE)
     name = re.sub(r"\s+\d+\s*[Mm][Tt][Ss]?\.?\s*$", "", name)
-    # Remove trailing unit-like tokens left over: TYS, MTR, MTR.
-    name = re.sub(r"\s+(TYS|MTR\.?)\s*$", "", name, flags=re.IGNORECASE)
-    # Strip 'CALADO X,X' / 'CALADO X.X' draft suffix (PDF artifact)
     name = re.sub(r"\s+CALADO\s+[\d,\.]+\s*$", "", name, flags=re.IGNORECASE)
 
-    # ── Bug 1 fix continued: strip artifact prefix if it survived line selection ─
-    # Case A: leading lowercase word + space  →  'oSk SCARABE' → 'SCARABE'
-    name = re.sub(r"^[a-z]\S*\s+", "", name)
-    # Case B: lowercase-start artifact glued to name  →  'oSkSCARABE' → 'SCARABE'
-    name = re.sub(r"^[a-z][A-Za-z]{0,2}(?=[A-Z]{2})", "", name)
-    # Case C: any remaining leading non-uppercase characters
-    name = re.sub(r"^[^A-Z]+", "", name)
+    # ── Artifact prefix cleanup (only triggers when name still starts lowercase) ─
 
-    # Fix mixed-case OCR artifacts in the vessel name body (suffix position)
+    # Case A — space-separated artifact of ≤ 3 non-space chars before the name:
+    #   'oNk NORD KAIZAN' → strip 'oNk ' → 'NORD KAIZAN'
+    #   'oSk SCARABE'     → strip 'oSk ' → 'SCARABE'
+    #   The {0,2} cap (1 lead char + at most 2 more) prevents greedy over-stripping
+    #   that the old \S* caused: 'oNkNORD KAIZAN' no longer matches (no space at pos 3).
+    name = re.sub(r"^[a-z]\S{0,2}\s+", "", name)
+
+    # Case B — artifact glued directly to the real name, no separating space:
+    #   Find the first run of ≥ 2 consecutive uppercase letters — that marks the
+    #   start of the real vessel name.  Strip the lowercase-start prefix before it,
+    #   but only when that prefix is ≤ 3 characters (otherwise the name is likely fine).
+    #   'oNkNORD KAIZAN' → [A-Z]{2} at pos 3 → strip 3 → 'NORD KAIZAN'
+    #   'oNkORD KAIZAN'  → [A-Z]{2} at pos 3 → strip 3 → 'ORD KAIZAN' (→ correction dict)
+    if name and name[0].islower():
+        m = re.search(r"[A-Z]{2}", name)
+        if m and m.start() <= 3:
+            name = name[m.start():]
+
+    # Fix mixed-case OCR artifacts remaining in the name body
     name = re.sub(r"\boSk\b", "OSK", name)
     name = re.sub(r"\boNk\b", "ONK", name)
-    # SCARABE: the 'oSk' artifact consumed the leading S in single-line PDFs,
-    # leaving 'CARABE'. Restore the correct name.
-    if name == 'CARABE':
-        name = 'SCARABE'
-    return name.strip()
+
+    # ── Correction dictionary: final safety net for known bad outputs ──────────
+    _CORRECTIONS: dict[str, str] = {
+        'CARABE':     'SCARABE',      # oSk consumed leading S of SCARABE
+        'ARABE':      'SCARABE',      # extreme truncation of SCARABE
+        'ORD KAIZAN': 'NORD KAIZAN',  # oNk consumed N, leaving ORD KAIZAN
+        'KAIZAN':     'NORD KAIZAN',  # oNk consumed NORD entirely
+        'ORD ANTHEM': 'NORD ANTHEM',  # same oNk pattern on NORD ANTHEM
+    }
+    name = _CORRECTIONS.get(name.strip(), name)
+
+    # Final guard: a valid vessel name must start with an uppercase letter
+    name = name.strip()
+    if not name or not name[0].isupper():
+        return ""
+    return name
 
 
 def is_dimension_only(val: str) -> bool:

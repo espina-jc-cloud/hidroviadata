@@ -9,8 +9,11 @@ Endpoints
   GET  /api/shipments               → all shipment records (normalised at API layer)
   GET  /api/shipments/quality       → data-quality summary for shipments
   GET  /api/vessel_profiles         → all vessel profiles  (173 rows)
-  GET  /api/vessel_candidates       → all predictive vessel entries
+  GET  /api/vessel_candidates       → all predictive vessel entries (with lead_time_days)
   GET  /api/fertilizer_core_fleet   → watchlist: vessels with ≥2 fertilizer visits
+  GET  /api/lineup_confirmed        → fertilizer arrivals in the rolling [−30d, +60d] window
+  GET  /api/track_record            → prediction accuracy metrics
+  GET  /api/status                  → DB freshness snapshot
 
 Database
 ────────
@@ -27,6 +30,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from flask import Flask, Response, g, jsonify, send_from_directory
@@ -294,13 +298,16 @@ def api_vessel_candidates() -> Response:
     """
     Return all predictive vessel candidates with JSON columns deserialised.
 
-    JSON columns: probable_tonnage_range (array or null), scoring_reasons (array).
+    JSON columns  : probable_tonnage_range (array or null), scoring_reasons (array).
+    Derived field : lead_time_days — days between created_at and confirmed_eta
+                    (only present when prediction_status = 'confirmed').
     Ordered by probability_score descending (highest confidence first).
     """
     rows = get_db().execute(
         'SELECT vessel_name, last_position, last_port, ais_destination, eta_estimated, '
         '       probable_product, probable_importer, probable_tonnage_range, '
-        '       probability_score, probability_level, prediction_status, scoring_reasons '
+        '       probability_score, probability_level, prediction_status, scoring_reasons, '
+        '       confirmed_eta, confirmed_match_reason, created_at '
         'FROM vessel_candidates '
         'ORDER BY probability_score DESC'
     ).fetchall()
@@ -309,6 +316,16 @@ def api_vessel_candidates() -> Response:
         d = dict(row)
         d['probable_tonnage_range'] = json.loads(d['probable_tonnage_range'] or 'null')
         d['scoring_reasons']        = json.loads(d['scoring_reasons']        or '[]')
+        # Compute lead_time_days for confirmed predictions
+        d['lead_time_days'] = None
+        if d.get('prediction_status') == 'confirmed' \
+                and d.get('confirmed_eta') and d.get('created_at'):
+            try:
+                t_confirmed = datetime.fromisoformat(d['confirmed_eta'][:10])
+                t_created   = datetime.fromisoformat(d['created_at'][:10])
+                d['lead_time_days'] = (t_confirmed - t_created).days
+            except (ValueError, TypeError):
+                pass
         result.append(d)
     return jsonify(result)
 
@@ -332,6 +349,168 @@ def api_fertilizer_core_fleet() -> Response:
         'ORDER BY fertilizer_visits DESC, vessel_name ASC'
     ).fetchall()
     return jsonify(_rows_to_list(rows))
+
+
+# Fertilizer materials recognised by the pipeline
+_FERT_MATERIALS: tuple[str, ...] = (
+    'UREA', 'MAP', 'DAP', 'MOP', 'TSP', 'NPS', 'UAN', 'AMSUL',
+    'NP', 'NPK', 'SSP', 'STP', 'GMOP', 'FERTILIZANTE',
+    'NITRODOBLE', 'NITRATO DE AMONIO',
+)
+
+
+@app.route('/api/lineup_confirmed')
+def api_lineup_confirmed() -> Response:
+    """
+    Fertilizer arrivals from the official San Nicolás lineup for the rolling
+    window [today − 30 days, today + 60 days].
+
+    Each row is one shipment record (not collapsed per vessel) so the caller
+    can aggregate as needed.  Fields:
+        buque, eta, material, cliente, tons, origen, agencia, muelle, sector,
+        source_id, source_date
+    Ordered by eta ASC.
+    """
+    today      = datetime.now().date()
+    date_from  = (today - timedelta(days=30)).isoformat()
+    date_to    = (today + timedelta(days=60)).isoformat()
+    placeholders = ','.join('?' * len(_FERT_MATERIALS))
+
+    rows = get_db().execute(
+        f'SELECT buque, eta, material, cliente, tons, origen, '
+        f'       agencia, muelle, sector, source_id, source_date '
+        f'FROM shipments '
+        f'WHERE material IN ({placeholders}) '
+        f'  AND eta >= ? AND eta <= ? '
+        f'ORDER BY eta ASC',
+        (*_FERT_MATERIALS, date_from, date_to),
+    ).fetchall()
+
+    result = []
+    for row in rows:
+        d = dict(row)
+        if d.get('tons') is not None:
+            try:
+                d['tons'] = int(round(float(d['tons'])))
+            except (TypeError, ValueError):
+                d['tons'] = None
+        result.append(d)
+
+    return jsonify(result)
+
+
+@app.route('/api/track_record')
+def api_track_record() -> Response:
+    """
+    Prediction accuracy metrics for vessel_candidates.
+
+    Returns
+    ───────
+    total           — total candidates ever created
+    predicted       — still open (no match yet)
+    confirmed       — matched to a lineup entry
+    expired         — window passed with no match (false positive)
+    confirm_rate_all  — confirmed / (confirmed + expired) %
+    confirm_rate_high — same, restricted to probability_level = 'high'
+    confirm_rate_med  — same, restricted to probability_level = 'medium'
+    avg_lead_time_days — mean (confirmed_eta − created_at) for confirmed rows
+    recently_confirmed — last 5 confirmed candidates (vessel_name, confirmed_eta,
+                         confirmed_match_reason, lead_time_days)
+    """
+    rows = [dict(r) for r in get_db().execute(
+        'SELECT vessel_name, prediction_status, probability_level, '
+        '       confirmed_eta, confirmed_match_reason, created_at '
+        'FROM vessel_candidates'
+    ).fetchall()]
+
+    total     = len(rows)
+    n_pred    = sum(1 for r in rows if r['prediction_status'] == 'predicted')
+    n_conf    = sum(1 for r in rows if r['prediction_status'] == 'confirmed')
+    n_exp     = sum(1 for r in rows if r['prediction_status'] == 'expired')
+    resolved  = n_conf + n_exp
+
+    def _rate(candidates: list[dict]) -> float | None:
+        res = [c for c in candidates if c['prediction_status'] in ('confirmed', 'expired')]
+        if not res:
+            return None
+        conf = sum(1 for c in res if c['prediction_status'] == 'confirmed')
+        return round(conf / len(res) * 100, 1)
+
+    # Lead-time computation
+    lead_times: list[int] = []
+    recently_confirmed: list[dict] = []
+    for r in rows:
+        if r['prediction_status'] == 'confirmed' \
+                and r.get('confirmed_eta') and r.get('created_at'):
+            try:
+                t_conf    = datetime.fromisoformat(r['confirmed_eta'][:10])
+                t_created = datetime.fromisoformat(r['created_at'][:10])
+                lt        = (t_conf - t_created).days
+                lead_times.append(lt)
+                recently_confirmed.append({
+                    'vessel_name':            r['vessel_name'],
+                    'confirmed_eta':          r['confirmed_eta'],
+                    'confirmed_match_reason': r['confirmed_match_reason'],
+                    'lead_time_days':         lt,
+                })
+            except (ValueError, TypeError):
+                pass
+
+    recently_confirmed.sort(key=lambda x: x['confirmed_eta'] or '', reverse=True)
+
+    return jsonify({
+        'total':                total,
+        'predicted':            n_pred,
+        'confirmed':            n_conf,
+        'expired':              n_exp,
+        'confirm_rate_all':     _rate(rows),
+        'confirm_rate_high':    _rate([r for r in rows if r['probability_level'] == 'high']),
+        'confirm_rate_med':     _rate([r for r in rows if r['probability_level'] == 'medium']),
+        'avg_lead_time_days':   round(sum(lead_times) / len(lead_times), 1) if lead_times else None,
+        'recently_confirmed':   recently_confirmed[:5],
+    })
+
+
+@app.route('/api/status')
+def api_status() -> Response:
+    """
+    Quick DB freshness snapshot.
+
+    Returns
+    ───────
+    shipments_count      — total rows in shipments
+    shipments_tons_total — sum of all tons (int)
+    fert_tons_total      — sum of tons where material is a known fertilizer
+    latest_source_date   — most recent PDF issue date loaded
+    candidates_by_status — {predicted, confirmed, expired}
+    as_of                — ISO timestamp of this response
+    """
+    db = get_db()
+    placeholders = ','.join('?' * len(_FERT_MATERIALS))
+
+    ship_count   = db.execute('SELECT count(*) FROM shipments').fetchone()[0]
+    ship_tons    = db.execute('SELECT sum(tons) FROM shipments WHERE tons IS NOT NULL').fetchone()[0]
+    fert_tons    = db.execute(
+        f'SELECT sum(tons) FROM shipments WHERE material IN ({placeholders}) AND tons IS NOT NULL',
+        _FERT_MATERIALS,
+    ).fetchone()[0]
+    latest_src   = db.execute('SELECT max(source_date) FROM shipments').fetchone()[0]
+    n_pred       = db.execute("SELECT count(*) FROM vessel_candidates WHERE prediction_status='predicted'").fetchone()[0]
+    n_conf       = db.execute("SELECT count(*) FROM vessel_candidates WHERE prediction_status='confirmed'").fetchone()[0]
+    n_exp        = db.execute("SELECT count(*) FROM vessel_candidates WHERE prediction_status='expired'").fetchone()[0]
+
+    return jsonify({
+        'shipments_count':      ship_count,
+        'shipments_tons_total': int(round(ship_tons))  if ship_tons  else 0,
+        'fert_tons_total':      int(round(fert_tons))  if fert_tons  else 0,
+        'latest_source_date':   latest_src,
+        'candidates_by_status': {
+            'predicted': n_pred,
+            'confirmed': n_conf,
+            'expired':   n_exp,
+        },
+        'as_of': datetime.now().isoformat(timespec='seconds'),
+    })
 
 
 # ── Dev server ────────────────────────────────────────────────────────────────

@@ -2477,143 +2477,242 @@ function renderOferta() {
 // =============================================================================
 
 function renderBuquesEnRuta() {
-  const panel = document.getElementById('tab-buquesruta');
-  const data  = (typeof BUQUES_EN_RUTA_DATA !== 'undefined') ? BUQUES_EN_RUTA_DATA : [];
+  const panel      = document.getElementById('tab-buquesruta');
+  const candidates = BUQUES_EN_RUTA_DATA || [];
+  const lineup     = LINEUP_DATA         || [];
+  const track      = TRACK_RECORD_DATA   || {};
 
-  /* ── KPI counts ── */
-  const nHigh = data.filter(d => d.probability_level === 'high').length;
-  const nMed  = data.filter(d => d.probability_level === 'medium').length;
-  const nConf = data.filter(d => d.prediction_status === 'confirmed').length;
-
-  /* ── Status badge helper ── */
-  function statusBadge(status) {
-    const labels = { estimated:'Estimado', probable:'Probable', confirmed:'Confirmado' };
-    const cls    = { estimated:'bd-estimated', probable:'bd-probable', confirmed:'bd-confirmed' };
-    return `<span class="badge ${cls[status]||''}">${labels[status]||status}</span>`;
-  }
-
-  /* ── Score bar helper ── */
+  /* ── Helpers ── */
   function scoreBar(score, level) {
-    const pct = Math.min(score, 100);
+    const pct = Math.min(Math.round((score / 80) * 100), 100);
     return `<div class="score-bar-wrap">
       <span style="font-weight:600;font-size:12px;min-width:28px;color:var(--text)">${score}</span>
       <div class="score-bar"><div class="score-fill ${level}" style="width:${pct}%"></div></div>
     </div>`;
   }
 
-  /* ── Tonnage range helper ── */
   function fmtTons(range) {
     if (!range || !range[0]) return '—';
     return `${Math.round(range[0]/1000)}k–${Math.round(range[1]/1000)}k t`;
   }
 
-  /* ── Empty state ── */
-  if (!data.length) {
-    panel.innerHTML = `
-    <div style="padding:24px">
-      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px">
-        <div class="kv-card"><div class="kv-label">EN SEGUIMIENTO</div><div class="kv-val">—</div></div>
-        <div class="kv-card"><div class="kv-label">PROB. ALTA</div><div class="kv-val">—</div></div>
-        <div class="kv-card"><div class="kv-label">PROB. MEDIA</div><div class="kv-val">—</div></div>
-        <div class="kv-card"><div class="kv-label">CONFIRMADOS</div><div class="kv-val">—</div></div>
-      </div>
-      <div class="panel" style="text-align:center;padding:60px 24px">
-        <div style="font-size:52px;margin-bottom:18px;opacity:0.25">🛰</div>
-        <div style="font-size:15px;font-weight:600;color:var(--text2);margin-bottom:8px">Sin datos de inteligencia predictiva</div>
-        <div style="font-size:12px;color:var(--text3);max-width:400px;margin:0 auto;line-height:1.8">
-          Este módulo mostrará buques detectados vía AIS antes de aparecer en la programación oficial de San Nicolás.<br>
-          La integración con el proveedor AIS está pendiente.
-        </div>
-        <div style="margin-top:26px;display:inline-flex;gap:10px;align-items:center;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);border-radius:7px;padding:10px 18px">
-          <span style="color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:0.5px">PRÓXIMAMENTE</span>
-          <span style="color:var(--text3);font-size:11px">Scoring automático · Perfiles históricos · Alertas tempranas</span>
-        </div>
-      </div>
-    </div>`;
-    return;
+  function fmtTonsInt(t) {
+    if (t == null) return '—';
+    return t >= 1000 ? `${(t/1000).toFixed(1)}k t` : `${t} t`;
   }
 
-  /* ── Table rows ── */
-  const rows = data.map(d => {
-    const reasonRow = (d.scoring_reasons && d.scoring_reasons.length)
-      ? `<tr class="reason-row">
-          <td colspan="9" style="padding:4px 11px 10px 28px;color:var(--text3);font-size:10.5px;white-space:normal;line-height:1.7">
-            ${d.scoring_reasons.map(r => `<span style="margin-right:14px">${r}</span>`).join('')}
-          </td>
-        </tr>`
-      : '';
-    return `<tr>
-      <td class="bold">${d.vessel_name}</td>
-      <td>${d.last_port || '—'}</td>
-      <td>${d.ais_destination || '—'}</td>
-      <td>${d.eta_estimated || '—'}</td>
-      <td>${d.probable_product || '<span class="muted">—</span>'}</td>
-      <td>${d.probable_importer || '<span class="muted">—</span>'}</td>
-      <td class="right">${fmtTons(d.probable_tonnage_range)}</td>
-      <td>${scoreBar(d.probability_score, d.probability_level)}</td>
-      <td>${statusBadge(d.prediction_status)}</td>
-    </tr>${reasonRow}`;
-  }).join('');
+  function levelBadge(level) {
+    const map = { high:'bd-confirmed', medium:'bd-probable', low:'bd-estimated' };
+    const lbl = { high:'Alta', medium:'Media', low:'Baja' };
+    return `<span class="badge ${map[level]||''}">${lbl[level]||level}</span>`;
+  }
 
-  panel.innerHTML = `
-  <div style="padding:24px">
+  function sectionHead(title, count, color) {
+    return `<div style="display:flex;align-items:center;gap:10px;margin:24px 0 10px">
+      <span style="font-size:12px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:${color||'var(--text2)'};">${title}</span>
+      <span style="font-size:11px;color:var(--text3);background:rgba(255,255,255,0.06);border-radius:10px;padding:1px 8px">${count}</span>
+    </div>`;
+  }
 
-    <!-- KPIs -->
-    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px">
+  /* ── Top-level KPIs ── */
+  const nLineup  = lineup.length;
+  const nPred    = candidates.filter(c => c.prediction_status !== 'confirmed').length;
+  const nConf    = candidates.filter(c => c.prediction_status === 'confirmed').length;
+  const confRate = track.confirm_rate_all != null ? track.confirm_rate_all + '%' : '—';
+
+  const kpiHtml = `
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:4px">
       <div class="kv-card">
-        <div class="kv-label">EN SEGUIMIENTO</div>
-        <div class="kv-val">${data.length}</div>
+        <div class="kv-label">LINEUP (±90d)</div>
+        <div class="kv-val">${nLineup}</div>
       </div>
       <div class="kv-card">
-        <div class="kv-label">PROB. ALTA</div>
-        <div class="kv-val" style="color:var(--green)">${nHigh}</div>
-      </div>
-      <div class="kv-card">
-        <div class="kv-label">PROB. MEDIA</div>
-        <div class="kv-val" style="color:var(--orange)">${nMed}</div>
+        <div class="kv-label">PREDICHOS AIS</div>
+        <div class="kv-val" style="color:var(--orange)">${nPred}</div>
       </div>
       <div class="kv-card">
         <div class="kv-label">CONFIRMADOS</div>
-        <div class="kv-val" style="color:var(--cyan)">${nConf}</div>
+        <div class="kv-val" style="color:var(--green)">${nConf}</div>
       </div>
-    </div>
+      <div class="kv-card">
+        <div class="kv-label">TASA CONF.</div>
+        <div class="kv-val" style="color:var(--cyan)">${confRate}</div>
+      </div>
+    </div>`;
 
-    <!-- Legend banner -->
-    <div style="background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.1);border-radius:6px;padding:10px 16px;margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap;align-items:center">
-      <span style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Estado:</span>
-      <span class="badge bd-estimated">Estimado</span><span style="font-size:11px;color:var(--text3)">AIS detectado, sin confirmar</span>
-      <span class="badge bd-probable">Probable</span><span style="font-size:11px;color:var(--text3)">Señales fuertes, alta confianza</span>
-      <span class="badge bd-confirmed">Confirmado</span><span style="font-size:11px;color:var(--text3)">En programación oficial</span>
-    </div>
+  /* ════════════════════════════════════════════════════════
+     SECTION A — CONFIRMADOS POR LINEUP
+     Fertilizer arrivals from the official San Nicolás lineup
+     ════════════════════════════════════════════════════════ */
+  let secA = '';
+  if (!lineup.length) {
+    secA = `<div class="panel" style="padding:20px 24px;color:var(--text3);font-size:12px">
+      Sin llegadas de fertilizantes en la ventana −30d / +60d.
+    </div>`;
+  } else {
+    // Collapse by buque+eta → aggregate materials, clients, sum tons
+    const byVoyage = {};
+    lineup.forEach(r => {
+      const key = (r.buque || '') + '||' + (r.eta || '');
+      if (!byVoyage[key]) byVoyage[key] = { buque: r.buque, eta: r.eta, origen: r.origen,
+        materials: [], clients: new Set(), tons: 0 };
+      const v = byVoyage[key];
+      if (r.material && !v.materials.includes(r.material)) v.materials.push(r.material);
+      if (r.cliente) v.clients.add(r.cliente);
+      v.tons += (r.tons || 0);
+    });
+    const voyages = Object.values(byVoyage).sort((a, b) => (a.eta || '') < (b.eta || '') ? -1 : 1);
+    const today   = new Date().toISOString().slice(0, 10);
 
-    <!-- Table -->
-    <div class="panel" style="padding:0">
+    const aRows = voyages.map(v => {
+      const isPast    = v.eta && v.eta < today;
+      const etaStyle  = isPast ? 'color:var(--text3)' : 'color:var(--green);font-weight:600';
+      const clients   = [...v.clients].join(', ') || '—';
+      const mats      = v.materials.join(' / ')   || '—';
+      const tonsStr   = v.tons ? `${Math.round(v.tons/1000 * 10)/10}k t` : '—';
+      return `<tr>
+        <td class="bold">${v.buque || '—'}</td>
+        <td style="${etaStyle}">${v.eta || '—'}</td>
+        <td>${mats}</td>
+        <td>${clients}</td>
+        <td class="right">${tonsStr}</td>
+        <td>${v.origen || '<span class="muted">—</span>'}</td>
+      </tr>`;
+    }).join('');
+
+    secA = `<div class="panel" style="padding:0">
       <div class="tbl-wrap scroll-tbl">
         <table class="dtbl">
-          <thead>
-            <tr>
-              <th>Buque</th>
-              <th>Último puerto</th>
-              <th>Destino AIS</th>
-              <th>ETA estimado</th>
-              <th>Producto probable</th>
-              <th>Importador probable</th>
-              <th class="right">Toneladas prob.</th>
-              <th>Score</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
+          <thead><tr>
+            <th>Buque</th><th>ETA</th><th>Material(es)</th>
+            <th>Importador(es)</th><th class="right">Toneladas</th><th>Origen</th>
+          </tr></thead>
+          <tbody>${aRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  /* ════════════════════════════════════════════════════════
+     SECTION B — PREDICHOS POR AIS
+     Candidates not yet confirmed by lineup
+     ════════════════════════════════════════════════════════ */
+  const predicted = candidates.filter(c => c.prediction_status !== 'confirmed');
+  let secB = '';
+  if (!predicted.length) {
+    secB = `<div class="panel" style="padding:20px 24px;color:var(--text3);font-size:12px">
+      No hay buques predichos en seguimiento. Usá <code>detect_candidates.py</code> para agregar observaciones AIS.
+    </div>`;
+  } else {
+    const bRows = predicted.map(d => {
+      const reasonRow = (d.scoring_reasons && d.scoring_reasons.length)
+        ? `<tr class="reason-row">
+            <td colspan="8" style="padding:4px 11px 10px 28px;color:var(--text3);font-size:10.5px;white-space:normal;line-height:1.7">
+              ${d.scoring_reasons.map(r => `<span style="margin-right:14px">${r}</span>`).join('')}
+            </td>
+          </tr>` : '';
+      return `<tr>
+        <td class="bold">${d.vessel_name}</td>
+        <td>${d.last_port || '—'}</td>
+        <td>${d.ais_destination || '—'}</td>
+        <td>${d.eta_estimated || '—'}</td>
+        <td>${d.probable_product || '<span class="muted">—</span>'}</td>
+        <td>${d.probable_importer || '<span class="muted">—</span>'}</td>
+        <td class="right">${fmtTons(d.probable_tonnage_range)}</td>
+        <td>${scoreBar(d.probability_score, d.probability_level)}</td>
+      </tr>${reasonRow}`;
+    }).join('');
+
+    secB = `<div class="panel" style="padding:0">
+      <div class="tbl-wrap scroll-tbl">
+        <table class="dtbl">
+          <thead><tr>
+            <th>Buque</th><th>Último puerto</th><th>Destino AIS</th>
+            <th>ETA estimado</th><th>Producto</th><th>Importador</th>
+            <th class="right">Toneladas prob.</th><th>Score</th>
+          </tr></thead>
+          <tbody>${bRows}</tbody>
         </table>
       </div>
     </div>
+    <div style="margin-top:6px;font-size:10px;color:var(--text3);text-align:right">
+      Score máx. 80 pts · generado por <strong style="color:var(--text2)">detect_candidates.py</strong>
+    </div>`;
+  }
 
-    <!-- Source note -->
-    <div style="margin-top:10px;font-size:10px;color:var(--text3);text-align:right">
-      Datos predictivos generados por <strong style="color:var(--text2)">vessel_scorer.py</strong>
-      &nbsp;·&nbsp; Score 0–100: ≥65 = Alta · 35–64 = Media · &lt;35 = Baja
-    </div>
+  /* ════════════════════════════════════════════════════════
+     SECTION C — TRACK RECORD (MATCHED)
+     Confirmed predictions with proof + lead time
+     ════════════════════════════════════════════════════════ */
+  const confirmed = candidates.filter(c => c.prediction_status === 'confirmed');
+  let secC = '';
 
+  // Summary stats row
+  const confRateHigh = track.confirm_rate_high != null ? track.confirm_rate_high + '%' : '—';
+  const confRateMed  = track.confirm_rate_med  != null ? track.confirm_rate_med  + '%' : '—';
+  const avgLead      = track.avg_lead_time_days != null
+    ? track.avg_lead_time_days + ' días' : '—';
+
+  const statsHtml = `
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+      <div class="kv-card" style="min-width:0;flex:1">
+        <div class="kv-label">TASA CONF. (ALTA)</div>
+        <div class="kv-val" style="color:var(--green)">${confRateHigh}</div>
+      </div>
+      <div class="kv-card" style="min-width:0;flex:1">
+        <div class="kv-label">TASA CONF. (MEDIA)</div>
+        <div class="kv-val" style="color:var(--orange)">${confRateMed}</div>
+      </div>
+      <div class="kv-card" style="min-width:0;flex:1">
+        <div class="kv-label">LEAD TIME PROM.</div>
+        <div class="kv-val" style="color:var(--cyan)">${avgLead}</div>
+      </div>
+      <div class="kv-card" style="min-width:0;flex:1">
+        <div class="kv-label">TOTAL RESUELTOS</div>
+        <div class="kv-val">${(track.confirmed||0) + (track.expired||0)}</div>
+      </div>
+    </div>`;
+
+  if (!confirmed.length) {
+    secC = statsHtml + `<div class="panel" style="padding:20px 24px;color:var(--text3);font-size:12px">
+      Ningún candidato confirmado todavía. Corré <code>verify_candidates.py</code> periódicamente para actualizar los estados.
+    </div>`;
+  } else {
+    const cRows = confirmed.map(d => {
+      const lt = d.lead_time_days != null ? d.lead_time_days + 'd antes' : '—';
+      return `<tr>
+        <td class="bold">${d.vessel_name}</td>
+        <td>${d.eta_estimated || '—'}</td>
+        <td style="color:var(--green);font-weight:600">${d.confirmed_eta || '—'}</td>
+        <td style="color:var(--cyan)">${lt}</td>
+        <td>${d.probable_product || '—'}</td>
+        <td style="font-size:10.5px;color:var(--text3);white-space:normal">${d.confirmed_match_reason || '—'}</td>
+        <td>${scoreBar(d.probability_score, d.probability_level)}</td>
+      </tr>`;
+    }).join('');
+
+    secC = statsHtml + `<div class="panel" style="padding:0">
+      <div class="tbl-wrap scroll-tbl">
+        <table class="dtbl">
+          <thead><tr>
+            <th>Buque</th><th>ETA predicho</th><th>ETA confirmado</th>
+            <th>Lead time</th><th>Producto</th><th>Evidencia</th><th>Score</th>
+          </tr></thead>
+          <tbody>${cRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  /* ── Assemble panel ── */
+  panel.innerHTML = `<div style="padding:24px">
+    ${kpiHtml}
+    ${sectionHead('A — Confirmados por Lineup', lineup.length + ' registros · ventana −30d/+60d', 'var(--green)')}
+    ${secA}
+    ${sectionHead('B — Predichos por AIS', predicted.length + ' en seguimiento', 'var(--orange)')}
+    ${secB}
+    ${sectionHead('C — Track Record (Matcheados)', confirmed.length + ' predicciones verificadas', 'var(--cyan)')}
+    ${secC}
   </div>`;
 }
 
@@ -2625,19 +2724,27 @@ function renderBuquesEnRuta() {
 // Shipments and vessel candidates are fetched from the Flask API in init().
 // Endpoints: GET /api/shipments  |  GET /api/vessel_candidates
 // Run: python3 app.py  (requires hidroviadata.db — see migrate.py)
-let BUQUES_EN_RUTA_DATA = [{"vessel_name":"CLIPPER I-STAR","last_position":"31.0°S 49.2°W","last_port":"CHINA","ais_destination":"RECALADA","eta_estimated":"2026-03-31","probable_product":"MAP","probable_importer":"YPF","probable_tonnage_range":[550,12000],"probability_score":100,"probability_level":"high","prediction_status":"probable","scoring_reasons":["+25 — Known vessel: 36 previous visits to Argentina (first: 2025-09-12, last: 2025-10-14)","+10 — Vessel specifically calls San Nicolás / Paraná corridor (recorded berths: CARGA GENERAL)","+20 — 31 fertilizer visits on record (dominant product: MAP)","+20 — Origin 'CHINA' matches known fertilizer origin corridor (China/Qatar/Morocco/Finland/…)","+15 — AIS destination 'RECALADA' matches Argentina / River Plate / upriver pattern","+10 — Vessel profile matches bulk fertilizer carrier: type 'BULK CARRIER', DWT 18,500 (within 8,000–85,000 t range)"]},{"vessel_name":"KEN UN","last_position":null,"last_port":"LOWER COVE CANADA","ais_destination":"SAN NICOLAS","eta_estimated":"2026-04-02","probable_product":"MOP","probable_importer":null,"probable_tonnage_range":null,"probability_score":55,"probability_level":"low","prediction_status":"predicted","scoring_reasons":["+20 — Last port 'LOWER COVE CANADA' matches known fertilizer origin corridor","+15 — AIS destination 'SAN NICOLAS' matches Argentina / River Plate pattern","+10 — Vessel type 'BULK CARRIER' matches bulk fertilizer carrier","+10 — DWT 32,000 within target range (25,000–60,000 t)"]},{"vessel_name":"LUCKY STAR","last_position":"25.4°S 44.1°W","last_port":"ARZEW (ARGELIA)","ais_destination":"RECALADA","eta_estimated":"2026-03-31","probable_product":"UREA","probable_importer":null,"probable_tonnage_range":[3000,12000],"probability_score":45,"probability_level":"low","prediction_status":"estimated","scoring_reasons":["+20 — Origin 'ARZEW (ARGELIA)' matches known fertilizer origin corridor (China/Qatar/Morocco/Finland/…)","+15 — AIS destination 'RECALADA' matches Argentina / River Plate / upriver pattern","+10 — Vessel profile matches bulk fertilizer carrier: type 'BULK CARRIER', DWT 28,500 (within 8,000–85,000 t range)"]},{"vessel_name":"NOVA GRAIN","last_position":"18.2°S 36.7°W","last_port":"MESAIEED (QATAR)","ais_destination":"SAN NICOLAS","eta_estimated":"2026-03-31","probable_product":"UREA","probable_importer":null,"probable_tonnage_range":[3000,12000],"probability_score":45,"probability_level":"low","prediction_status":"estimated","scoring_reasons":["+20 — Origin 'MESAIEED (QATAR)' matches known fertilizer origin corridor (China/Qatar/Morocco/Finland/…)","+15 — AIS destination 'SAN NICOLAS' matches Argentina / River Plate / upriver pattern","+10 — Vessel profile matches bulk fertilizer carrier: type 'BULK CARRIER', DWT 35,000 (within 8,000–85,000 t range)"]},{"vessel_name":"ATLAS PIONEER","last_position":"10.5°S 28.3°W","last_port":"KOTKA (FINLANDIA)","ais_destination":"ROSARIO","eta_estimated":"2026-03-31","probable_product":"NPS","probable_importer":null,"probable_tonnage_range":[3000,12000],"probability_score":45,"probability_level":"low","prediction_status":"estimated","scoring_reasons":["+20 — Origin 'KOTKA (FINLANDIA)' matches known fertilizer origin corridor (China/Qatar/Morocco/Finland/…)","+15 — AIS destination 'ROSARIO' matches Argentina / River Plate / upriver pattern","+10 — Vessel profile matches bulk fertilizer carrier: type 'BULK CARRIER', DWT 22,000 (within 8,000–85,000 t range)"]},{"vessel_name":"UNKNOWN","last_position":"5.1°N 15.3°W","last_port":"MARRUECOS","ais_destination":"UPRIVER","eta_estimated":"2026-03-31","probable_product":"MAP","probable_importer":null,"probable_tonnage_range":[3000,12000],"probability_score":45,"probability_level":"low","prediction_status":"estimated","scoring_reasons":["+20 — Origin 'MARRUECOS' matches known fertilizer origin corridor (China/Qatar/Morocco/Finland/…)","+15 — AIS destination 'UPRIVER' matches Argentina / River Plate / upriver pattern","+10 — Vessel profile matches bulk fertilizer carrier: type 'HANDYMAX', DWT 45,000 (within 8,000–85,000 t range)"]}];  // pre-embedded; overwritten by API in init()
+let BUQUES_EN_RUTA_DATA  = [];  // vessel_candidates — overwritten by /api/vessel_candidates
+let LINEUP_DATA          = [];  // fertilizer arrivals — overwritten by /api/lineup_confirmed
+let TRACK_RECORD_DATA    = {};  // accuracy metrics   — overwritten by /api/track_record
 
 async function init() {
   // ── Fetch data from Flask API ─────────────────────────────────────────────
   try {
-    const [shipmentsRes, candidatesRes] = await Promise.all([
+    const [shipmentsRes, candidatesRes, lineupRes, trackRes] = await Promise.all([
       fetch('/api/shipments'),
       fetch('/api/vessel_candidates'),
+      fetch('/api/lineup_confirmed'),
+      fetch('/api/track_record'),
     ]);
-    if (!shipmentsRes.ok)  throw new Error('/api/shipments returned ' + shipmentsRes.status);
-    if (!candidatesRes.ok) throw new Error('/api/vessel_candidates returned ' + candidatesRes.status);
+    if (!shipmentsRes.ok)  throw new Error('/api/shipments returned '          + shipmentsRes.status);
+    if (!candidatesRes.ok) throw new Error('/api/vessel_candidates returned '  + candidatesRes.status);
+    if (!lineupRes.ok)     throw new Error('/api/lineup_confirmed returned '   + lineupRes.status);
+    if (!trackRes.ok)      throw new Error('/api/track_record returned '       + trackRes.status);
     ALL_DATA            = await shipmentsRes.json();
     BUQUES_EN_RUTA_DATA = await candidatesRes.json();
+    LINEUP_DATA         = await lineupRes.json();
+    TRACK_RECORD_DATA   = await trackRes.json();
   } catch (err) {
     console.error('API fetch failed:', err);
     document.getElementById('loading').style.display = 'none';

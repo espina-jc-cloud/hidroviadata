@@ -2586,6 +2586,19 @@ function renderBuquesEnRuta() {
     </div>`;
   }
 
+  /* ── Data-source banner (debug visibility) ── */
+  const sourceBanner = `
+    <div style="font-size:10px;color:var(--text3);background:rgba(255,255,255,0.03);
+                border:1px solid rgba(255,255,255,0.07);border-radius:4px;
+                padding:5px 10px;margin-bottom:14px;display:flex;gap:16px;flex-wrap:wrap">
+      <span>📋 <strong style="color:var(--text2)">Fuente lineup:</strong>
+        ${meta.latest_source_id || '—'}</span>
+      <span>📅 <strong style="color:var(--text2)">Fecha:</strong>
+        ${meta.latest_source_date || '—'}</span>
+      <span>🚢 <strong style="color:var(--text2)">Candidatos AIS:</strong>
+        ${candidates.length}</span>
+    </div>`;
+
   /* ── Top-level KPIs ── */
   // section B: predicted / probable / estimated (everything except confirmed)
   const OPEN_STATUSES = new Set(['predicted', 'probable', 'estimated']);
@@ -2825,6 +2838,7 @@ function renderBuquesEnRuta() {
 
   /* ── Assemble panel ── */
   panel.innerHTML = `<div style="padding:24px">
+    ${sourceBanner}
     ${kpiHtml}
     ${sectionHead('A — Confirmados por Lineup', meta.row_count + ' filas · ' + (meta.latest_source_date || '—'), 'var(--green)')}
     ${secA}
@@ -2871,6 +2885,12 @@ async function init() {
                             total_tons:         lineupPayload.total_tons };
     LINEUP_DATA         = lineupPayload.rows || [];
     TRACK_RECORD_DATA   = await trackRes.json();
+
+    // ── Debug logging — visible in browser console ──────────────────────────
+    console.log('%c HidrovíaData — data loaded ', 'background:#1e3a8a;color:#00d4ff;font-weight:bold;padding:2px 6px');
+    console.log(`shipments:          ${ALL_DATA.length} rows`);
+    console.log(`lineup_confirmed:   ${LINEUP_META.row_count} rows · source_id=${LINEUP_META.latest_source_id} · date=${LINEUP_META.latest_source_date}`);
+    console.log(`vessel_candidates:  ${BUQUES_EN_RUTA_DATA.length} rows`);
   } catch (err) {
     console.error('API fetch failed:', err);
     document.getElementById('loading').style.display = 'none';

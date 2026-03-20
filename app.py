@@ -209,11 +209,42 @@ def health() -> Response:
     return jsonify('ok')
 
 
+# ── Debug endpoint ────────────────────────────────────────────────────────────
+
+@app.route('/api/debug')
+def api_debug() -> Response:
+    """Snapshot of what the running server actually sees in its DB."""
+    db           = get_db()
+    placeholders = ','.join('?' * len(_FERT_MATERIALS))
+
+    ship_count  = db.execute('SELECT count(*) FROM shipments').fetchone()[0]
+    ship_tons   = db.execute('SELECT sum(tons) FROM shipments WHERE tons IS NOT NULL').fetchone()[0]
+    fert_count  = db.execute(f'SELECT count(*) FROM shipments WHERE material IN ({placeholders})', _FERT_MATERIALS).fetchone()[0]
+    fert_tons   = db.execute(f'SELECT sum(tons)  FROM shipments WHERE material IN ({placeholders}) AND tons IS NOT NULL', _FERT_MATERIALS).fetchone()[0]
+    latest_row  = db.execute('SELECT source_date, source_id FROM shipments ORDER BY source_date DESC LIMIT 1').fetchone()
+    cand_count  = db.execute('SELECT count(*) FROM vessel_candidates').fetchone()[0]
+
+    return jsonify({
+        'db_path':           str(DATABASE),
+        'shipments_count':   ship_count,
+        'shipments_tons':    int(round(ship_tons))  if ship_tons  else 0,
+        'fert_count':        fert_count,
+        'fert_tons':         int(round(fert_tons))  if fert_tons  else 0,
+        'latest_source_date': latest_row['source_date'] if latest_row else None,
+        'latest_source_id':  latest_row['source_id']   if latest_row else None,
+        'vessel_candidates': cand_count,
+        'as_of':             datetime.now().isoformat(timespec='seconds'),
+    })
+
+
 # ── Static file ───────────────────────────────────────────────────────────────
 
 @app.route('/')
 def index() -> Response:
-    return send_from_directory(str(BASE_DIR), 'dashboard.html')
+    # no-store so Railway/browsers never serve a stale dashboard.html
+    resp = send_from_directory(str(BASE_DIR), 'dashboard.html')
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+    return resp
 
 
 # ── API endpoints ─────────────────────────────────────────────────────────────
@@ -232,6 +263,7 @@ def api_shipments() -> Response:
         material — empty → 'UNKNOWN'
         origen   — typos / abbreviations corrected; ambiguous strings flagged
     """
+    print(f"[{datetime.now().isoformat(timespec='seconds')}] GET /api/shipments", flush=True)
     rows = get_db().execute(
         'SELECT buque, agencia, eta, material, cliente, tons, '
         '       operador, operacion, muelle, sector, origen '
@@ -320,6 +352,7 @@ def api_vessel_candidates() -> Response:
                     (only present when prediction_status = 'confirmed').
     Ordered by probability_score descending (highest confidence first).
     """
+    print(f"[{datetime.now().isoformat(timespec='seconds')}] GET /api/vessel_candidates", flush=True)
     rows = get_db().execute(
         'SELECT vessel_name, last_position, last_port, ais_destination, eta_estimated, '
         '       probable_product, probable_importer, probable_tonnage_range, '
@@ -397,6 +430,7 @@ def api_lineup_confirmed() -> Response:
     }
     Ordered by eta ASC, then buque ASC.
     """
+    print(f"[{datetime.now().isoformat(timespec='seconds')}] GET /api/lineup_confirmed", flush=True)
     db           = get_db()
     placeholders = ','.join('?' * len(_FERT_MATERIALS))
 

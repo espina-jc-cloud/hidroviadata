@@ -1,0 +1,11 @@
+# Explicit Nixpacks config — forces Railway to treat this as a Python/gunicorn app
+# and prevents any static-site or wrong-provider detection.
+
+[phases.setup]
+nixPkgs = ["python311", "git"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
+
+[start]
+cmd = "gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120"

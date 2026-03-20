@@ -37,6 +37,8 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
+import subprocess
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -49,6 +51,58 @@ BASE_DIR = Path(__file__).parent
 DATABASE = BASE_DIR / 'hidroviadata.db'
 
 app = Flask(__name__, static_folder=None)
+
+
+# ── Git SHA helper ─────────────────────────────────────────────────────────────
+
+def _git_sha() -> str:
+    """Return 7-char commit SHA.  Falls back to RAILWAY_GIT_COMMIT_SHA env var."""
+    try:
+        return subprocess.check_output(
+            ['git', 'rev-parse', '--short', 'HEAD'],
+            stderr=subprocess.DEVNULL, cwd=str(BASE_DIR),
+        ).decode().strip()
+    except Exception:
+        return os.environ.get('RAILWAY_GIT_COMMIT_SHA', 'unknown')[:7]
+
+
+# ── DB bootstrap (runs at module import — safe for gunicorn workers) ──────────
+
+def _bootstrap_db() -> None:
+    """
+    If the DB is absent or has no shipments rows, rebuild it by running
+    migrate.py.  This is the primary safety net for Railway ephemeral
+    filesystems.  It is a no-op when hidroviadata.db is already populated.
+    """
+    needs_build = False
+
+    if not DATABASE.exists():
+        print(f"[bootstrap] {DATABASE.name} not found — rebuilding from data.json …", flush=True)
+        needs_build = True
+    else:
+        try:
+            con = sqlite3.connect(DATABASE)
+            n   = con.execute('SELECT count(*) FROM shipments').fetchone()[0]
+            con.close()
+            if n == 0:
+                print('[bootstrap] DB exists but shipments table is empty — rebuilding …', flush=True)
+                needs_build = True
+        except Exception as exc:
+            print(f'[bootstrap] DB unreadable ({exc}) — rebuilding …', flush=True)
+            needs_build = True
+
+    if needs_build:
+        res = subprocess.run(
+            [sys.executable, str(BASE_DIR / 'migrate.py')],
+            capture_output=True, text=True,
+        )
+        if res.returncode == 0:
+            print('[bootstrap] migrate.py finished OK', flush=True)
+        else:
+            print(f'[bootstrap] migrate.py FAILED:\n{res.stderr}', flush=True)
+
+
+_bootstrap_db()
 
 
 # ── Database helpers ──────────────────────────────────────────────────────────
@@ -225,6 +279,7 @@ def api_debug() -> Response:
     cand_count  = db.execute('SELECT count(*) FROM vessel_candidates').fetchone()[0]
 
     return jsonify({
+        'git_sha':           _git_sha(),
         'db_path':           str(DATABASE),
         'shipments_count':   ship_count,
         'shipments_tons':    int(round(ship_tons))  if ship_tons  else 0,
@@ -407,6 +462,28 @@ _FERT_MATERIALS: tuple[str, ...] = (
     'NP', 'NPK', 'SSP', 'STP', 'GMOP', 'FERTILIZANTE',
     'NITRODOBLE', 'NITRATO DE AMONIO',
 )
+
+
+# ── Startup log (printed once per gunicorn worker, captured by Railway logs) ──
+
+def _startup_log() -> None:
+    sha = _git_sha()
+    try:
+        con  = sqlite3.connect(DATABASE)
+        ph   = ','.join('?' * len(_FERT_MATERIALS))
+        n    = con.execute('SELECT count(*) FROM shipments').fetchone()[0]
+        ft   = con.execute(f'SELECT sum(tons) FROM shipments WHERE material IN ({ph}) AND tons IS NOT NULL', _FERT_MATERIALS).fetchone()[0]
+        lat  = con.execute('SELECT source_date, source_id FROM shipments ORDER BY source_date DESC LIMIT 1').fetchone()
+        cand = con.execute('SELECT count(*) FROM vessel_candidates').fetchone()[0]
+        con.close()
+        print(f'[startup] sha={sha}  db={DATABASE.name}', flush=True)
+        print(f'[startup] shipments={n}  fert_tons={int(ft or 0)}  candidates={cand}', flush=True)
+        print(f'[startup] latest_source_date={lat[0] if lat else "N/A"}  latest_source_id={lat[1] if lat else "N/A"}', flush=True)
+    except Exception as exc:
+        print(f'[startup] sha={sha}  DB read failed: {exc}', flush=True)
+
+
+_startup_log()
 
 
 @app.route('/api/lineup_confirmed')

@@ -43,7 +43,10 @@
       "Bash(python3 verify_candidates.py)",
       "Bash(python3 detect_candidates.py output/templates/observations.json)",
       "Bash(head -30 echo --- sqlite3 hidroviadata.db \"SELECT id, vessel_name, probability_score, probability_level, prediction_status, eta_estimated, source\\(id\\) FROM vessel_candidates ORDER BY id DESC LIMIT 5;\")",
-      "Bash(sqlite3 hidroviadata.db \"SELECT id, vessel_name, probability_score, probability_level, prediction_status, eta_estimated FROM vessel_candidates ORDER BY id DESC LIMIT 5;\")"
+      "Bash(sqlite3 hidroviadata.db \"SELECT id, vessel_name, probability_score, probability_level, prediction_status, eta_estimated FROM vessel_candidates ORDER BY id DESC LIMIT 5;\")",
+      "Bash(git -C /Users/juancruzespina/Desktop/hidroviadata log --oneline -5)",
+      "Bash(git -C /Users/juancruzespina/Desktop/hidroviadata ls-files)",
+      "Bash(complete\"\\) — two commits before /health was added \\(e3bc5f4\\). All:*)"
     ]
   }
 }

@@ -15,8 +15,8 @@ Endpoints
   GET  /api/track_record            → prediction accuracy metrics
   GET  /api/status                  → DB freshness snapshot
 
-Admin endpoints (dev-only — require X-Admin-Token header)
-─────────────────────────────────────────────────────────
+Admin endpoints
+───────────────
   POST /api/admin/reset_candidates  → DELETE all rows from vessel_candidates
   POST /api/admin/add_candidate     → score + insert one AIS observation
 
@@ -29,7 +29,7 @@ Usage
     python3 migrate.py              # first time only
     python3 build_core_fleet.py    # rebuild watchlist (after profile updates)
     python3 app.py                  # start dev server on http://localhost:5000
-    ADMIN_TOKEN=secret python3 app.py   # enable admin endpoints
+    python3 app.py                  # start dev server (admin endpoints open)
 """
 
 from __future__ import annotations
@@ -691,34 +691,15 @@ def api_status() -> Response:
     })
 
 
-# ── Admin helpers ─────────────────────────────────────────────────────────────
-
-def _check_admin_token() -> Response | None:
-    """
-    Validate the X-Admin-Token request header against the ADMIN_TOKEN env var.
-    Returns a 401/403 Response on failure, or None on success.
-    """
-    expected = os.environ.get('ADMIN_TOKEN', '').strip()
-    if not expected:
-        return jsonify({'error': 'Admin endpoints disabled. Set ADMIN_TOKEN env var.'}), 403
-    provided = request.headers.get('X-Admin-Token', '').strip()
-    if provided != expected:
-        return jsonify({'error': 'Invalid or missing X-Admin-Token header.'}), 401
-    return None
-
+# ── Admin endpoints ────────────────────────────────────────────────────────────
 
 @app.route('/api/admin/reset_candidates', methods=['POST'])
 def api_admin_reset_candidates() -> Response:
     """
     DELETE all rows from vessel_candidates.
-    Requires X-Admin-Token header matching ADMIN_TOKEN env var.
 
     Returns: {deleted_count: N}
     """
-    err = _check_admin_token()
-    if err is not None:
-        return err
-
     db  = get_db()
     cur = db.execute('DELETE FROM vessel_candidates')
     db.commit()
@@ -729,7 +710,6 @@ def api_admin_reset_candidates() -> Response:
 def api_admin_add_candidate() -> Response:
     """
     Score + insert one AIS observation into vessel_candidates.
-    Requires X-Admin-Token header matching ADMIN_TOKEN env var.
 
     Body (JSON):
         vessel_name      string  required
@@ -742,10 +722,6 @@ def api_admin_add_candidate() -> Response:
 
     Returns the fully inserted row (same shape as /api/vessel_candidates).
     """
-    err = _check_admin_token()
-    if err is not None:
-        return err
-
     obs = request.get_json(force=True, silent=True)
     if not obs or not obs.get('vessel_name'):
         return jsonify({'error': 'vessel_name is required in JSON body.'}), 400

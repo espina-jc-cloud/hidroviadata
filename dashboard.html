@@ -2476,10 +2476,82 @@ function renderOferta() {
 // TAB 9 — BUQUES EN RUTA (Predictive Intelligence)
 // =============================================================================
 
+// ── Admin helpers (dev-only) ──────────────────────────────────────────────────
+
+let _adminToken = null;   // set once per session via prompt
+
+function _getAdminToken() {
+  if (!_adminToken) {
+    _adminToken = prompt('ADMIN_TOKEN (dejar vacío para cancelar):') || null;
+  }
+  return _adminToken;
+}
+
+async function adminResetCandidates() {
+  const tok = _getAdminToken();
+  if (!tok) return;
+  if (!confirm('¿Borrar TODOS los candidatos de la DB?')) return;
+  try {
+    const res = await fetch('/api/admin/reset_candidates', {
+      method: 'POST',
+      headers: { 'X-Admin-Token': tok },
+    });
+    const d = await res.json();
+    if (!res.ok) { alert('Error: ' + (d.error || res.status)); _adminToken = null; return; }
+    alert(`Borrados ${d.deleted_count} candidato(s).`);
+    await _refreshBuquesEnRuta();
+  } catch (e) { alert('Network error: ' + e.message); }
+}
+
+async function adminAddKenUn() {
+  const tok = _getAdminToken();
+  if (!tok) return;
+  const payload = {
+    vessel_name:     'KEN UN',
+    last_port:       'LOWER COVE CANADA',
+    ais_destination: 'SAN NICOLAS',
+    vessel_type:     'BULK CARRIER',
+    dwt:             55000,
+  };
+  try {
+    const res = await fetch('/api/admin/add_candidate', {
+      method:  'POST',
+      headers: { 'X-Admin-Token': tok, 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    const d = await res.json();
+    if (!res.ok) { alert('Error: ' + (d.error || res.status)); _adminToken = null; return; }
+    alert(`Agregado: ${d.vessel_name}  score=${d.probability_score}  status=${d.prediction_status}`);
+    await _refreshBuquesEnRuta();
+  } catch (e) { alert('Network error: ' + e.message); }
+}
+
+async function _refreshBuquesEnRuta() {
+  try {
+    const [candRes, lineupRes, trackRes] = await Promise.all([
+      fetch('/api/vessel_candidates'),
+      fetch('/api/lineup_confirmed'),
+      fetch('/api/track_record'),
+    ]);
+    BUQUES_EN_RUTA_DATA = await candRes.json();
+    const lp = await lineupRes.json();
+    LINEUP_META = { latest_source_date: lp.latest_source_date,
+                    latest_source_id:   lp.latest_source_id,
+                    row_count:          lp.row_count,
+                    total_tons:         lp.total_tons };
+    LINEUP_DATA = lp.rows || [];
+    TRACK_RECORD_DATA = await trackRes.json();
+  } catch (e) { console.error('Refresh error:', e); }
+  renderBuquesEnRuta();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function renderBuquesEnRuta() {
   const panel      = document.getElementById('tab-buquesruta');
   const candidates = BUQUES_EN_RUTA_DATA || [];
   const lineup     = LINEUP_DATA         || [];
+  const meta       = LINEUP_META         || {};
   const track      = TRACK_RECORD_DATA   || {};
 
   /* ── Helpers ── */
@@ -2496,43 +2568,33 @@ function renderBuquesEnRuta() {
     return `${Math.round(range[0]/1000)}k–${Math.round(range[1]/1000)}k t`;
   }
 
-  function fmtTonsInt(t) {
-    if (t == null) return '—';
-    return t >= 1000 ? `${(t/1000).toFixed(1)}k t` : `${t} t`;
-  }
-
-  function levelBadge(level) {
-    const map = { high:'bd-confirmed', medium:'bd-probable', low:'bd-estimated' };
-    const lbl = { high:'Alta', medium:'Media', low:'Baja' };
-    return `<span class="badge ${map[level]||''}">${lbl[level]||level}</span>`;
-  }
-
-  function sectionHead(title, count, color) {
+  function sectionHead(title, subtitle, color) {
     return `<div style="display:flex;align-items:center;gap:10px;margin:24px 0 10px">
       <span style="font-size:12px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:${color||'var(--text2)'};">${title}</span>
-      <span style="font-size:11px;color:var(--text3);background:rgba(255,255,255,0.06);border-radius:10px;padding:1px 8px">${count}</span>
+      <span style="font-size:11px;color:var(--text3);background:rgba(255,255,255,0.06);border-radius:10px;padding:1px 8px">${subtitle}</span>
     </div>`;
   }
 
   /* ── Top-level KPIs ── */
-  const nLineup  = lineup.length;
-  const nPred    = candidates.filter(c => c.prediction_status !== 'confirmed').length;
-  const nConf    = candidates.filter(c => c.prediction_status === 'confirmed').length;
-  const confRate = track.confirm_rate_all != null ? track.confirm_rate_all + '%' : '—';
+  // section B: predicted / probable / estimated (everything except confirmed)
+  const OPEN_STATUSES = new Set(['predicted', 'probable', 'estimated']);
+  const predicted  = candidates.filter(c => OPEN_STATUSES.has(c.prediction_status));
+  const confirmed  = candidates.filter(c => c.prediction_status === 'confirmed');
+  const confRate   = track.confirm_rate_all != null ? track.confirm_rate_all + '%' : '—';
 
   const kpiHtml = `
     <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:4px">
       <div class="kv-card">
-        <div class="kv-label">LINEUP (±90d)</div>
-        <div class="kv-val">${nLineup}</div>
+        <div class="kv-label">LINEUP (${meta.latest_source_date || '—'})</div>
+        <div class="kv-val">${meta.row_count || 0} filas</div>
       </div>
       <div class="kv-card">
         <div class="kv-label">PREDICHOS AIS</div>
-        <div class="kv-val" style="color:var(--orange)">${nPred}</div>
+        <div class="kv-val" style="color:var(--orange)">${predicted.length}</div>
       </div>
       <div class="kv-card">
-        <div class="kv-label">CONFIRMADOS</div>
-        <div class="kv-val" style="color:var(--green)">${nConf}</div>
+        <div class="kv-label">CONFIRMADOS AIS</div>
+        <div class="kv-val" style="color:var(--green)">${confirmed.length}</div>
       </div>
       <div class="kv-card">
         <div class="kv-label">TASA CONF.</div>
@@ -2542,50 +2604,42 @@ function renderBuquesEnRuta() {
 
   /* ════════════════════════════════════════════════════════
      SECTION A — CONFIRMADOS POR LINEUP
-     Fertilizer arrivals from the official San Nicolás lineup
+     ALL fertilizer rows from the latest imported PDF only.
+     Different clients for the same vessel = different rows (not collapsed).
      ════════════════════════════════════════════════════════ */
   let secA = '';
   if (!lineup.length) {
     secA = `<div class="panel" style="padding:20px 24px;color:var(--text3);font-size:12px">
-      Sin llegadas de fertilizantes en la ventana −30d / +60d.
+      Sin datos de fertilizantes en el último lineup importado.
     </div>`;
   } else {
-    // Collapse by buque+eta → aggregate materials, clients, sum tons
-    const byVoyage = {};
-    lineup.forEach(r => {
-      const key = (r.buque || '') + '||' + (r.eta || '');
-      if (!byVoyage[key]) byVoyage[key] = { buque: r.buque, eta: r.eta, origen: r.origen,
-        materials: [], clients: new Set(), tons: 0 };
-      const v = byVoyage[key];
-      if (r.material && !v.materials.includes(r.material)) v.materials.push(r.material);
-      if (r.cliente) v.clients.add(r.cliente);
-      v.tons += (r.tons || 0);
-    });
-    const voyages = Object.values(byVoyage).sort((a, b) => (a.eta || '') < (b.eta || '') ? -1 : 1);
-    const today   = new Date().toISOString().slice(0, 10);
-
-    const aRows = voyages.map(v => {
-      const isPast    = v.eta && v.eta < today;
-      const etaStyle  = isPast ? 'color:var(--text3)' : 'color:var(--green);font-weight:600';
-      const clients   = [...v.clients].join(', ') || '—';
-      const mats      = v.materials.join(' / ')   || '—';
-      const tonsStr   = v.tons ? `${Math.round(v.tons/1000 * 10)/10}k t` : '—';
+    const today = new Date().toISOString().slice(0, 10);
+    const aRows = lineup.map(r => {
+      const isPast   = r.eta && r.eta < today;
+      const etaStyle = isPast ? 'color:var(--text3)' : 'color:var(--green);font-weight:600';
+      const tonsStr  = r.tons != null ? `${r.tons.toLocaleString()} t` : '—';
       return `<tr>
-        <td class="bold">${v.buque || '—'}</td>
-        <td style="${etaStyle}">${v.eta || '—'}</td>
-        <td>${mats}</td>
-        <td>${clients}</td>
+        <td class="bold">${r.buque || '—'}</td>
+        <td style="${etaStyle}">${r.eta || '—'}</td>
+        <td>${r.material || '—'}</td>
+        <td>${r.cliente || '<span class="muted">—</span>'}</td>
         <td class="right">${tonsStr}</td>
-        <td>${v.origen || '<span class="muted">—</span>'}</td>
+        <td>${r.origen || '<span class="muted">—</span>'}</td>
       </tr>`;
     }).join('');
 
-    secA = `<div class="panel" style="padding:0">
+    const totalT = meta.total_tons ? meta.total_tons.toLocaleString() + ' t' : '—';
+    secA = `
+    <div style="font-size:10.5px;color:var(--text3);margin-bottom:6px">
+      Fuente: <strong style="color:var(--text2)">${meta.latest_source_id || '—'}</strong>
+      &nbsp;·&nbsp; ${meta.row_count} filas &nbsp;·&nbsp; ${totalT} fertilizante
+    </div>
+    <div class="panel" style="padding:0">
       <div class="tbl-wrap scroll-tbl">
         <table class="dtbl">
           <thead><tr>
-            <th>Buque</th><th>ETA</th><th>Material(es)</th>
-            <th>Importador(es)</th><th class="right">Toneladas</th><th>Origen</th>
+            <th>Buque</th><th>ETA</th><th>Material</th>
+            <th>Importador</th><th class="right">Toneladas</th><th>Origen</th>
           </tr></thead>
           <tbody>${aRows}</tbody>
         </table>
@@ -2595,13 +2649,14 @@ function renderBuquesEnRuta() {
 
   /* ════════════════════════════════════════════════════════
      SECTION B — PREDICHOS POR AIS
-     Candidates not yet confirmed by lineup
+     Only real candidates from vessel_candidates DB.
+     Statuses: predicted, probable, estimated (not confirmed).
      ════════════════════════════════════════════════════════ */
-  const predicted = candidates.filter(c => c.prediction_status !== 'confirmed');
   let secB = '';
   if (!predicted.length) {
     secB = `<div class="panel" style="padding:20px 24px;color:var(--text3);font-size:12px">
-      No hay buques predichos en seguimiento. Usá <code>detect_candidates.py</code> para agregar observaciones AIS.
+      Sin candidatos AIS en seguimiento.
+      Usá el botón <em>Admin</em> abajo o el CLI <code>detect_candidates.py</code> para agregar observaciones.
     </div>`;
   } else {
     const bRows = predicted.map(d => {
@@ -2629,7 +2684,7 @@ function renderBuquesEnRuta() {
           <thead><tr>
             <th>Buque</th><th>Último puerto</th><th>Destino AIS</th>
             <th>ETA estimado</th><th>Producto</th><th>Importador</th>
-            <th class="right">Toneladas prob.</th><th>Score</th>
+            <th class="right">Toneladas prob.</th><th>Score / 80</th>
           </tr></thead>
           <tbody>${bRows}</tbody>
         </table>
@@ -2642,16 +2697,11 @@ function renderBuquesEnRuta() {
 
   /* ════════════════════════════════════════════════════════
      SECTION C — TRACK RECORD (MATCHED)
-     Confirmed predictions with proof + lead time
+     Candidates verified by verify_candidates.py
      ════════════════════════════════════════════════════════ */
-  const confirmed = candidates.filter(c => c.prediction_status === 'confirmed');
-  let secC = '';
-
-  // Summary stats row
   const confRateHigh = track.confirm_rate_high != null ? track.confirm_rate_high + '%' : '—';
   const confRateMed  = track.confirm_rate_med  != null ? track.confirm_rate_med  + '%' : '—';
-  const avgLead      = track.avg_lead_time_days != null
-    ? track.avg_lead_time_days + ' días' : '—';
+  const avgLead      = track.avg_lead_time_days != null ? track.avg_lead_time_days + ' días' : '—';
 
   const statsHtml = `
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
@@ -2673,9 +2723,11 @@ function renderBuquesEnRuta() {
       </div>
     </div>`;
 
+  let secC = '';
   if (!confirmed.length) {
     secC = statsHtml + `<div class="panel" style="padding:20px 24px;color:var(--text3);font-size:12px">
-      Ningún candidato confirmado todavía. Corré <code>verify_candidates.py</code> periódicamente para actualizar los estados.
+      Ningún candidato confirmado todavía.
+      Corré <code>python3 verify_candidates.py</code> periódicamente para actualizar los estados.
     </div>`;
   } else {
     const cRows = confirmed.map(d => {
@@ -2704,15 +2756,41 @@ function renderBuquesEnRuta() {
     </div>`;
   }
 
+  /* ════════════════════════════════════════════════════════
+     ADMIN PANEL (dev-only, local use)
+     ════════════════════════════════════════════════════════ */
+  const adminHtml = `
+    <div style="margin-top:28px;border-top:1px solid rgba(255,255,255,0.07);padding-top:16px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.8px;color:var(--text3);text-transform:uppercase;margin-bottom:10px">
+        Admin · solo uso local
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button onclick="adminResetCandidates()"
+          style="font-size:11px;padding:6px 14px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);
+                 color:#f87171;border-radius:5px;cursor:pointer">
+          🗑 Reset candidatos
+        </button>
+        <button onclick="adminAddKenUn()"
+          style="font-size:11px;padding:6px 14px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);
+                 color:var(--cyan);border-radius:5px;cursor:pointer">
+          ＋ Agregar KEN UN
+        </button>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:var(--text3)">
+        Requiere <code>ADMIN_TOKEN</code> env var en el servidor + mismo token aquí.
+      </div>
+    </div>`;
+
   /* ── Assemble panel ── */
   panel.innerHTML = `<div style="padding:24px">
     ${kpiHtml}
-    ${sectionHead('A — Confirmados por Lineup', lineup.length + ' registros · ventana −30d/+60d', 'var(--green)')}
+    ${sectionHead('A — Confirmados por Lineup', meta.row_count + ' filas · ' + (meta.latest_source_date || '—'), 'var(--green)')}
     ${secA}
     ${sectionHead('B — Predichos por AIS', predicted.length + ' en seguimiento', 'var(--orange)')}
     ${secB}
     ${sectionHead('C — Track Record (Matcheados)', confirmed.length + ' predicciones verificadas', 'var(--cyan)')}
     ${secC}
+    ${adminHtml}
   </div>`;
 }
 
@@ -2725,7 +2803,8 @@ function renderBuquesEnRuta() {
 // Endpoints: GET /api/shipments  |  GET /api/vessel_candidates
 // Run: python3 app.py  (requires hidroviadata.db — see migrate.py)
 let BUQUES_EN_RUTA_DATA  = [];  // vessel_candidates — overwritten by /api/vessel_candidates
-let LINEUP_DATA          = [];  // fertilizer arrivals — overwritten by /api/lineup_confirmed
+let LINEUP_DATA          = [];  // fertilizer rows for latest PDF
+let LINEUP_META          = {};  // {latest_source_date, latest_source_id, row_count, total_tons}
 let TRACK_RECORD_DATA    = {};  // accuracy metrics   — overwritten by /api/track_record
 
 async function init() {
@@ -2743,7 +2822,12 @@ async function init() {
     if (!trackRes.ok)      throw new Error('/api/track_record returned '       + trackRes.status);
     ALL_DATA            = await shipmentsRes.json();
     BUQUES_EN_RUTA_DATA = await candidatesRes.json();
-    LINEUP_DATA         = await lineupRes.json();
+    const lineupPayload = await lineupRes.json();
+    LINEUP_META         = { latest_source_date: lineupPayload.latest_source_date,
+                            latest_source_id:   lineupPayload.latest_source_id,
+                            row_count:          lineupPayload.row_count,
+                            total_tons:         lineupPayload.total_tons };
+    LINEUP_DATA         = lineupPayload.rows || [];
     TRACK_RECORD_DATA   = await trackRes.json();
   } catch (err) {
     console.error('API fetch failed:', err);

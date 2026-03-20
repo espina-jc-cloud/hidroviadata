@@ -11,9 +11,14 @@ Endpoints
   GET  /api/vessel_profiles         → all vessel profiles  (173 rows)
   GET  /api/vessel_candidates       → all predictive vessel entries (with lead_time_days)
   GET  /api/fertilizer_core_fleet   → watchlist: vessels with ≥2 fertilizer visits
-  GET  /api/lineup_confirmed        → fertilizer arrivals in the rolling [−30d, +60d] window
+  GET  /api/lineup_confirmed        → ALL fertilizer rows from the latest lineup PDF
   GET  /api/track_record            → prediction accuracy metrics
   GET  /api/status                  → DB freshness snapshot
+
+Admin endpoints (dev-only — require X-Admin-Token header)
+─────────────────────────────────────────────────────────
+  POST /api/admin/reset_candidates  → DELETE all rows from vessel_candidates
+  POST /api/admin/add_candidate     → score + insert one AIS observation
 
 Database
 ────────
@@ -24,16 +29,21 @@ Usage
     python3 migrate.py              # first time only
     python3 build_core_fleet.py    # rebuild watchlist (after profile updates)
     python3 app.py                  # start dev server on http://localhost:5000
+    ADMIN_TOKEN=secret python3 app.py   # enable admin endpoints
 """
 
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from flask import Flask, Response, g, jsonify, send_from_directory
+from flask import Flask, Response, g, jsonify, request, send_from_directory
+
+# Reuse the scoring helpers from the CLI pipeline — pure functions, no side effects.
+from detect_candidates import _score_observation, _load_core_fleet, _insert_candidate
 
 BASE_DIR = Path(__file__).parent
 DATABASE = BASE_DIR / 'hidroviadata.db'
@@ -362,41 +372,67 @@ _FERT_MATERIALS: tuple[str, ...] = (
 @app.route('/api/lineup_confirmed')
 def api_lineup_confirmed() -> Response:
     """
-    Fertilizer arrivals from the official San Nicolás lineup for the rolling
-    window [today − 30 days, today + 60 days].
+    ALL fertilizer rows from the single latest imported lineup PDF
+    (identified by MAX(source_date)).
 
-    Each row is one shipment record (not collapsed per vessel) so the caller
-    can aggregate as needed.  Fields:
-        buque, eta, material, cliente, tons, origen, agencia, muelle, sector,
-        source_id, source_date
-    Ordered by eta ASC.
+    Each row is one shipment record — different clients for the same vessel
+    are NOT collapsed, because they are distinct trade positions.
+
+    Returns
+    ───────
+    {
+      "latest_source_date": "2026-03-18",
+      "latest_source_id":   "LINE UP PUERTO SAN NICOLAS 180326.pdf",
+      "row_count":          24,
+      "total_tons":         58091,
+      "rows": [ {buque, eta, material, cliente, tons, origen,
+                 agencia, muelle, sector, source_id, source_date}, … ]
+    }
+    Ordered by eta ASC, then buque ASC.
     """
-    today      = datetime.now().date()
-    date_from  = (today - timedelta(days=30)).isoformat()
-    date_to    = (today + timedelta(days=60)).isoformat()
+    db           = get_db()
     placeholders = ','.join('?' * len(_FERT_MATERIALS))
 
-    rows = get_db().execute(
+    # Find the latest lineup date and its primary source_id
+    latest_meta  = db.execute(
+        'SELECT source_date, source_id FROM shipments '
+        'ORDER BY source_date DESC, source_id DESC LIMIT 1'
+    ).fetchone()
+    if not latest_meta:
+        return jsonify({'latest_source_date': None, 'latest_source_id': None,
+                        'row_count': 0, 'total_tons': 0, 'rows': []})
+
+    latest_date = latest_meta['source_date']
+    latest_sid  = latest_meta['source_id']
+
+    rows = db.execute(
         f'SELECT buque, eta, material, cliente, tons, origen, '
         f'       agencia, muelle, sector, source_id, source_date '
         f'FROM shipments '
-        f'WHERE material IN ({placeholders}) '
-        f'  AND eta >= ? AND eta <= ? '
-        f'ORDER BY eta ASC',
-        (*_FERT_MATERIALS, date_from, date_to),
+        f'WHERE source_date = ? AND material IN ({placeholders}) '
+        f'ORDER BY eta ASC, buque ASC',
+        (latest_date, *_FERT_MATERIALS),
     ).fetchall()
 
     result = []
+    total_tons = 0
     for row in rows:
         d = dict(row)
         if d.get('tons') is not None:
             try:
                 d['tons'] = int(round(float(d['tons'])))
+                total_tons += d['tons']
             except (TypeError, ValueError):
                 d['tons'] = None
         result.append(d)
 
-    return jsonify(result)
+    return jsonify({
+        'latest_source_date': latest_date,
+        'latest_source_id':   latest_sid,
+        'row_count':          len(result),
+        'total_tons':         total_tons,
+        'rows':               result,
+    })
 
 
 @app.route('/api/track_record')
@@ -478,39 +514,150 @@ def api_status() -> Response:
 
     Returns
     ───────
-    shipments_count      — total rows in shipments
-    shipments_tons_total — sum of all tons (int)
-    fert_tons_total      — sum of tons where material is a known fertilizer
-    latest_source_date   — most recent PDF issue date loaded
-    candidates_by_status — {predicted, confirmed, expired}
-    as_of                — ISO timestamp of this response
+    total_shipments          total rows in shipments
+    total_tons               sum of all tons (int)
+    fert_shipments           rows where material is a known fertilizer
+    fert_tons                tons for those rows
+    latest_source_date       most recent PDF issue date loaded
+    latest_source_id         filename of that PDF
+    latest_lineup_fert_rows  fertilizer row count for the latest PDF
+    latest_lineup_fert_tons  fertilizer tonnage for the latest PDF
+    candidates_by_status     {predicted, confirmed, expired}
+    as_of                    ISO timestamp of this response
     """
-    db = get_db()
+    db           = get_db()
     placeholders = ','.join('?' * len(_FERT_MATERIALS))
 
     ship_count   = db.execute('SELECT count(*) FROM shipments').fetchone()[0]
     ship_tons    = db.execute('SELECT sum(tons) FROM shipments WHERE tons IS NOT NULL').fetchone()[0]
+    fert_count   = db.execute(
+        f'SELECT count(*) FROM shipments WHERE material IN ({placeholders})',
+        _FERT_MATERIALS,
+    ).fetchone()[0]
     fert_tons    = db.execute(
         f'SELECT sum(tons) FROM shipments WHERE material IN ({placeholders}) AND tons IS NOT NULL',
         _FERT_MATERIALS,
     ).fetchone()[0]
-    latest_src   = db.execute('SELECT max(source_date) FROM shipments').fetchone()[0]
-    n_pred       = db.execute("SELECT count(*) FROM vessel_candidates WHERE prediction_status='predicted'").fetchone()[0]
-    n_conf       = db.execute("SELECT count(*) FROM vessel_candidates WHERE prediction_status='confirmed'").fetchone()[0]
-    n_exp        = db.execute("SELECT count(*) FROM vessel_candidates WHERE prediction_status='expired'").fetchone()[0]
+
+    latest_row   = db.execute(
+        'SELECT source_date, source_id FROM shipments ORDER BY source_date DESC LIMIT 1'
+    ).fetchone()
+    latest_src   = latest_row['source_date'] if latest_row else None
+    latest_sid   = latest_row['source_id']   if latest_row else None
+
+    lf_rows, lf_tons = 0, 0
+    if latest_src:
+        r = db.execute(
+            f'SELECT count(*), sum(tons) FROM shipments '
+            f'WHERE source_date=? AND material IN ({placeholders}) AND tons IS NOT NULL',
+            (latest_src, *_FERT_MATERIALS),
+        ).fetchone()
+        lf_rows = r[0] or 0
+        lf_tons = int(round(r[1])) if r[1] else 0
+
+    n_pred = db.execute("SELECT count(*) FROM vessel_candidates WHERE prediction_status='predicted'").fetchone()[0]
+    n_conf = db.execute("SELECT count(*) FROM vessel_candidates WHERE prediction_status='confirmed'").fetchone()[0]
+    n_exp  = db.execute("SELECT count(*) FROM vessel_candidates WHERE prediction_status='expired'").fetchone()[0]
 
     return jsonify({
-        'shipments_count':      ship_count,
-        'shipments_tons_total': int(round(ship_tons))  if ship_tons  else 0,
-        'fert_tons_total':      int(round(fert_tons))  if fert_tons  else 0,
-        'latest_source_date':   latest_src,
-        'candidates_by_status': {
-            'predicted': n_pred,
-            'confirmed': n_conf,
-            'expired':   n_exp,
-        },
-        'as_of': datetime.now().isoformat(timespec='seconds'),
+        'total_shipments':          ship_count,
+        'total_tons':               int(round(ship_tons))  if ship_tons  else 0,
+        'fert_shipments':           fert_count,
+        'fert_tons':                int(round(fert_tons))  if fert_tons  else 0,
+        'latest_source_date':       latest_src,
+        'latest_source_id':         latest_sid,
+        'latest_lineup_fert_rows':  lf_rows,
+        'latest_lineup_fert_tons':  lf_tons,
+        'candidates_by_status':     {'predicted': n_pred, 'confirmed': n_conf, 'expired': n_exp},
+        'as_of':                    datetime.now().isoformat(timespec='seconds'),
     })
+
+
+# ── Admin helpers ─────────────────────────────────────────────────────────────
+
+def _check_admin_token() -> Response | None:
+    """
+    Validate the X-Admin-Token request header against the ADMIN_TOKEN env var.
+    Returns a 401/403 Response on failure, or None on success.
+    """
+    expected = os.environ.get('ADMIN_TOKEN', '').strip()
+    if not expected:
+        return jsonify({'error': 'Admin endpoints disabled. Set ADMIN_TOKEN env var.'}), 403
+    provided = request.headers.get('X-Admin-Token', '').strip()
+    if provided != expected:
+        return jsonify({'error': 'Invalid or missing X-Admin-Token header.'}), 401
+    return None
+
+
+@app.route('/api/admin/reset_candidates', methods=['POST'])
+def api_admin_reset_candidates() -> Response:
+    """
+    DELETE all rows from vessel_candidates.
+    Requires X-Admin-Token header matching ADMIN_TOKEN env var.
+
+    Returns: {deleted_count: N}
+    """
+    err = _check_admin_token()
+    if err is not None:
+        return err
+
+    db  = get_db()
+    cur = db.execute('DELETE FROM vessel_candidates')
+    db.commit()
+    return jsonify({'deleted_count': cur.rowcount})
+
+
+@app.route('/api/admin/add_candidate', methods=['POST'])
+def api_admin_add_candidate() -> Response:
+    """
+    Score + insert one AIS observation into vessel_candidates.
+    Requires X-Admin-Token header matching ADMIN_TOKEN env var.
+
+    Body (JSON):
+        vessel_name      string  required
+        last_port        string  optional
+        ais_destination  string  optional
+        vessel_type      string  optional
+        dwt              int     optional
+        eta_estimated    string  optional  (YYYY-MM-DD)
+        last_position    string  optional
+
+    Returns the fully inserted row (same shape as /api/vessel_candidates).
+    """
+    err = _check_admin_token()
+    if err is not None:
+        return err
+
+    obs = request.get_json(force=True, silent=True)
+    if not obs or not obs.get('vessel_name'):
+        return jsonify({'error': 'vessel_name is required in JSON body.'}), 400
+
+    db         = get_db()
+    core_fleet = _load_core_fleet(db)
+    candidate  = _score_observation(obs, core_fleet)
+
+    # Preserve last_position if caller supplied it
+    if obs.get('last_position'):
+        candidate['last_position'] = obs['last_position']
+
+    row_id     = _insert_candidate(db, candidate)
+
+    # Read back the full row so the response matches /api/vessel_candidates
+    row = db.execute(
+        'SELECT vessel_name, last_position, last_port, ais_destination, eta_estimated, '
+        '       probable_product, probable_importer, probable_tonnage_range, '
+        '       probability_score, probability_level, prediction_status, scoring_reasons, '
+        '       confirmed_eta, confirmed_match_reason, created_at '
+        'FROM vessel_candidates WHERE id = ?',
+        (row_id,),
+    ).fetchone()
+
+    d = dict(row)
+    d['probable_tonnage_range'] = json.loads(d['probable_tonnage_range'] or 'null')
+    d['scoring_reasons']        = json.loads(d['scoring_reasons']        or '[]')
+    d['lead_time_days']         = None
+    d['id']                     = row_id
+    return jsonify(d), 201
 
 
 # ── Dev server ────────────────────────────────────────────────────────────────

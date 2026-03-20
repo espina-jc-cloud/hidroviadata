@@ -202,6 +202,13 @@ def normalize_shipment(row: dict) -> dict:
     return d
 
 
+# ── Health check ──────────────────────────────────────────────────────────────
+
+@app.route('/health')
+def health() -> Response:
+    return jsonify('ok')
+
+
 # ── Static file ───────────────────────────────────────────────────────────────
 
 @app.route('/')

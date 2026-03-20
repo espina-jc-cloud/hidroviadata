@@ -1,0 +1,42 @@
+[
+  {
+    "vessel_name":     "CLIPPER I-STAR",
+    "last_port":       "MESAIEED",
+    "ais_destination": "RECALADA",
+    "vessel_type":     "BULK CARRIER",
+    "dwt":             28500,
+    "eta_estimated":   null
+  },
+  {
+    "vessel_name":     "IVS TRADER",
+    "last_port":       "ARGELIA",
+    "ais_destination": "SAN NICOLAS",
+    "vessel_type":     "BULK CARRIER",
+    "dwt":             34000,
+    "eta_estimated":   null
+  },
+  {
+    "vessel_name":     "CAPITAN DIMITRIS",
+    "last_port":       "CHINA",
+    "ais_destination": "ROSARIO",
+    "vessel_type":     "BULK CARRIER",
+    "dwt":             32000,
+    "eta_estimated":   null
+  },
+  {
+    "vessel_name":     "FORTUNE GLORY",
+    "last_port":       "QATAR",
+    "ais_destination": "RIVER PLATE",
+    "vessel_type":     "BULK CARRIER",
+    "dwt":             45000,
+    "eta_estimated":   null
+  },
+  {
+    "vessel_name":     "BLUE STAR VENTURE",
+    "last_port":       "MARRUECOS",
+    "ais_destination": "ARGENTINA",
+    "vessel_type":     "GENERAL CARGO",
+    "dwt":             18000,
+    "eta_estimated":   null
+  }
+]

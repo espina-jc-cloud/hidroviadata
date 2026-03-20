@@ -24,6 +24,75 @@
     ]
   },
   {
+    "vessel_name": "CLIPPER I-STAR",
+    "last_position": null,
+    "last_port": "MESAIEED",
+    "ais_destination": "RECALADA",
+    "eta_estimated": "2026-04-03",
+    "probable_product": "MAP",
+    "probable_importer": "YPF",
+    "probable_tonnage_range": [
+      550,
+      12000
+    ],
+    "probability_score": 80,
+    "probability_level": "high",
+    "prediction_status": "predicted",
+    "scoring_reasons": [
+      "+25 — In fertilizer core fleet (31 fertilizer visits on record)",
+      "+20 — Last port 'MESAIEED' matches known fertilizer origin corridor",
+      "+15 — AIS destination 'RECALADA' matches Argentina / River Plate pattern",
+      "+10 — Vessel type 'BULK CARRIER' matches bulk fertilizer carrier",
+      "+10 — DWT 28,500 within target range (25,000–60,000 t)"
+    ]
+  },
+  {
+    "vessel_name": "IVS TRADER",
+    "last_position": null,
+    "last_port": "ARGELIA",
+    "ais_destination": "SAN NICOLAS",
+    "eta_estimated": "2026-04-03",
+    "probable_product": "DAP",
+    "probable_importer": "ACA",
+    "probable_tonnage_range": [
+      500,
+      5500
+    ],
+    "probability_score": 80,
+    "probability_level": "high",
+    "prediction_status": "predicted",
+    "scoring_reasons": [
+      "+25 — In fertilizer core fleet (28 fertilizer visits on record)",
+      "+20 — Last port 'ARGELIA' matches known fertilizer origin corridor",
+      "+15 — AIS destination 'SAN NICOLAS' matches Argentina / River Plate pattern",
+      "+10 — Vessel type 'BULK CARRIER' matches bulk fertilizer carrier",
+      "+10 — DWT 34,000 within target range (25,000–60,000 t)"
+    ]
+  },
+  {
+    "vessel_name": "CAPITAN DIMITRIS",
+    "last_position": null,
+    "last_port": "CHINA",
+    "ais_destination": "ROSARIO",
+    "eta_estimated": "2026-04-03",
+    "probable_product": "NPS",
+    "probable_importer": "PTP ZONA FRANCA",
+    "probable_tonnage_range": [
+      1000,
+      10000
+    ],
+    "probability_score": 80,
+    "probability_level": "high",
+    "prediction_status": "predicted",
+    "scoring_reasons": [
+      "+25 — In fertilizer core fleet (26 fertilizer visits on record)",
+      "+20 — Last port 'CHINA' matches known fertilizer origin corridor",
+      "+15 — AIS destination 'ROSARIO' matches Argentina / River Plate pattern",
+      "+10 — Vessel type 'BULK CARRIER' matches bulk fertilizer carrier",
+      "+10 — DWT 32,000 within target range (25,000–60,000 t)"
+    ]
+  },
+  {
     "vessel_name": "KEN UN",
     "last_position": null,
     "last_port": "LOWER COVE CANADA",
@@ -40,6 +109,25 @@
       "+15 — AIS destination 'SAN NICOLAS' matches Argentina / River Plate pattern",
       "+10 — Vessel type 'BULK CARRIER' matches bulk fertilizer carrier",
       "+10 — DWT 32,000 within target range (25,000–60,000 t)"
+    ]
+  },
+  {
+    "vessel_name": "FORTUNE GLORY",
+    "last_position": null,
+    "last_port": "QATAR",
+    "ais_destination": "RIVER PLATE",
+    "eta_estimated": "2026-04-03",
+    "probable_product": "UREA",
+    "probable_importer": null,
+    "probable_tonnage_range": null,
+    "probability_score": 55,
+    "probability_level": "low",
+    "prediction_status": "predicted",
+    "scoring_reasons": [
+      "+20 — Last port 'QATAR' matches known fertilizer origin corridor",
+      "+15 — AIS destination 'RIVER PLATE' matches Argentina / River Plate pattern",
+      "+10 — Vessel type 'BULK CARRIER' matches bulk fertilizer carrier",
+      "+10 — DWT 45,000 within target range (25,000–60,000 t)"
     ]
   },
   {
@@ -124,6 +212,24 @@
       "+20 — Origin 'MARRUECOS' matches known fertilizer origin corridor (China/Qatar/Morocco/Finland/…)",
       "+15 — AIS destination 'UPRIVER' matches Argentina / River Plate / upriver pattern",
       "+10 — Vessel profile matches bulk fertilizer carrier: type 'HANDYMAX', DWT 45,000 (within 8,000–85,000 t range)"
+    ]
+  },
+  {
+    "vessel_name": "BLUE STAR VENTURE",
+    "last_position": null,
+    "last_port": "MARRUECOS",
+    "ais_destination": "ARGENTINA",
+    "eta_estimated": "2026-04-03",
+    "probable_product": "MAP",
+    "probable_importer": null,
+    "probable_tonnage_range": null,
+    "probability_score": 45,
+    "probability_level": "low",
+    "prediction_status": "predicted",
+    "scoring_reasons": [
+      "+20 — Last port 'MARRUECOS' matches known fertilizer origin corridor",
+      "+15 — AIS destination 'ARGENTINA' matches Argentina / River Plate pattern",
+      "+10 — Vessel type 'GENERAL CARGO' matches bulk fertilizer carrier"
     ]
   }
 ]

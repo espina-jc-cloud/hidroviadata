@@ -6,7 +6,8 @@ Minimal Flask backend for HidrovíaData dashboard.
 Endpoints
 ─────────
   GET  /                            → serves dashboard.html
-  GET  /api/shipments               → all shipment records (770 rows)
+  GET  /api/shipments               → all shipment records (normalised at API layer)
+  GET  /api/shipments/quality       → data-quality summary for shipments
   GET  /api/vessel_profiles         → all vessel profiles  (173 rows)
   GET  /api/vessel_candidates       → all predictive vessel entries
   GET  /api/fertilizer_core_fleet   → watchlist: vessels with ≥2 fertilizer visits
@@ -64,6 +65,129 @@ def _rows_to_list(rows) -> list[dict]:
     return [dict(row) for row in rows]
 
 
+# ── Shipment normalisation ─────────────────────────────────────────────────────
+# Applied at the API layer only — the DB schema is unchanged.
+
+# Canonical Spanish country / port names.
+# Keys cover every raw value seen in the data (typos, abbreviations, aliases).
+# Values are the canonical form used in scoring and analytics.
+_ORIGIN_CANONICAL: dict[str, str] = {
+    # ── Typos / English aliases ────────────────────────────────────────────────
+    'MARRECOS':       'MARRUECOS',      # common OCR / transcription typo
+    'RUSSIA':         'RUSIA',          # English → Spanish
+    'ARABIA':         'ARABIA SAUDITA', # abbreviation
+    'EEUU':           'ESTADOS UNIDOS', # abbreviation
+    # ── Already-canonical (membership defines the confirmed-origin set) ────────
+    'MARRUECOS':      'MARRUECOS',
+    'RUSIA':          'RUSIA',
+    'QATAR':          'QATAR',
+    'ARGELIA':        'ARGELIA',
+    'CHINA':          'CHINA',
+    'NIGERIA':        'NIGERIA',
+    'FINLANDIA':      'FINLANDIA',
+    'RUMANIA':        'RUMANIA',
+    'OMAN':           'OMAN',
+    'CANADA':         'CANADA',
+    'MEXICO':         'MEXICO',
+    'GEORGIA':        'GEORGIA',
+    'NORUEGA':        'NORUEGA',
+    'HOLANDA':        'HOLANDA',
+    'COLOMBIA':       'COLOMBIA',
+    'ESTADOS UNIDOS': 'ESTADOS UNIDOS',
+    'ARABIA SAUDITA': 'ARABIA SAUDITA',
+    'PERU':           'PERU',
+    'ISRAEL':         'ISRAEL',
+    'INDIA':          'INDIA',
+    'BELGICA':        'BELGICA',
+    'JORDANIA':       'JORDANIA',
+    'EGIPTO':         'EGIPTO',
+    'JAPON':          'JAPON',
+    # ── Specific ports (kept as-is — more precise than country) ───────────────
+    'ARZEW':          'ARZEW',       # Algeria — urea terminal
+    'MESAIEED':       'MESAIEED',    # Qatar
+    'YUZHNE':         'YUZHNE',      # Ukraine
+    'VENTSPILS':      'VENTSPILS',   # Latvia
+    'KOTKA':          'KOTKA',       # Finland
+}
+
+# Substrings that mark an origen value as operational text, not a real origin.
+# Using a tuple so the `any(kw in upper for kw in ...)` check is short-circuit.
+_AMBIGUOUS_SUBSTRINGS: tuple[str, ...] = (
+    'ETA ', 'ETC ', 'EXTC ',
+    'TRANSITO', 'TRASBORDO', 'TRABORDO',
+    'EXPO', 'EXPORTACION',
+    'SEGUNDA ANDANA', 'FINALIZADO', 'CAMBIO DE',
+    'DESCARGA', 'REGLAMENTO', 'NAVEGACION',
+)
+
+
+def _try_extract_origin(text: str) -> str | None:
+    """
+    Scan an ambiguous string for an embedded canonical origin.
+    Returns the canonical name on first match, or None.
+    Example: 'ETC SAN LORENZO MARRUECOS' → 'MARRUECOS'
+    """
+    upper = text.upper()
+    for raw, canonical in _ORIGIN_CANONICAL.items():
+        if raw in upper:
+            return canonical
+    return None
+
+
+def normalize_shipment(row: dict) -> dict:
+    """
+    Lightweight normalisation applied to every record returned by /api/shipments.
+
+    Field rules
+    ───────────
+    tons              float | null → int(round()) | null
+    material          '' | null    → 'UNKNOWN'
+    origen            typos fixed, abbreviations expanded, ambiguous text flagged
+    origin_raw        new — original DB value before any change (null when empty)
+    origin_confidence new — 'confirmed' | 'ambiguous' | 'unknown'
+
+    The DB is not touched; all changes are in-flight.
+    """
+    d = dict(row)
+
+    # ── tons ──────────────────────────────────────────────────────────────────
+    if d.get('tons') is not None:
+        try:
+            d['tons'] = int(round(float(d['tons'])))
+        except (TypeError, ValueError):
+            d['tons'] = None
+
+    # ── material ──────────────────────────────────────────────────────────────
+    if not d.get('material'):
+        d['material'] = 'UNKNOWN'
+
+    # ── origin ────────────────────────────────────────────────────────────────
+    raw = (d.get('origen') or '').strip()
+    d['origin_raw'] = raw or None   # null when the DB value was empty
+
+    if not raw:
+        d['origen']            = None
+        d['origin_confidence'] = 'unknown'
+    else:
+        upper        = raw.upper()
+        is_ambiguous = any(kw in upper for kw in _AMBIGUOUS_SUBSTRINGS)
+
+        if is_ambiguous:
+            d['origin_confidence'] = 'ambiguous'
+            # Best-effort: try to salvage a country name embedded in the noise
+            d['origen'] = _try_extract_origin(raw) or raw
+        elif upper in _ORIGIN_CANONICAL:
+            d['origen']            = _ORIGIN_CANONICAL[upper]
+            d['origin_confidence'] = 'confirmed'
+        else:
+            # Non-empty, no ambiguous keywords, not in known-set.
+            # Keep the raw value — may be a valid but unrecognised origin.
+            d['origen']            = raw
+            d['origin_confidence'] = 'confirmed'
+
+    return d
+
+
 # ── Static file ───────────────────────────────────────────────────────────────
 
 @app.route('/')
@@ -76,18 +200,76 @@ def index() -> Response:
 @app.route('/api/shipments')
 def api_shipments() -> Response:
     """
-    Return all shipment records.
+    Return all shipment records with lightweight normalisation applied.
 
-    Each record matches the original RAW_DATA schema:
-        buque, agencia, eta, material, cliente, tons,
-        operador, operacion, muelle, sector, origen
+    Added fields (not in DB):
+        origin_raw        — original origen value before normalisation
+        origin_confidence — 'confirmed' | 'ambiguous' | 'unknown'
+
+    Changed fields:
+        tons     — rounded to int (null stays null)
+        material — empty → 'UNKNOWN'
+        origen   — typos / abbreviations corrected; ambiguous strings flagged
     """
     rows = get_db().execute(
         'SELECT buque, agencia, eta, material, cliente, tons, '
         '       operador, operacion, muelle, sector, origen '
         'FROM shipments'
     ).fetchall()
-    return jsonify(_rows_to_list(rows))
+    return jsonify([normalize_shipment(dict(r)) for r in rows])
+
+
+@app.route('/api/shipments/quality')
+def api_shipments_quality() -> Response:
+    """
+    Data-quality summary for the shipments table.
+
+    Returns
+    ───────
+    total_records
+    material_unknown_count / _pct   rows where material was empty in the DB
+    origin_ambiguous_count / _pct   rows where origen is operational text
+    origin_unknown_count   / _pct   rows where origen was empty
+    tons_null_count        / _pct   rows where tons is null
+    top_10_raw_origins              raw DB values with counts (before normalisation)
+    """
+    rows = get_db().execute(
+        'SELECT material, origen, tons FROM shipments'
+    ).fetchall()
+    records = [normalize_shipment(dict(r)) for r in rows]
+
+    total             = len(records)
+    mat_unknown       = sum(1 for r in records if r['material'] == 'UNKNOWN')
+    origin_ambiguous  = sum(1 for r in records if r['origin_confidence'] == 'ambiguous')
+    origin_unknown    = sum(1 for r in records if r['origin_confidence'] == 'unknown')
+    tons_null         = sum(1 for r in records if r['tons'] is None)
+
+    def pct(n: int) -> float:
+        return round(100 * n / total, 1) if total else 0.0
+
+    top_raw = get_db().execute(
+        'SELECT origen, count(*) as n '
+        'FROM shipments '
+        'GROUP BY origen '
+        'ORDER BY n DESC '
+        'LIMIT 10'
+    ).fetchall()
+
+    return jsonify({
+        'total_records':          total,
+        'material_unknown_count': mat_unknown,
+        'material_unknown_pct':   pct(mat_unknown),
+        'origin_ambiguous_count': origin_ambiguous,
+        'origin_ambiguous_pct':   pct(origin_ambiguous),
+        'origin_unknown_count':   origin_unknown,
+        'origin_unknown_pct':     pct(origin_unknown),
+        'tons_null_count':        tons_null,
+        'tons_null_pct':          pct(tons_null),
+        'top_10_raw_origins':     [
+            {'origen': r['origen'] or '', 'count': r['n']}
+            for r in top_raw
+        ],
+    })
 
 
 @app.route('/api/vessel_profiles')

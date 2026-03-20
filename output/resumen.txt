@@ -1,106 +1,106 @@
 ═══════════════════════════════════════════════════════
   RESUMEN — HidrovíaData Parser
-  Generado: 2026-03-19 16:46:27
+  Generado: 2026-03-20 11:02:58
 ═══════════════════════════════════════════════════════
 
 PDFs procesados:                  60
 Registros raw (suma todos PDFs):  2714
 Tras consolidación intra-PDF:     2391
-Duplicados inter-PDF eliminados:  1644
-REGISTROS FINALES:                747
-Toneladas totales:                4,205,716
+Duplicados inter-PDF eliminados:  1806
+REGISTROS FINALES:                585
+Toneladas totales:                3,116,416
 
 ─── Por operación ───────────────────────────────────
-  DESCARGAR                        605
-  DESCARGA                          58
-  CARGA                             44
-  TRASBORDO                         40
+  DESCARGAR                        465
+  DESCARGA                          48
+  TRASBORDO                         39
+  CARGA                             33
 
 ─── Por material (top 20) ───────────────────────────
-  UREA                             207
-  MAP                              157
-  NPS                               53
-  DAP                               47
-  TSP                               45
-  AMSUL                             23
-  ARRABIO                           20
-  MOP                               19
-  SSP                               19
-  GMOP                              15
-  UAN                               11
-  STP                               11
-  NPS+ZN                            10
-  —                                  9
-  ACEITE VEGETAL                     8
+  UREA                             175
+  MAP                              108
+  TSP                               42
+  NPS                               37
+  DAP                               26
+  AMSUL                             21
+  SSP                               17
+  ARRABIO                           17
+  MOP                               16
+  GMOP                              11
+  STP                               10
+  —                                  8
+  UAN                                8
+  MAP 10-50                          8
   NP                                 8
-  MAP 10-50                          7
-  CARBON                             7
+  ACEITE VEGETAL                     5
   NP 1240                            5
-  bolsones                           5
+  CARBON                             5
+  NP 840                             4
+  NPS+ZN                             4
 
 ─── Por cliente (top 25) ────────────────────────────
-  CARGILL                           86
-  BUNGE                             75
-  YPF                               73
-  LDC                               55
-  NUTRIEN                           39
-  ACA                               35
-  COFCO                             34
-  AMAGGI                            25
-  AFA                               24
-  AMEROPA                           24
-  YARA                              23
-  AGREFERT                          23
-  PROFERTIL                         18
-  LDC PARAGUAY                      16
-  VETORIAL                          15
-  VITERRA                           14
-  PTP (ZONA FRANCA)                 13
-  NITRON                            11
-  MANUCHART                         10
-  PTP ZONA FRANCA                   10
+  CARGILL                           64
+  YPF                               54
+  LDC                               48
+  BUNGE                             46
+  NUTRIEN                           30
+  COFCO                             28
+  ACA                               26
+  AMEROPA                           25
+  AMAGGI                            22
+  AFA                               22
+  AGREFERT                          20
+  YARA                              19
+  LDC PARAGUAY                      15
+  VETORIAL                          12
+  PTP (ZONA FRANCA)                 11
+  PROFERTIL                         11
+  NITRON                            10
   CHS                                9
-  CASPORT FISCAL                     9
-  NEUS                               8
-  AES                                8
+  VITERRA                            7
+  NEUS                               7
+  PTP (zona franca)                  7
   ABOPAR                             6
+  AES                                6
+  MANUCHART                          5
+  MOVIPORT FISCAL                    5
 
 ─── Por muelle ──────────────────────────────────────
-  CARGA GENERAL                    693
-  ELEVADOR                          37
-  AES                               17
+  CARGA GENERAL                    542
+  ELEVADOR                          28
+  AES                               15
 
 ─── Buques únicos (top 30) ──────────────────────────
-  CLIPPER I-STAR                         35
-  IVS TRADER                             28
-  CAPITAN DIMITRIS                       26
-  ULTRALAZ                               16
-  SAINT VASSILIOS                        15
-  DESERT HONOUR                          14
-  MIDJUR                                 14
-  AFRICAN DRAGON                         12
-  APEX                                   12
+  ULTRALAZ                               14
+  DESERT HONOUR                          12
   ALEXANDRA KPN                          12
-  AMANI                                  11
+  CLIPPER I-STAR                         11
+  IVS TRADER                             11
   SEACON BANGKOK                         11
   OCEAN INNOVATION                       10
-  REM. TBC                               10
   INTERLINK FORTUITY                     10
   IC PROGRESS                             9
-  BONNY ISLAND                            9
   CECILIE F                               9
+  REM. TBC                                8
+  CAPITAN DIMITRIS                        8
+  SAINT VASSILIOS                         8
+  LOWLANDS FUTURE                         8
   ICARIAN SPIRE                           8
   QANUX BENEFIT                           8
-  KOUROS GLORY                            8
-  ARETI                                   8
   MACURU ARROW                            7
+  AFRICAN DRAGON                          7
   MANTA NIGAR                             7
   CS CELESTE                              7
-  ARGENMAR MISTRAL                        7
-  BLUE NEPTUNE                            7
-  AFRICAN LORIKEET                        7
-  CHAMPION TIMUR                          7
-  REIWA                                   7
+  SUPER SAKA                              7
+  ALEXANDROS P.                           7
+  NIKITIS                                 6
+  BOGDAN                                  6
+  COLUMBIA RIVER                          6
+  ARGENMAR MISTRAL                        6
+  BLUE NEPTUNE                            6
+  APEX                                    6
+  CL ZHANGJIAJIE                          6
+  AMANI                                   6
 
 ─── Detalle por PDF ─────────────────────────────────
   ✓ LINE UP PUERTO SAN NICOLAS 180326.pdf                   (2026-03-18)  raw:  26  intra:  25

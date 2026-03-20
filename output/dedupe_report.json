@@ -1,0 +1,730 @@
+{
+  "generated": "2026-03-20T10:56:50.533168",
+  "current": {
+    "total_records": 596,
+    "total_tons": 3150316,
+    "null_tons": 5,
+    "no_material": 8,
+    "dup_groups_over_3d": 5,
+    "dup_records_in_groups": 12
+  },
+  "top_offenders": [
+    {
+      "buque": "REM. TBC",
+      "material": "SSP",
+      "cliente": "BUNGE",
+      "count": 3,
+      "eta_span_days": 74,
+      "etas": [
+        "2025-06-12",
+        "2025-07-24",
+        "2025-08-25"
+      ],
+      "tons": [
+        7000,
+        6000,
+        3000
+      ],
+      "sources": [
+        "✓_LINE UP PUERTO SAN NICOLAS 0603.pdf",
+        "✓_LINE UP PUERTO SAN NICOLAS 1807.pdf",
+        "✓_12975.pdf"
+      ]
+    },
+    {
+      "buque": "REM. GUILLERMO C",
+      "material": "SSP",
+      "cliente": "BUNGE",
+      "count": 3,
+      "eta_span_days": 45,
+      "etas": [
+        "2025-07-10",
+        "2025-07-25",
+        "2025-08-24"
+      ],
+      "tons": [
+        6000,
+        6000,
+        3000
+      ],
+      "sources": [
+        "✓_LINE UP PUERTO SAN NICOLAS 407.pdf",
+        "✓_13153.pdf",
+        "✓_12958.pdf"
+      ]
+    },
+    {
+      "buque": "REM. HERKULES III",
+      "material": "ARRABIO",
+      "cliente": "VETORIAL",
+      "count": 2,
+      "eta_span_days": 43,
+      "etas": [
+        "2025-08-18",
+        "2025-09-30"
+      ],
+      "tons": [
+        null,
+        13666
+      ],
+      "sources": [
+        "✓_13034.pdf",
+        "✓_15813.pdf"
+      ]
+    },
+    {
+      "buque": "REM. ZONDA I",
+      "material": "SSP",
+      "cliente": "BUNGE",
+      "count": 2,
+      "eta_span_days": 28,
+      "etas": [
+        "2025-06-17",
+        "2025-07-15"
+      ],
+      "tons": [
+        7400,
+        8600
+      ],
+      "sources": [
+        "✓_LINE UP PUERTO SAN NICOLAS 1906.pdf",
+        "✓_LINE UP PUERTO SAN NICOLAS 1807.pdf"
+      ]
+    },
+    {
+      "buque": "CLIPPER I-STAR",
+      "material": "MAP",
+      "cliente": "YPF",
+      "count": 2,
+      "eta_span_days": 25,
+      "etas": [
+        "2025-09-19",
+        "2025-10-14"
+      ],
+      "tons": [
+        8600,
+        5500
+      ],
+      "sources": [
+        "✓_12882.pdf",
+        "✓_16333.pdf"
+      ]
+    }
+  ],
+  "before_snapshot": {
+    "total_records": 744,
+    "total_tons": 4203116,
+    "null_tons": 8,
+    "no_material": 9,
+    "dup_groups_over_3d": 101,
+    "dup_records_in_groups": 259
+  },
+  "delta": {
+    "records_removed": 148,
+    "tons_removed": 1052800,
+    "dup_groups_resolved": 96
+  },
+  "top_offenders_before": [
+    {
+      "buque": "CLIPPER I-STAR",
+      "material": "MAP",
+      "cliente": "BUNGE",
+      "count": 8,
+      "eta_span_days": 32,
+      "etas": [
+        "2025-09-12",
+        "2025-09-19",
+        "2025-09-23",
+        "2025-09-28",
+        "2025-10-02",
+        "2025-10-07",
+        "2025-10-14"
+      ],
+      "tons": [
+        1425,
+        1425,
+        1425,
+        1425,
+        1425,
+        1425,
+        2850,
+        1425
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?",
+        "?",
+        "?",
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "CLIPPER I-STAR",
+      "material": "MAP",
+      "cliente": "YPF",
+      "count": 7,
+      "eta_span_days": 32,
+      "etas": [
+        "2025-09-12",
+        "2025-09-19",
+        "2025-09-23",
+        "2025-09-28",
+        "2025-10-02",
+        "2025-10-07",
+        "2025-10-14"
+      ],
+      "tons": [
+        8600,
+        8600,
+        8600,
+        8600,
+        5500,
+        5500,
+        11000
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?",
+        "?",
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "REM. TBC",
+      "material": "SSP",
+      "cliente": "BUNGE",
+      "count": 5,
+      "eta_span_days": 74,
+      "etas": [
+        "2025-06-12",
+        "2025-06-25",
+        "2025-07-24",
+        "2025-08-18",
+        "2025-08-25"
+      ],
+      "tons": [
+        7000,
+        12000,
+        6000,
+        3000,
+        3000
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "CAPITAN DIMITRIS",
+      "material": "DAP",
+      "cliente": "BUNGE",
+      "count": 5,
+      "eta_span_days": 21,
+      "etas": [
+        "2025-09-27",
+        "2025-10-04",
+        "2025-10-13",
+        "2025-10-18"
+      ],
+      "tons": [
+        1100,
+        1100,
+        1100,
+        2200,
+        1000
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "CAPITAN DIMITRIS",
+      "material": "DAP",
+      "cliente": "CARGILL",
+      "count": 4,
+      "eta_span_days": 21,
+      "etas": [
+        "2025-09-27",
+        "2025-10-04",
+        "2025-10-13",
+        "2025-10-18"
+      ],
+      "tons": [
+        1000,
+        1000,
+        1000,
+        2000
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "CAPITAN DIMITRIS",
+      "material": "NPS",
+      "cliente": "CARGILL",
+      "count": 4,
+      "eta_span_days": 21,
+      "etas": [
+        "2025-09-27",
+        "2025-10-04",
+        "2025-10-13",
+        "2025-10-18"
+      ],
+      "tons": [
+        2000,
+        2000,
+        2000,
+        4000
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "CAPITAN DIMITRIS",
+      "material": "NPS",
+      "cliente": "¿?",
+      "count": 4,
+      "eta_span_days": 21,
+      "etas": [
+        "2025-09-27",
+        "2025-10-04",
+        "2025-10-13",
+        "2025-10-18"
+      ],
+      "tons": [
+        2000,
+        2000,
+        2000,
+        4000
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "CAPITAN DIMITRIS",
+      "material": "NPS",
+      "cliente": "YPF",
+      "count": 4,
+      "eta_span_days": 21,
+      "etas": [
+        "2025-09-27",
+        "2025-10-04",
+        "2025-10-13",
+        "2025-10-18"
+      ],
+      "tons": [
+        1000,
+        1000,
+        1000,
+        2000
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "MIDJUR",
+      "material": "MAP",
+      "cliente": "VITERRA",
+      "count": 4,
+      "eta_span_days": 18,
+      "etas": [
+        "2025-05-31",
+        "2025-06-06",
+        "2025-06-11",
+        "2025-06-18"
+      ],
+      "tons": [
+        1500,
+        2500,
+        2500,
+        3100
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "MIDJUR",
+      "material": "MAP",
+      "cliente": "CARGILL",
+      "count": 4,
+      "eta_span_days": 18,
+      "etas": [
+        "2025-05-31",
+        "2025-06-06",
+        "2025-06-11",
+        "2025-06-18"
+      ],
+      "tons": [
+        2000,
+        2000,
+        2000,
+        9260
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "MIDJUR",
+      "material": "MAP",
+      "cliente": "BUNGE",
+      "count": 4,
+      "eta_span_days": 17,
+      "etas": [
+        "2025-05-31",
+        "2025-06-06",
+        "2025-06-11",
+        "2025-06-17"
+      ],
+      "tons": [
+        1500,
+        1500,
+        1500,
+        1500
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "REM. GUILLERMO C",
+      "material": "SSP",
+      "cliente": "BUNGE",
+      "count": 3,
+      "eta_span_days": 45,
+      "etas": [
+        "2025-07-10",
+        "2025-07-25",
+        "2025-08-24"
+      ],
+      "tons": [
+        6000,
+        6000,
+        3000
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "CAPITAN DIMITRIS",
+      "material": "NPS",
+      "cliente": "PTP ZONA FRANCA",
+      "count": 3,
+      "eta_span_days": 16,
+      "etas": [
+        "2025-09-27",
+        "2025-10-04",
+        "2025-10-13"
+      ],
+      "tons": [
+        10000,
+        10000,
+        10000
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "REM. IMPALA PANTANAL",
+      "material": "NAFTA",
+      "cliente": "PAMPA ENERGIA",
+      "count": 3,
+      "eta_span_days": 13,
+      "etas": [
+        "2025-06-10",
+        "2025-06-23"
+      ],
+      "tons": [
+        2100,
+        2100,
+        2100
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "CLIPPER I-STAR",
+      "material": "MAP",
+      "cliente": "VITERRA",
+      "count": 3,
+      "eta_span_days": 12,
+      "etas": [
+        "2025-10-02",
+        "2025-10-07",
+        "2025-10-14"
+      ],
+      "tons": [
+        3000,
+        3000,
+        6000
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "CLIPPER I-STAR",
+      "material": "MAP",
+      "cliente": "LARTIRIGOYEN",
+      "count": 3,
+      "eta_span_days": 12,
+      "etas": [
+        "2025-10-02",
+        "2025-10-07",
+        "2025-10-14"
+      ],
+      "tons": [
+        1650,
+        1650,
+        3300
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "CLIPPER I-STAR",
+      "material": "NPS+ZN",
+      "cliente": "LDC",
+      "count": 3,
+      "eta_span_days": 12,
+      "etas": [
+        "2025-10-02",
+        "2025-10-07",
+        "2025-10-14"
+      ],
+      "tons": [
+        6000,
+        6000,
+        12000
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "CLIPPER I-STAR",
+      "material": "NPS+ZN",
+      "cliente": "YPF",
+      "count": 3,
+      "eta_span_days": 12,
+      "etas": [
+        "2025-10-02",
+        "2025-10-07",
+        "2025-10-14"
+      ],
+      "tons": [
+        2000,
+        2000,
+        4000
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "BONNY ISLAND",
+      "material": "DAP",
+      "cliente": "YPF",
+      "count": 3,
+      "eta_span_days": 11,
+      "etas": [
+        "2025-09-10",
+        "2025-09-15",
+        "2025-09-21"
+      ],
+      "tons": [
+        3300,
+        3300,
+        6600
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?"
+      ]
+    },
+    {
+      "buque": "BONNY ISLAND",
+      "material": "DAP",
+      "cliente": "COFCO",
+      "count": 3,
+      "eta_span_days": 11,
+      "etas": [
+        "2025-09-10",
+        "2025-09-15",
+        "2025-09-21"
+      ],
+      "tons": [
+        2000,
+        2000,
+        4200
+      ],
+      "sources": [
+        "?",
+        "?",
+        "?"
+      ]
+    }
+  ],
+  "clipper_i_star_map_bunge": {
+    "before": [
+      {
+        "eta": null,
+        "tons": 1425,
+        "source_id": "—"
+      },
+      {
+        "eta": "2025-09-12",
+        "tons": 1425,
+        "source_id": "—"
+      },
+      {
+        "eta": "2025-09-19",
+        "tons": 1425,
+        "source_id": "—"
+      },
+      {
+        "eta": "2025-09-23",
+        "tons": 1425,
+        "source_id": "—"
+      },
+      {
+        "eta": "2025-09-28",
+        "tons": 1425,
+        "source_id": "—"
+      },
+      {
+        "eta": "2025-10-02",
+        "tons": 1425,
+        "source_id": "—"
+      },
+      {
+        "eta": "2025-10-07",
+        "tons": 1425,
+        "source_id": "—"
+      },
+      {
+        "eta": "2025-10-14",
+        "tons": 2850,
+        "source_id": "—"
+      }
+    ],
+    "after": [
+      {
+        "eta": null,
+        "tons": 1500,
+        "source_id": "✓_13119.pdf"
+      },
+      {
+        "eta": "2025-10-14",
+        "tons": 1425,
+        "source_id": "✓_16333.pdf"
+      }
+    ]
+  },
+  "nord_kaizan": {
+    "before": [
+      {
+        "buque": "NORD KAIZAN",
+        "eta": "2026-04-03",
+        "material": "MOP",
+        "cliente": "NUTRIEN",
+        "tons": 1100
+      },
+      {
+        "buque": "NORD KAIZAN",
+        "eta": "2026-04-03",
+        "material": "MOP",
+        "cliente": "YARA",
+        "tons": 1000
+      },
+      {
+        "buque": "NORD KAIZAN",
+        "eta": "2026-04-03",
+        "material": "MOP",
+        "cliente": "BUNGE",
+        "tons": 500
+      }
+    ],
+    "after": [
+      {
+        "buque": "NORD KAIZAN",
+        "eta": "2026-04-03",
+        "material": "MOP",
+        "cliente": "NUTRIEN",
+        "tons": 1100
+      },
+      {
+        "buque": "NORD KAIZAN",
+        "eta": "2026-04-03",
+        "material": "MOP",
+        "cliente": "YARA",
+        "tons": 1000
+      },
+      {
+        "buque": "NORD KAIZAN",
+        "eta": "2026-04-03",
+        "material": "MOP",
+        "cliente": "BUNGE",
+        "tons": 500
+      }
+    ]
+  }
+}

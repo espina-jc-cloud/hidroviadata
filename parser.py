@@ -251,6 +251,95 @@ def clean_cell(raw) -> str:
     return val.split("\n")[0].strip()
 
 
+# ── CANONICALIZATION (dedup keys + normalisation) ─────────────────────────────
+# These functions produce stable, comparable keys. They are NOT used to rewrite
+# stored fields — the DB keeps the original cleaned values. They only control
+# which records are treated as "same voyage".
+
+_MATERIAL_ALIASES: dict[str, str] = {
+    'SULFATO DE AMONIO':   'AMSUL',
+    'SULPHATE OF AMMONIA': 'AMSUL',
+    'S.A.':                'AMSUL',
+    'NITRATO DE AMONIO':   'NITRODOBLE',
+    'NITRATO AMONIO':      'NITRODOBLE',
+    'FOSFATO DIAMONICO':   'DAP',
+    'FOSFATO MONOAMONICO': 'MAP',
+    'CLORURO DE POTASIO':  'MOP',
+    'UREA GRANULADA':      'UREA',
+    'SULFATO SIMPLE':      'SSP',
+}
+
+_CLIENT_NORM: dict[str, str] = {
+    'CARGIL':        'CARGILL',
+    'DREYFUS':       'LDC',
+    'LOUIS DREYFUS': 'LDC',
+}
+
+# Origin typo / alias map — applied by norm_origin() when writing source data
+# AND used in canon keys so that e.g. "RUSSIA" and "RUSIA" collapse together.
+_ORIGIN_NORM: dict[str, str] = {
+    'MARRECOS':     'MARRUECOS',
+    'MARROCO':      'MARRUECOS',
+    'RUSSIA':       'RUSIA',
+    'EEUU':         'ESTADOS UNIDOS',
+    'EE.UU.':       'ESTADOS UNIDOS',
+    'ARABIA':       'ARABIA SAUDITA',
+    'ARAB SAUDI':   'ARABIA SAUDITA',
+    'SAUDI ARABIA': 'ARABIA SAUDITA',
+}
+
+
+def canon_vessel_name(name: str) -> str:
+    """Dedup key for vessel name: uppercase, single spaces, normalised REM prefix."""
+    if not name:
+        return ""
+    n = name.upper().strip()
+    n = re.sub(r"\s+", " ", n)
+    # 'REMOLCADOR X' → 'REM. X'   |   'REM X' → 'REM. X'
+    n = re.sub(r"^REMOLCADOR\.?\s+", "REM. ", n)
+    n = re.sub(r"^REM\.?\s+", "REM. ", n)
+    return n
+
+
+def canon_material(raw: str) -> str:
+    """Dedup key for material: alias expansion, empty → UNKNOWN."""
+    if not raw or not raw.strip():
+        return "UNKNOWN"
+    return _MATERIAL_ALIASES.get(raw.upper().strip(), raw.upper().strip())
+
+
+def canon_cliente(raw: str) -> str:
+    """Dedup key for client: uppercase, single spaces, PTP variant collapse."""
+    if not raw:
+        return ""
+    c = raw.upper().strip()
+    c = re.sub(r"\s+", " ", c)
+    # 'PTP (ZONA FRANCA)' / 'PTP ZONA FRANCA' / 'PTP-ZF' → 'PTP'
+    c = re.sub(r"^PTP\b.*", "PTP", c)
+    return _CLIENT_NORM.get(c, c)
+
+
+def canon_operacion(raw: str) -> str:
+    """Dedup key for operation: map to DESCARGAR / CARGA / TRASBORDO / UNKNOWN."""
+    if not raw:
+        return "UNKNOWN"
+    v = raw.upper().strip()
+    if "DESCARGAR" in v or "DESCARGA" in v:
+        return "DESCARGAR"
+    if "CARGA" in v and "TRANS" not in v:
+        return "CARGA"
+    if "TRASBORDO" in v or "TRANSBORDO" in v:
+        return "TRASBORDO"
+    return "UNKNOWN"
+
+
+def norm_origin(raw: str) -> str:
+    """Normalise known origin typos and aliases to canonical country name."""
+    if not raw:
+        return raw
+    return _ORIGIN_NORM.get(raw.upper().strip(), raw)
+
+
 def extract_origin(obs: str) -> str:
     """
     'ETA RECALADA - MARRUECOS'   → 'MARRUECOS'
@@ -445,20 +534,23 @@ def parse_pdf(pdf_path: Path) -> tuple[str | None, list[dict]]:
 
                     for cliente in clients:
                         records.append({
-                            "buque":     vessel_ctx["buque"],
-                            "agencia":   vessel_ctx["agencia"],
-                            "eta":       vessel_ctx["eta"],
-                            "material":  material,
-                            "cliente":   cliente,
-                            "tons":      tons,
-                            "operador":  operador or "",
-                            "operacion": operacion,
-                            "muelle":    vessel_ctx["muelle"],
-                            "sector":    vessel_ctx["sector"],
-                            "origen":    vessel_ctx["origen"],
-                            # Internal fields for deduplication
-                            "_pdf_date": pdf_date,
-                            "_pdf_file": pdf_path.name,
+                            "buque":       vessel_ctx["buque"],
+                            "agencia":     vessel_ctx["agencia"],
+                            "eta":         vessel_ctx["eta"],
+                            "material":    material,
+                            "cliente":     cliente,
+                            "tons":        tons,
+                            "operador":    operador or "",
+                            "operacion":   operacion,
+                            "muelle":      vessel_ctx["muelle"],
+                            "sector":      vessel_ctx["sector"],
+                            "origen":      norm_origin(vessel_ctx["origen"]),
+                            # Provenance — kept in output (not underscore-prefixed)
+                            "source_id":   pdf_path.name,
+                            "source_date": pdf_date,
+                            # Internal fields for dedup sort (stripped before JSON output)
+                            "_pdf_date":   pdf_date,
+                            "_pdf_file":   pdf_path.name,
                         })
 
     return pdf_date, records
@@ -478,67 +570,99 @@ def eta_to_date(eta: str | None) -> datetime | None:
 
 def consolidate_within_pdf(records: list[dict]) -> list[dict]:
     """
-    Within a single PDF: group by (buque, eta, material, cliente) and SUM tons.
-    Other fields come from the first occurrence.
+    Within a single PDF: deduplicate on (buque, eta, material, cliente).
+    Keep the first occurrence — do NOT sum tons. Repeated rows within the
+    same PDF are parser/PDF-layout artifacts, not genuinely separate parcels.
+    (Summing created inflated values, e.g. 2×1425 = 2850 for the same slot.)
     """
-    groups: dict[tuple, list[dict]] = defaultdict(list)
+    seen: set[tuple] = set()
+    result: list[dict] = []
     for r in records:
         key = (r["buque"], r["eta"], r["material"], r["cliente"])
-        groups[key].append(r)
-
-    consolidated = []
-    for group in groups.values():
-        merged = dict(group[0])
-        # Sum tons across all rows for this group
-        valid_tons = [r["tons"] for r in group if r["tons"] is not None]
-        merged["tons"] = sum(valid_tons) if valid_tons else None
-        consolidated.append(merged)
-    return consolidated
+        if key not in seen:
+            seen.add(key)
+            result.append(r)
+    return result
 
 
 def consolidate_across_pdfs(all_records: list[dict]) -> list[dict]:
     """
-    Across all PDFs: same (buque, material, cliente) with ETAs within ±3 days
-    = same voyage. Keep the record from the most-recent PDF.
+    Across all PDFs: collapse same-voyage records into one (best snapshot wins).
 
-    Strategy:
-      1. Sort by _pdf_date descending (most recent first).
-      2. For each record, check if a "matching" record already exists in `final`.
-      3. If yes, skip (the already-stored one is more recent).
-      4. If no, add it.
+    Voyage identity uses a canonical base_key:
+        (canon_vessel_name, canon_material, canon_cliente, canon_operacion, muelle_upper)
+
+    Two records are treated as the same voyage when base_key matches AND any of:
+      1. ETA-null yields to ETA-present (early draft vs confirmed arrival)
+      2. ETA difference ≤ 21 days  (weekly lineup drift window)
+      3. Tons identical / both null (strong override — definitively same snapshot)
+
+    Best-snapshot priority (applied via sort order before dedup loop):
+      • ETA-present records before ETA-null records for the same base_key
+      • Among ETA-present: most recent source_date wins
+      This means the first occurrence in the loop is always the best snapshot.
     """
-    # Sort most-recent PDF first
+    # Step 1 — most-recent PDF first (source_date descending)
     all_records.sort(key=lambda r: r.get("_pdf_date") or "", reverse=True)
+    # Step 2 — ETA-present records before ETA-null (stable sort preserves step 1 order)
+    all_records.sort(key=lambda r: 0 if r.get("eta") else 1)
 
-    final: list[dict] = []
+    # Pre-compute canonical keys once per record (avoids repeated calls in O(n²) loop)
+    keyed: list[tuple[tuple, dict]] = []
+    for r in all_records:
+        k = (
+            canon_vessel_name(r.get("buque")     or ""),
+            canon_material(   r.get("material")  or ""),
+            canon_cliente(    r.get("cliente")   or ""),
+            canon_operacion(  r.get("operacion") or ""),
+            (r.get("muelle") or "").strip().upper(),
+        )
+        keyed.append((k, r))
 
-    for record in all_records:
-        buque    = record["buque"]
-        material = record["material"]
-        cliente  = record["cliente"]
+    final_records: list[dict]  = []
+    final_keys:    list[tuple] = []
+
+    for bkey, record in keyed:
         eta_dt   = eta_to_date(record.get("eta"))
+        rec_tons = record.get("tons")
 
         matched = False
-        for existing in final:
-            if (existing["buque"]    != buque    or
-                existing["material"] != material or
-                existing["cliente"]  != cliente):
+        for ekey, existing in zip(final_keys, final_records):
+            if bkey != ekey:
                 continue
-            # Same buque+material+cliente — check ETA proximity
-            existing_dt = eta_to_date(existing.get("eta"))
-            if eta_dt and existing_dt:
-                if abs((eta_dt - existing_dt).days) <= 3:
+
+            ex_dt   = eta_to_date(existing.get("eta"))
+            ex_tons = existing.get("tons")
+
+            # Rule 1: ETA-null record always yields to any ETA-present record.
+            # The ETA-null was an early "draft" sighting; the ETA-present is the
+            # definitive arrival snapshot.  Because the sort puts ETA-present
+            # records first, by the time we reach an ETA-null candidate the
+            # ETA-present record is already in final → we safely drop the draft.
+            if eta_dt is None and ex_dt is not None:
+                matched = True
+                break
+
+            # Strong override: identical tons (or both null) → always same voyage
+            if rec_tons == ex_tons or (rec_tons is None and ex_tons is None):
+                matched = True
+                break
+
+            # Normal window: ETA within 21 days
+            if eta_dt and ex_dt:
+                if abs((eta_dt - ex_dt).days) <= 21:
                     matched = True
                     break
             elif record.get("eta") == existing.get("eta"):
-                # Both non-parseable, exact string match
+                # Both non-parseable strings — exact match
                 matched = True
                 break
 
         if not matched:
-            final.append(record)
+            final_records.append(record)
+            final_keys.append(bkey)
 
-    return final
+    return final_records
 
 
 def strip_internal(r: dict) -> dict:

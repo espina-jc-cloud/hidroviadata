@@ -42,18 +42,20 @@ RESET = '--reset' in sys.argv
 
 DDL = """
 CREATE TABLE IF NOT EXISTS shipments (
-    id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    buque     TEXT,
-    agencia   TEXT,
-    eta       TEXT,
-    material  TEXT,
-    cliente   TEXT,
-    tons      REAL,
-    operador  TEXT,
-    operacion TEXT,
-    muelle    TEXT,
-    sector    TEXT,
-    origen    TEXT
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    buque       TEXT,
+    agencia     TEXT,
+    eta         TEXT,
+    material    TEXT,
+    cliente     TEXT,
+    tons        REAL,
+    operador    TEXT,
+    operacion   TEXT,
+    muelle      TEXT,
+    sector      TEXT,
+    origen      TEXT,
+    source_id   TEXT,   -- PDF filename that created this row
+    source_date TEXT    -- Issue date of that PDF (YYYY-MM-DD)
 );
 
 CREATE TABLE IF NOT EXISTS vessel_profiles (
@@ -84,11 +86,13 @@ CREATE TABLE IF NOT EXISTS vessel_candidates (
     probable_product      TEXT,
     probable_importer     TEXT,
     probable_tonnage_range TEXT,  -- JSON array [min, max] or null
-    probability_score     INTEGER,
-    probability_level     TEXT,
-    prediction_status     TEXT,
-    scoring_reasons       TEXT,   -- JSON array
-    created_at            TEXT DEFAULT (datetime('now'))
+    probability_score        INTEGER,
+    probability_level        TEXT,
+    prediction_status        TEXT,   -- predicted / confirmed / expired
+    scoring_reasons          TEXT,   -- JSON array
+    confirmed_eta            TEXT,   -- ISO date when vessel appeared in shipments
+    confirmed_match_reason   TEXT,   -- brief description of the matching shipment row
+    created_at               TEXT DEFAULT (datetime('now'))
 );
 """
 
@@ -116,24 +120,28 @@ def migrate() -> None:
         """
         INSERT INTO shipments
             (buque, agencia, eta, material, cliente, tons,
-             operador, operacion, muelle, sector, origen)
+             operador, operacion, muelle, sector, origen,
+             source_id, source_date)
         VALUES
             (:buque, :agencia, :eta, :material, :cliente, :tons,
-             :operador, :operacion, :muelle, :sector, :origen)
+             :operador, :operacion, :muelle, :sector, :origen,
+             :source_id, :source_date)
         """,
         [
             {
-                'buque':     r.get('buque')     or '',
-                'agencia':   r.get('agencia')   or '',
-                'eta':       r.get('eta')        or '',
-                'material':  r.get('material')  or '',
-                'cliente':   r.get('cliente')   or '',
-                'tons':      r.get('tons'),
-                'operador':  r.get('operador')  or '',
-                'operacion': r.get('operacion') or '',
-                'muelle':    r.get('muelle')    or '',
-                'sector':    r.get('sector')    or '',
-                'origen':    r.get('origen')    or '',
+                'buque':       r.get('buque')       or '',
+                'agencia':     r.get('agencia')     or '',
+                'eta':         r.get('eta')          or '',
+                'material':    r.get('material')    or '',
+                'cliente':     r.get('cliente')     or '',
+                'tons':        r.get('tons'),
+                'operador':    r.get('operador')    or '',
+                'operacion':   r.get('operacion')   or '',
+                'muelle':      r.get('muelle')      or '',
+                'sector':      r.get('sector')      or '',
+                'origen':      r.get('origen')      or '',
+                'source_id':   r.get('source_id'),
+                'source_date': r.get('source_date'),
             }
             for r in records
         ],

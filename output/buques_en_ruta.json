@@ -1,21 +1,21 @@
 [
   {
-    "vessel_name": "KEN UN",
+    "vessel_name": "NORSE IJMUIDEN",
     "last_position": null,
-    "last_port": "LOWER COVE CANADA",
-    "ais_destination": "SAN NICOLAS",
+    "last_port": "ARGELIA",
+    "ais_destination": "RECALADA",
     "eta_estimated": "2026-04-03",
-    "probable_product": "MOP",
+    "probable_product": "UREA",
     "probable_importer": null,
     "probable_tonnage_range": null,
     "probability_score": 55,
     "probability_level": "low",
     "prediction_status": "predicted",
     "scoring_reasons": [
-      "+20 — Last port 'LOWER COVE CANADA' matches known fertilizer origin corridor",
-      "+15 — AIS destination 'SAN NICOLAS' matches Argentina / River Plate pattern",
+      "+20 — Last port 'ARGELIA' matches known fertilizer origin corridor",
+      "+15 — AIS destination 'RECALADA' matches Argentina / River Plate pattern",
       "+10 — Vessel type 'BULK CARRIER' matches bulk fertilizer carrier",
-      "+10 — DWT 32,000 within target range (25,000–60,000 t)"
+      "+10 — DWT 45,000 within target range (25,000–60,000 t)"
     ]
   }
 ]

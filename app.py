@@ -105,6 +105,40 @@ def _bootstrap_db() -> None:
 _bootstrap_db()
 
 
+# ── Startup log — always visible in Railway logs ──────────────────────────────
+
+def _startup_log() -> None:
+    """Print a one-time summary to stdout so Railway logs confirm which version
+    is running and what data the DB contains."""
+    try:
+        con = sqlite3.connect(DATABASE)
+        n_ship   = con.execute('SELECT count(*) FROM shipments').fetchone()[0]
+        tons_row = con.execute('SELECT sum(tons) FROM shipments WHERE tons IS NOT NULL').fetchone()
+        t_tons   = int(round(tons_row[0])) if tons_row and tons_row[0] else 0
+        latest   = con.execute(
+            'SELECT source_date, source_id FROM shipments ORDER BY source_date DESC LIMIT 1'
+        ).fetchone()
+        n_cand   = con.execute('SELECT count(*) FROM vessel_candidates').fetchone()[0]
+        con.close()
+        src_date = latest[0] if latest else 'n/a'
+        src_id   = latest[1] if latest else 'n/a'
+    except Exception as exc:
+        n_ship = t_tons = n_cand = 0
+        src_date = src_id = f'ERROR: {exc}'
+
+    sha = _git_sha()
+    print('─' * 60, flush=True)
+    print(f'HidrovíaData startup  sha={sha}', flush=True)
+    print(f'  DB           : {DATABASE}', flush=True)
+    print(f'  shipments    : {n_ship:,}  total_tons={t_tons:,}', flush=True)
+    print(f'  latest_lineup: {src_date}  ({src_id})', flush=True)
+    print(f'  candidates   : {n_cand}', flush=True)
+    print('─' * 60, flush=True)
+
+
+_startup_log()
+
+
 # ── Database helpers ──────────────────────────────────────────────────────────
 
 def get_db() -> sqlite3.Connection:

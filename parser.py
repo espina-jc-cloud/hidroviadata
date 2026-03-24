@@ -527,6 +527,16 @@ def parse_pdf(pdf_path: Path) -> tuple[str | None, list[dict]]:
                     operacion = normalize_operacion(clean_cell(row[6])) or vessel_ctx["operacion"]
 
                     clients = split_clients(raw_cli)
+                    # Fallback: col3 (cliente) is empty but material is present.
+                    # Some PDF layouts put the agency entity in col1 and leave col3
+                    # blank when the agent == consignee (e.g. PTP importing AMSUL).
+                    # Use col1 of this row first; fall back to the vessel's inherited
+                    # agencia.  Do NOT trigger when material is missing (aggregate rows).
+                    if not clients and material:
+                        row_agency = clean_agency(str(row[1] or ""))
+                        fallback_cli = row_agency or vessel_ctx.get("agencia", "")
+                        if fallback_cli:
+                            clients = [fallback_cli]
                     if not clients:
                         continue
 

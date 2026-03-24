@@ -1,0 +1,4 @@
+- No tocar más de 3 archivos por cambio, salvo que sea imprescindible.
+- Antes de modificar: explicar en 2 líneas el root cause y el plan.
+- Después: listar cómo verificar (curl o python) y qué output esperar.
+- No crear pasos manuales innecesarios: preferir que el sistema se auto-repare.

@@ -1,0 +1,4 @@
+- Railway usa filesystem efímero: si falta hidroviadata.db, correr migrate.py --reset automáticamente al iniciar.
+- Agregar /health 200 ok.
+- Evitar cache del dashboard.html: Cache-Control: no-store.
+- Siempre exponer /api/debug con git_sha + latest_source_date para verificar qué versión corre.

@@ -1,0 +1,6 @@
+{
+  "project": "hidroviadata",
+  "preferred_style": "minimal_changes",
+  "language": "es",
+  "always_read_first": ["CLAUDE.md", ".claude/rules/project_rules.md", ".claude/rules/railway.md", ".claude/rules/data_integrity.md"]
+}

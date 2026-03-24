@@ -1,0 +1,4 @@
+- Nunca sumar toneladas por duplicados.
+- La fuente “lineup confirmado” se basa solo en el último source_date.
+- “Predichos por AIS” SOLO se alimenta de vessel_candidates (inputs manuales).
+- Si un AIS candidate coincide con shipments: marcar confirmed_eta y lead_time_days.

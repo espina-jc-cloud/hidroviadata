@@ -523,8 +523,10 @@ _startup_log()
 @app.route('/api/lineup_confirmed')
 def api_lineup_confirmed() -> Response:
     """
-    ALL fertilizer rows from the single latest imported lineup PDF
-    (identified by MAX(source_date)).
+    ALL rows from the single latest imported lineup PDF
+    (identified by MAX(source_date)).  No material whitelist — rows with
+    any material (or empty material) are included so that incomplete rows
+    (eta=null, cliente='', tons=null) are not silently dropped.
 
     Each row is one shipment record — different clients for the same vessel
     are NOT collapsed, because they are distinct trade positions.
@@ -532,18 +534,17 @@ def api_lineup_confirmed() -> Response:
     Returns
     ───────
     {
-      "latest_source_date": "2026-03-18",
-      "latest_source_id":   "LINE UP PUERTO SAN NICOLAS 180326.pdf",
-      "row_count":          24,
-      "total_tons":         58091,
+      "latest_source_date": "2026-03-20",
+      "latest_source_id":   "LINE UP PUERTO SAN NICOLAS 200326.pdf",
+      "row_count":          43,
+      "total_tons":         133210,
       "rows": [ {buque, eta, material, cliente, tons, origen,
                  agencia, muelle, sector, source_id, source_date}, … ]
     }
-    Ordered by eta ASC, then buque ASC.
+    Ordered by eta ASC NULLS LAST, then buque ASC.
     """
     print(f"[{datetime.now().isoformat(timespec='seconds')}] GET /api/lineup_confirmed", flush=True)
-    db           = get_db()
-    placeholders = ','.join('?' * len(_FERT_MATERIALS))
+    db = get_db()
 
     # Find the latest lineup date and its primary source_id
     latest_meta  = db.execute(
@@ -558,12 +559,13 @@ def api_lineup_confirmed() -> Response:
     latest_sid  = latest_meta['source_id']
 
     rows = db.execute(
-        f'SELECT buque, eta, material, cliente, tons, origen, '
-        f'       agencia, muelle, sector, source_id, source_date '
-        f'FROM shipments '
-        f'WHERE source_date = ? AND material IN ({placeholders}) '
-        f'ORDER BY eta ASC, buque ASC',
-        (latest_date, *_FERT_MATERIALS),
+        'SELECT buque, eta, material, cliente, tons, origen, '
+        '       agencia, muelle, sector, source_id, source_date '
+        'FROM shipments '
+        'WHERE source_date = ? '
+        'ORDER BY CASE WHEN eta IS NULL OR eta = "" THEN 1 ELSE 0 END ASC, '
+        '         eta ASC, buque ASC',
+        (latest_date,),
     ).fetchall()
 
     result = []

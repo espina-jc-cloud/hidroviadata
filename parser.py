@@ -534,9 +534,18 @@ def parse_pdf(pdf_path: Path) -> tuple[str | None, list[dict]]:
                     # agencia.  Do NOT trigger when material is missing (aggregate rows).
                     if not clients and material:
                         row_agency = clean_agency(str(row[1] or ""))
+                        # Reject bare 'X' separator artifacts that clean_agency
+                        # doesn't strip (it only removes 'X\n' prefix, not lone 'X').
+                        if row_agency in ("X", ""):
+                            row_agency = ""
                         fallback_cli = row_agency or vessel_ctx.get("agencia", "")
-                        if fallback_cli:
+                        if fallback_cli and fallback_cli != "X":
                             clients = [fallback_cli]
+                        else:
+                            # No valid client or agency in PDF — emit record with
+                            # blank client so the vessel+material+tons are preserved
+                            # (e.g. NORSE OMISHIMA: FERTILIZANTE 26500t, no client listed).
+                            clients = [""]
                     if not clients:
                         continue
 

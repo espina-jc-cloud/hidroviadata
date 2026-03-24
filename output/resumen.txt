@@ -1,25 +1,25 @@
 ═══════════════════════════════════════════════════════
   RESUMEN — HidrovíaData Parser
-  Generado: 2026-03-20 11:02:58
+  Generado: 2026-03-24 14:45:13
 ═══════════════════════════════════════════════════════
 
-PDFs procesados:                  60
-Registros raw (suma todos PDFs):  2714
-Tras consolidación intra-PDF:     2391
-Duplicados inter-PDF eliminados:  1806
-REGISTROS FINALES:                585
-Toneladas totales:                3,116,416
+PDFs procesados:                  61
+Registros raw (suma todos PDFs):  2747
+Tras consolidación intra-PDF:     2421
+Duplicados inter-PDF eliminados:  1832
+REGISTROS FINALES:                589
+Toneladas totales:                3,128,816
 
 ─── Por operación ───────────────────────────────────
   DESCARGAR                        465
-  DESCARGA                          48
-  TRASBORDO                         39
+  DESCARGA                          50
+  TRASBORDO                         41
   CARGA                             33
 
 ─── Por material (top 20) ───────────────────────────
   UREA                             175
-  MAP                              108
-  TSP                               42
+  MAP                              110
+  TSP                               44
   NPS                               37
   DAP                               26
   AMSUL                             21
@@ -66,7 +66,7 @@ Toneladas totales:                3,116,416
   MOVIPORT FISCAL                    5
 
 ─── Por muelle ──────────────────────────────────────
-  CARGA GENERAL                    542
+  CARGA GENERAL                    546
   ELEVADOR                          28
   AES                               15
 
@@ -93,6 +93,7 @@ Toneladas totales:                3,116,416
   CS CELESTE                              7
   SUPER SAKA                              7
   ALEXANDROS P.                           7
+  REM. SAN JOSE V                         6
   NIKITIS                                 6
   BOGDAN                                  6
   COLUMBIA RIVER                          6
@@ -100,10 +101,10 @@ Toneladas totales:                3,116,416
   BLUE NEPTUNE                            6
   APEX                                    6
   CL ZHANGJIAJIE                          6
-  AMANI                                   6
 
 ─── Detalle por PDF ─────────────────────────────────
   ✓ LINE UP PUERTO SAN NICOLAS 180326.pdf                   (2026-03-18)  raw:  26  intra:  25
+  ✓ LINE UP PUERTO SAN NICOLAS 200326.pdf                   (2026-03-20)  raw:  33  intra:  30
   ✓ ✓_12882.pdf                                             (2025-08-22)  raw:  44  intra:  40
   ✓ ✓_12958.pdf                                             (2025-08-20)  raw:  45  intra:  40
   ✓ ✓_12975.pdf                                             (2025-08-18)  raw:  43  intra:  38

@@ -1,15 +1,15 @@
 # HidrovíaData — DB Status
 
-_Generated: 2026-03-20 11:20_
+_Generated: 2026-03-24 14:45_
 
 ## Shipments
 
 | Field | Value |
 |---|---|
-| Total rows | 585 |
+| Total rows | 589 |
 | Earliest ETA | 2025-01-05 |
 | Latest ETA | 2026-04-11 |
-| Most recent source_date | 2026-03-18 |
+| Most recent source_date | 2026-03-20 |
 | Null-tonnage rows | 4 |
 | Missing-material rows | 8 |
 
@@ -17,16 +17,17 @@ _Generated: 2026-03-20 11:20_
 
 | Status | Count |
 |---|---|
-| predicted | 6 |
+| predicted | 1 |
 | confirmed | 0 |
 | expired | 0 |
-| **total** | **11** |
+| **total** | **1** |
 
 ## Last 10 Import Batches (source_id)
 
 | source_id | source_date | rows |
 |---|---|---|
-| LINE UP PUERTO SAN NICOLAS 180326.pdf | 2026-03-18 | 25 |
+| LINE UP PUERTO SAN NICOLAS 200326.pdf | 2026-03-20 | 26 |
+| LINE UP PUERTO SAN NICOLAS 180326.pdf | 2026-03-18 | 3 |
 | ✓_LINE UP PUERTO SAN NICOLAS 110326.pdf | 2026-03-11 | 7 |
 | ✓_17738.pdf | 2026-01-12 | 8 |
 | ✓_17491.pdf | 2025-12-19 | 10 |
@@ -35,13 +36,13 @@ _Generated: 2026-03-20 11:20_
 | ✓_16872.pdf | 2025-11-20 | 34 |
 | ✓_16817.pdf | 2025-11-19 | 8 |
 | ✓_16765.pdf | 2025-11-17 | 5 |
-| ✓_16751.pdf | 2025-11-14 | 6 |
 
 ## Rows per source_date (all batches)
 
 | source_date | rows | rows_with_tons |
 |---|---|---|
-| 2026-03-18 | 25 | 25 |
+| 2026-03-20 | 26 | 26 |
+| 2026-03-18 | 3 | 3 |
 | 2026-03-11 | 7 | 7 |
 | 2026-01-12 | 8 | 8 |
 | 2025-12-19 | 10 | 10 |

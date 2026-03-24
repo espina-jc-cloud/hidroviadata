@@ -538,13 +538,15 @@ def parse_pdf(pdf_path: Path) -> tuple[str | None, list[dict]]:
                         # doesn't strip (it only removes 'X\n' prefix, not lone 'X').
                         if row_agency in ("X", ""):
                             row_agency = ""
-                        fallback_cli = row_agency or vessel_ctx.get("agencia", "")
-                        if fallback_cli and fallback_cli != "X":
-                            clients = [fallback_cli]
+                        # Use only the row-level col1 entity.
+                        # NEVER inherit vessel_ctx["agencia"]: the vessel-level field is
+                        # the shipping agent (e.g. WAVE), not the cargo importer.
+                        # PTP rows already carry "PTP" in their own col1, so this is safe.
+                        if row_agency and row_agency != "X":
+                            clients = [row_agency]
                         else:
-                            # No valid client or agency in PDF — emit record with
-                            # blank client so the vessel+material+tons are preserved
-                            # (e.g. NORSE OMISHIMA: FERTILIZANTE 26500t, no client listed).
+                            # Truly no client in this PDF row — preserve the record with
+                            # blank cliente so vessel+material+tons are not lost.
                             clients = [""]
                     if not clients:
                         continue

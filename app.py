@@ -167,6 +167,31 @@ def _rows_to_list(rows) -> list[dict]:
     return [dict(row) for row in rows]
 
 
+def _get_latest_quality() -> dict | None:
+    """
+    Return the most recent row from quality_reports as a plain dict.
+    Returns None if the table is missing or empty (safe for old DBs).
+    """
+    try:
+        row = get_db().execute(
+            'SELECT status, blocks_json, warnings_json, summary_json, timestamp, source_date, source_id '
+            'FROM quality_reports ORDER BY id DESC LIMIT 1'
+        ).fetchone()
+        if not row:
+            return None
+        return {
+            'status':      row['status'],
+            'blocks':      json.loads(row['blocks_json']   or '[]'),
+            'warnings':    json.loads(row['warnings_json'] or '[]'),
+            'summary':     json.loads(row['summary_json']  or '{}'),
+            'timestamp':   row['timestamp'],
+            'source_date': row['source_date'],
+            'source_id':   row['source_id'],
+        }
+    except Exception:
+        return None
+
+
 # ── Shipment normalisation ─────────────────────────────────────────────────────
 # Applied at the API layer only — the DB schema is unchanged.
 
@@ -313,16 +338,17 @@ def api_debug() -> Response:
     cand_count  = db.execute('SELECT count(*) FROM vessel_candidates').fetchone()[0]
 
     return jsonify({
-        'git_sha':           _git_sha(),
-        'db_path':           str(DATABASE),
-        'shipments_count':   ship_count,
-        'shipments_tons':    int(round(ship_tons))  if ship_tons  else 0,
-        'fert_count':        fert_count,
-        'fert_tons':         int(round(fert_tons))  if fert_tons  else 0,
+        'git_sha':            _git_sha(),
+        'db_path':            str(DATABASE),
+        'shipments_count':    ship_count,
+        'shipments_tons':     int(round(ship_tons))  if ship_tons  else 0,
+        'fert_count':         fert_count,
+        'fert_tons':          int(round(fert_tons))  if fert_tons  else 0,
         'latest_source_date': latest_row['source_date'] if latest_row else None,
-        'latest_source_id':  latest_row['source_id']   if latest_row else None,
-        'vessel_candidates': cand_count,
-        'as_of':             datetime.now().isoformat(timespec='seconds'),
+        'latest_source_id':   latest_row['source_id']   if latest_row else None,
+        'vessel_candidates':  cand_count,
+        'quality':            _get_latest_quality(),
+        'as_of':              datetime.now().isoformat(timespec='seconds'),
     })
 
 
@@ -585,6 +611,7 @@ def api_lineup_confirmed() -> Response:
         'latest_source_id':   latest_sid,
         'row_count':          len(result),
         'total_tons':         total_tons,
+        'quality':            _get_latest_quality(),
         'rows':               result,
     })
 
@@ -723,6 +750,7 @@ def api_status() -> Response:
         'latest_lineup_fert_rows':  lf_rows,
         'latest_lineup_fert_tons':  lf_tons,
         'candidates_by_status':     {'predicted': n_pred, 'confirmed': n_conf, 'expired': n_exp},
+        'quality':                  _get_latest_quality(),
         'as_of':                    datetime.now().isoformat(timespec='seconds'),
     })
 

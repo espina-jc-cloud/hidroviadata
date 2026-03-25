@@ -29,11 +29,12 @@ from pathlib import Path
 
 from build_core_fleet import build as _build_core_fleet
 
-BASE      = Path(__file__).parent
-DB_PATH   = BASE / 'hidroviadata.db'
-DATA      = BASE / 'output' / 'data.json'
-PROFILES  = BASE / 'output' / 'vessel_profiles.json'
-BUQUES    = BASE / 'output' / 'buques_en_ruta.json'
+BASE           = Path(__file__).parent
+DB_PATH        = BASE / 'hidroviadata.db'
+DATA           = BASE / 'output' / 'data.json'
+PROFILES       = BASE / 'output' / 'vessel_profiles.json'
+BUQUES         = BASE / 'output' / 'buques_en_ruta.json'
+QUALITY_REPORT = BASE / 'output' / 'quality_report.json'
 
 RESET = '--reset' in sys.argv
 
@@ -94,17 +95,97 @@ CREATE TABLE IF NOT EXISTS vessel_candidates (
     confirmed_match_reason   TEXT,   -- brief description of the matching shipment row
     created_at               TEXT DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS quality_reports (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp     TEXT NOT NULL,
+    source_date   TEXT,
+    source_id     TEXT,
+    status        TEXT NOT NULL,   -- PASS / WARNING / BLOCK
+    blocks_json   TEXT,            -- JSON array of block reasons
+    warnings_json TEXT,            -- JSON array of warning reasons
+    summary_json  TEXT             -- JSON object with computed metrics
+);
 """
 
 DROP_DDL = """
 DROP TABLE IF EXISTS fertilizer_core_fleet;
+DROP TABLE IF EXISTS quality_reports;
 DROP TABLE IF EXISTS shipments;
 DROP TABLE IF EXISTS vessel_profiles;
 DROP TABLE IF EXISTS vessel_candidates;
 """
 
 
+def _check_quality_gate() -> dict | None:
+    """
+    Read output/quality_report.json (written by parser.py).
+    - BLOCK  → print reasons and sys.exit(1) WITHOUT touching the DB.
+    - WARNING → print reasons but continue.
+    - PASS / missing report → continue silently.
+    Returns the report dict (or None if no report file).
+    """
+    if not QUALITY_REPORT.exists():
+        print("[quality] No quality_report.json found — run python3 parser.py first.")
+        return None
+
+    report = json.loads(QUALITY_REPORT.read_text(encoding='utf-8'))
+    status = report.get('status', 'PASS')
+
+    # When --reset is used, the DB will be fully rebuilt from data.json, so a
+    # "Duplicate PDF" block is expected and safe — waive it only for --reset.
+    blocks = report.get('blocks', [])
+    if RESET:
+        dup_blocks = [b for b in blocks if b.startswith('Duplicate PDF')]
+        if dup_blocks:
+            blocks = [b for b in blocks if not b.startswith('Duplicate PDF')]
+            print(f'[quality] --reset mode: waiving duplicate-PDF block '
+                  f'(DB will be fully rebuilt).')
+            status = 'BLOCK' if blocks else ('WARNING' if report.get('warnings') else 'PASS')
+            # Update report so the effective status is stored in the DB
+            report = {**report, 'status': status, 'blocks': blocks}
+
+    if status == 'BLOCK':
+        print('\n' + '═' * 60)
+        print('  ❌  QUALITY GATE: BLOCK — DB NOT modified (previous DB kept intact)')
+        for reason in blocks:
+            print(f'       • {reason}')
+        print('  Fix the issues above, re-run parser.py, then retry migrate.py.')
+        print('═' * 60 + '\n')
+        sys.exit(1)
+
+    if status == 'WARNING':
+        print('\n' + '─' * 60)
+        print('  ⚠   QUALITY GATE: WARNING — publishing with caveats')
+        for reason in report.get('warnings', []):
+            print(f'       • {reason}')
+        print('─' * 60)
+
+    return report
+
+
+def _write_quality_report(con: sqlite3.Connection, report: dict) -> None:
+    """Persist the quality report to the quality_reports table."""
+    con.execute(
+        'INSERT INTO quality_reports '
+        '  (timestamp, source_date, source_id, status, blocks_json, warnings_json, summary_json) '
+        'VALUES (?, ?, ?, ?, ?, ?, ?)',
+        (
+            report.get('timestamp'),
+            report.get('source_date'),
+            report.get('source_id'),
+            report.get('status'),
+            json.dumps(report.get('blocks', [])),
+            json.dumps(report.get('warnings', [])),
+            json.dumps(report.get('summary', {})),
+        ),
+    )
+
+
 def migrate() -> None:
+    # ── Quality gate: abort on BLOCK before touching the DB ───────────────
+    quality_report = _check_quality_gate()
+
     con = sqlite3.connect(DB_PATH)
     cur = con.cursor()
 
@@ -231,6 +312,12 @@ def migrate() -> None:
     core_fleet = _build_core_fleet(con)
     print(f"  fertilizer_core_fleet : {len(core_fleet):>3} rows derived  "
           f"(fertilizer_visits ≥ 2)")
+
+    # ── Persist quality report ─────────────────────────────────────────────
+    if quality_report:
+        _write_quality_report(con, quality_report)
+        con.commit()
+        print(f"  quality_reports    :   1 row written  (status={quality_report.get('status')})")
 
     con.close()
     print(f"\nDatabase written → {DB_PATH}")

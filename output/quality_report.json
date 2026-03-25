@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-03-25T11:57:08",
+  "source_date": "2026-03-20",
+  "source_id": "LINE UP PUERTO SAN NICOLAS 200326.pdf",
+  "status": "BLOCK",
+  "blocks": [
+    "Duplicate PDF: \"LINE UP PUERTO SAN NICOLAS 200326.pdf\" already in DB (43 rows)."
+  ],
+  "warnings": [
+    "Missing cliente: 10/43 rows (23.3%) — exceeds 5% threshold.",
+    "ETA >30 days in the past: ['REM. DON JUAN N eta=2026-02-21', 'REM. SAN JOSE V eta=2026-02-21', 'REM. SAN JOSE V eta=2026-02-21']"
+  ],
+  "summary": {
+    "n_rows": 43,
+    "total_tons": 229480,
+    "prev_tons": null,
+    "delta_pct": null,
+    "missing_cliente": 10,
+    "missing_material": 0,
+    "old_eta_count": 4
+  }
+}

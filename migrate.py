@@ -372,15 +372,21 @@ def compute_quality_report(records: list[dict]) -> dict:
 
     status = 'BLOCK' if blocks else ('WARNING' if warnings else 'PASS')
 
-    # ── Alias hit counts (written by parser.py into output/alias_stats.json) ─
-    alias_stats_path = BASE / 'output' / 'alias_stats.json'
-    try:
-        _astats = json.loads(alias_stats_path.read_text(encoding='utf-8'))
-        alias_hits_v = int(_astats.get('vessels',   0))
-        alias_hits_c = int(_astats.get('clients',   0))
-        alias_hits_m = int(_astats.get('materials', 0))
-    except (FileNotFoundError, json.JSONDecodeError, ValueError):
-        alias_hits_v = alias_hits_c = alias_hits_m = 0
+    # ── Alias hit counts — derived directly from newest_rows in data.json ────
+    # buque_raw/cliente_raw/material_raw are set by parser.py only when aliases
+    # were loaded; missing keys → 0 (backwards-compatible with old data.json).
+    alias_hits_v = sum(
+        1 for r in newest_rows
+        if r.get('buque_raw') is not None and r['buque_raw'] != r.get('buque')
+    )
+    alias_hits_c = sum(
+        1 for r in newest_rows
+        if r.get('cliente_raw') is not None and r['cliente_raw'] != r.get('cliente')
+    )
+    alias_hits_m = sum(
+        1 for r in newest_rows
+        if r.get('material_raw') is not None and r['material_raw'] != r.get('material')
+    )
 
     return {
         'timestamp':   now_str,

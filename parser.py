@@ -35,23 +35,15 @@ _ALIAS_VESSELS:   dict[str, str] = {k.upper(): v for k, v in _ALIASES_RAW.get('v
 _ALIAS_CLIENTS:   dict[str, str] = {k.upper(): v for k, v in _ALIASES_RAW.get('clients',   {}).items()}
 _ALIAS_MATERIALS: dict[str, str] = {k.upper(): v for k, v in _ALIASES_RAW.get('materials', {}).items()}
 
-# Hit counters — reset at start of main(), incremented by helpers below.
-_alias_hits: dict[str, int] = {'vessels': 0, 'clients': 0, 'materials': 0}
-
-
 def _alias_vessel(name: str) -> str:
     """Apply aliases.json vessel mapping. Treats hyphens == spaces for lookup."""
     if not name:
         return name
-    # Try exact key first, then hyphen-normalised key
     key_exact = name.upper().strip()
     key_norm  = re.sub(r'\s+', ' ', re.sub(r'-', ' ', key_exact))
     for key in (key_exact, key_norm):
         if key in _ALIAS_VESSELS:
-            canonical = _ALIAS_VESSELS[key]
-            if canonical.upper() != key_exact:
-                _alias_hits['vessels'] += 1
-            return canonical
+            return _ALIAS_VESSELS[key]
     return name
 
 
@@ -59,26 +51,14 @@ def _alias_client(name: str) -> str:
     """Apply aliases.json client mapping."""
     if not name:
         return name
-    key = name.upper().strip()
-    if key in _ALIAS_CLIENTS:
-        canonical = _ALIAS_CLIENTS[key]
-        if canonical.upper() != key:
-            _alias_hits['clients'] += 1
-        return canonical
-    return name
+    return _ALIAS_CLIENTS.get(name.upper().strip(), name)
 
 
 def _alias_material(name: str) -> str:
     """Apply aliases.json material mapping."""
     if not name:
         return name
-    key = name.upper().strip()
-    if key in _ALIAS_MATERIALS:
-        canonical = _ALIAS_MATERIALS[key]
-        if canonical.upper() != key:
-            _alias_hits['materials'] += 1
-        return canonical
-    return name
+    return _ALIAS_MATERIALS.get(name.upper().strip(), name)
 
 
 # Client name corrections applied after X-artifact removal
@@ -612,24 +592,32 @@ def parse_pdf(pdf_path: Path) -> tuple[str | None, list[dict]]:
                     tons = parse_tons(raw_tons)
 
                     for cliente in clients:
+                        _buque_c    = _alias_vessel(vessel_ctx["buque"])
+                        _cliente_c  = _alias_client(cliente)
+                        _material_c = _alias_material(material)
                         records.append({
-                            "buque":       _alias_vessel(vessel_ctx["buque"]),
-                            "agencia":     vessel_ctx["agencia"],
-                            "eta":         vessel_ctx["eta"],
-                            "material":    _alias_material(material),
-                            "cliente":     _alias_client(cliente),
-                            "tons":        tons,
-                            "operador":    operador or "",
-                            "operacion":   operacion,
-                            "muelle":      vessel_ctx["muelle"],
-                            "sector":      vessel_ctx["sector"],
-                            "origen":      norm_origin(vessel_ctx["origen"]),
+                            "buque":        _buque_c,
+                            "agencia":      vessel_ctx["agencia"],
+                            "eta":          vessel_ctx["eta"],
+                            "material":     _material_c,
+                            "cliente":      _cliente_c,
+                            "tons":         tons,
+                            "operador":     operador or "",
+                            "operacion":    operacion,
+                            "muelle":       vessel_ctx["muelle"],
+                            "sector":       vessel_ctx["sector"],
+                            "origen":       norm_origin(vessel_ctx["origen"]),
                             # Provenance — kept in output (not underscore-prefixed)
-                            "source_id":   pdf_path.name,
-                            "source_date": pdf_date,
+                            "source_id":    pdf_path.name,
+                            "source_date":  pdf_date,
+                            # Raw pre-alias values for audit / alias hit counting in migrate.py
+                            # (ignored by DB INSERT; stripped by strip_internal only if _-prefixed)
+                            "buque_raw":    vessel_ctx["buque"],
+                            "cliente_raw":  cliente,
+                            "material_raw": material,
                             # Internal fields for dedup sort (stripped before JSON output)
-                            "_pdf_date":   pdf_date,
-                            "_pdf_file":   pdf_path.name,
+                            "_pdf_date":    pdf_date,
+                            "_pdf_file":    pdf_path.name,
                         })
 
     return pdf_date, records
@@ -754,9 +742,6 @@ def strip_internal(r: dict) -> dict:
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 
 def main():
-    # Reset alias hit counters for this run
-    _alias_hits['vessels'] = _alias_hits['clients'] = _alias_hits['materials'] = 0
-
     pdf_files = sorted(PDF_DIR.glob("*.pdf")) + sorted(PDF_DIR.glob("*.PDF"))
 
     if not pdf_files:
@@ -875,14 +860,13 @@ def main():
                 w(f"  ✓ {s['archivo']:<55} ({s['fecha']})  "
                   f"raw:{s['filas_raw']:>4}  intra:{s['registros']:>4}")
 
-    # ── Write alias hit stats for migrate.py quality report ──────────────────
-    with open(OUTPUT_DIR / "alias_stats.json", "w", encoding="utf-8") as f:
-        json.dump(_alias_hits, f)
+    _hits_v = sum(1 for r in output_data if r.get('buque_raw')    is not None and r['buque_raw']    != r['buque'])
+    _hits_c = sum(1 for r in output_data if r.get('cliente_raw')  is not None and r['cliente_raw']  != r['cliente'])
+    _hits_m = sum(1 for r in output_data if r.get('material_raw') is not None and r['material_raw'] != r['material'])
 
     print(f"  → {OUTPUT_DIR}/data.json")
     print(f"  → {OUTPUT_DIR}/resumen.txt")
-    print(f"  alias hits: vessels={_alias_hits['vessels']}  "
-          f"clients={_alias_hits['clients']}  materials={_alias_hits['materials']}")
+    print(f"  alias hits: vessels={_hits_v}  clients={_hits_c}  materials={_hits_m}")
     print(f"\n✓ Listo.")
 
 

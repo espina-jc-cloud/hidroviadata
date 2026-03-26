@@ -336,19 +336,25 @@ def api_debug() -> Response:
     fert_tons   = db.execute(f'SELECT sum(tons)  FROM shipments WHERE material IN ({placeholders}) AND tons IS NOT NULL', _FERT_MATERIALS).fetchone()[0]
     latest_row  = db.execute('SELECT source_date, source_id FROM shipments ORDER BY source_date DESC LIMIT 1').fetchone()
     cand_count  = db.execute('SELECT count(*) FROM vessel_candidates').fetchone()[0]
+    cand_by_status: dict = {}
+    for r in db.execute(
+        'SELECT prediction_status, count(*) FROM vessel_candidates GROUP BY prediction_status'
+    ).fetchall():
+        cand_by_status[r[0] or 'unknown'] = r[1]
 
     return jsonify({
-        'git_sha':            _git_sha(),
-        'db_path':            str(DATABASE),
-        'shipments_count':    ship_count,
-        'shipments_tons':     int(round(ship_tons))  if ship_tons  else 0,
-        'fert_count':         fert_count,
-        'fert_tons':          int(round(fert_tons))  if fert_tons  else 0,
-        'latest_source_date': latest_row['source_date'] if latest_row else None,
-        'latest_source_id':   latest_row['source_id']   if latest_row else None,
-        'vessel_candidates':  cand_count,
-        'quality':            _get_latest_quality(),
-        'as_of':              datetime.now().isoformat(timespec='seconds'),
+        'git_sha':                     _git_sha(),
+        'db_path':                     str(DATABASE),
+        'shipments_count':             ship_count,
+        'shipments_tons':              int(round(ship_tons))  if ship_tons  else 0,
+        'fert_count':                  fert_count,
+        'fert_tons':                   int(round(fert_tons))  if fert_tons  else 0,
+        'latest_source_date':          latest_row['source_date'] if latest_row else None,
+        'latest_source_id':            latest_row['source_id']   if latest_row else None,
+        'vessel_candidates':           cand_count,
+        'vessel_candidates_by_status': cand_by_status,
+        'quality':                     _get_latest_quality(),
+        'as_of':                       datetime.now().isoformat(timespec='seconds'),
     })
 
 

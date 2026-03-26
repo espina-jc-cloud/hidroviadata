@@ -22,7 +22,9 @@ Usage
 
 from __future__ import annotations
 
+import difflib
 import json
+import re
 import sqlite3
 import sys
 from datetime import datetime
@@ -116,6 +118,137 @@ DROP TABLE IF EXISTS shipments;
 DROP TABLE IF EXISTS vessel_profiles;
 DROP TABLE IF EXISTS vessel_candidates;
 """
+
+
+def _norm_vessel(name: str | None) -> str:
+    """Uppercase, collapse hyphens/underscores/dots to spaces, strip non-alphanumeric."""
+    if not name:
+        return ''
+    s = name.upper()
+    s = re.sub(r'[-_.]', ' ', s)
+    s = re.sub(r'[^A-Z0-9 ]', '', s)
+    return re.sub(r'\s+', ' ', s).strip()
+
+
+def _fuzzy_match_candidates(con: sqlite3.Connection) -> dict:
+    """
+    Match vessel_candidates against the latest lineup (MAX source_date).
+
+    Thresholds (difflib.SequenceMatcher ratio on normalised names):
+      1.00  exact (after normalisation)  → AUTO-CONFIRM
+      ≥0.95                              → AUTO-CONFIRM
+      0.85–0.94                          → REVIEW (set status, no confirmed_eta)
+      <0.85                              → no match
+
+    Expiry: any candidate with prediction_status NOT IN ('confirmed','expired')
+    whose created_at is ≥45 days ago → set status='expired'.
+
+    Idempotent: candidates already 'confirmed' or 'expired' are never touched.
+    """
+    today = datetime.now()
+    EXPIRE_DAYS = 45
+
+    # Latest source_date
+    row = con.execute('SELECT MAX(source_date) FROM shipments').fetchone()
+    latest_date = row[0] if row and row[0] else None
+    if not latest_date:
+        print('  AIS→lineup matching: skipped (no shipments in DB)')
+        return {'confirmed': 0, 'review': 0, 'expired': 0}
+
+    # Get source_id for that date (for the match reason string)
+    sid_row = con.execute(
+        'SELECT source_id FROM shipments WHERE source_date=? LIMIT 1', (latest_date,)
+    ).fetchone()
+    latest_sid = sid_row[0] if sid_row else latest_date
+
+    # Shipments from latest lineup only: (buque, eta, material, cliente, source_id, source_date)
+    ship_rows = con.execute(
+        'SELECT buque, eta, material, cliente, source_id, source_date '
+        'FROM shipments WHERE source_date = ?', (latest_date,)
+    ).fetchall()
+    norm_ships = [
+        (
+            {'buque': r[0], 'eta': r[1], 'material': r[2],
+             'cliente': r[3], 'source_id': r[4], 'source_date': r[5]},
+            _norm_vessel(r[0]),
+        )
+        for r in ship_rows
+    ]
+
+    # Candidates not yet finalized: (id, vessel_name, prediction_status, created_at)
+    cand_rows = con.execute(
+        "SELECT id, vessel_name, prediction_status, created_at "
+        "FROM vessel_candidates "
+        "WHERE prediction_status NOT IN ('confirmed', 'expired')"
+    ).fetchall()
+
+    n_confirmed = n_review = n_expired = 0
+
+    for cid, vessel_name, _status, created_at_str in cand_rows:
+        # ── Expiry check ──────────────────────────────────────────────────
+        try:
+            created_dt = datetime.fromisoformat(created_at_str[:19])
+            age_days = (today - created_dt).days
+        except (TypeError, ValueError):
+            age_days = 0
+
+        if age_days >= EXPIRE_DAYS:
+            con.execute(
+                "UPDATE vessel_candidates SET prediction_status='expired', "
+                "confirmed_match_reason='expired: >45d without match' WHERE id=?",
+                (cid,),
+            )
+            n_expired += 1
+            continue
+
+        # ── Fuzzy match against latest lineup ─────────────────────────────
+        norm_cand = _norm_vessel(vessel_name)
+        best_ratio = 0.0
+        best_ship: dict | None = None
+
+        for ship, norm_ship in norm_ships:
+            if not norm_ship:
+                continue
+            if norm_cand == norm_ship:
+                ratio = 1.0
+            else:
+                ratio = difflib.SequenceMatcher(None, norm_cand, norm_ship).ratio()
+            if ratio > best_ratio:
+                best_ratio = ratio
+                best_ship = ship
+
+        if best_ratio >= 0.95 and best_ship:
+            reason = (
+                f"matched={best_ship['buque']}  sim={best_ratio:.2f}  "
+                f"src={best_ship['source_id']}  date={best_ship['source_date']}"
+            )
+            con.execute(
+                "UPDATE vessel_candidates "
+                "SET prediction_status='confirmed', confirmed_eta=?, confirmed_match_reason=? "
+                "WHERE id=?",
+                (best_ship['eta'] or None, reason, cid),
+            )
+            n_confirmed += 1
+        elif 0.85 <= best_ratio < 0.95 and best_ship:
+            reason = (
+                f"review: proposed={best_ship['buque']}  sim={best_ratio:.2f}  "
+                f"src={best_ship['source_id']}  date={best_ship['source_date']}"
+            )
+            con.execute(
+                "UPDATE vessel_candidates "
+                "SET prediction_status='review', confirmed_match_reason=? "
+                "WHERE id=?",
+                (reason, cid),
+            )
+            n_review += 1
+
+    con.commit()
+    return {
+        'confirmed': n_confirmed,
+        'review':    n_review,
+        'expired':   n_expired,
+        'latest_source_date': latest_date,
+    }
 
 
 def compute_quality_report(records: list[dict]) -> dict:
@@ -447,6 +580,16 @@ def migrate() -> None:
     _write_quality_report(con, quality_report)
     con.commit()
     print(f"  quality_reports    :   1 row written  (status={quality_report['status']})")
+
+    # ── AIS → Lineup automatic confirmation ───────────────────────────────
+    ais_result = _fuzzy_match_candidates(con)
+    print(
+        f"  AIS→lineup match   : "
+        f"{ais_result['confirmed']} confirmed  "
+        f"{ais_result['review']} review  "
+        f"{ais_result['expired']} expired  "
+        f"(lineup={ais_result.get('latest_source_date', 'n/a')})"
+    )
 
     con.close()
 

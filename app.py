@@ -34,8 +34,11 @@ Usage
 
 from __future__ import annotations
 
+import csv
+import io
 import json
 import os
+import re
 import sqlite3
 import subprocess
 import sys
@@ -967,6 +970,106 @@ def api_admin_last_preview() -> Response:
     if not _check_admin_token():
         return jsonify({'error': 'Unauthorized'}), 401
     return jsonify(_last_preview or {})
+
+
+def _norm_name(name: str | None) -> str:
+    """Normalise vessel name: uppercase, hyphens/dots→space, strip non-alphanum."""
+    if not name:
+        return ''
+    s = name.upper()
+    s = re.sub(r'[-_.]', ' ', s)
+    s = re.sub(r'[^A-Z0-9 ]', '', s)
+    return re.sub(r'\s+', ' ', s).strip()
+
+
+@app.route('/api/admin/upload_candidates_csv', methods=['POST'])
+def api_admin_upload_candidates_csv() -> Response:
+    """
+    Batch-insert AIS candidates from a CSV file.
+
+    Required column  : vessel_name
+    Optional columns : last_port, ais_destination, vessel_type, dwt
+
+    Dedup rule: if an active candidate (status predicted/estimated/probable/review)
+    with the same normalised vessel_name already exists → skip (count as duplicate).
+
+    Returns: {ok, inserted, duplicates, rejected, errors:[{row, reason}]}
+    """
+    if not _check_admin_token():
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    f = request.files.get('file')
+    if not f or not f.filename:
+        return jsonify({'error': 'No file uploaded. Use multipart/form-data field "file".'}), 400
+
+    # Decode — handle optional UTF-8 BOM
+    try:
+        content = f.read().decode('utf-8-sig')
+    except UnicodeDecodeError:
+        return jsonify({'error': 'CSV must be UTF-8 encoded.'}), 400
+
+    reader = csv.DictReader(io.StringIO(content))
+
+    if not reader.fieldnames:
+        return jsonify({'error': 'CSV has no header row.'}), 400
+
+    # Normalise header names (strip surrounding whitespace)
+    reader.fieldnames = [h.strip() for h in reader.fieldnames]
+
+    if 'vessel_name' not in reader.fieldnames:
+        return jsonify({'error': 'CSV is missing required column: vessel_name'}), 400
+
+    db = get_db()
+
+    # Build set of already-active normalised names for dedup
+    active_rows  = db.execute(
+        "SELECT vessel_name FROM vessel_candidates "
+        "WHERE prediction_status IN ('predicted','estimated','probable','review')"
+    ).fetchall()
+    active_norms = {_norm_name(r['vessel_name']) for r in active_rows}
+
+    inserted   = 0
+    duplicates = 0
+    rejected   = 0
+    errors: list[dict] = []
+
+    for i, row in enumerate(reader, start=2):   # row 1 = header
+        vname = (row.get('vessel_name') or '').strip()
+        if not vname:
+            rejected += 1
+            errors.append({'row': i, 'reason': 'missing vessel_name'})
+            continue
+
+        norm = _norm_name(vname)
+        if norm in active_norms:
+            duplicates += 1
+            continue
+
+        last_port       = (row.get('last_port')       or '').strip() or None
+        ais_destination = (row.get('ais_destination') or '').strip() or None
+
+        db.execute(
+            """
+            INSERT INTO vessel_candidates
+                (vessel_name, last_port, ais_destination,
+                 probability_score, probability_level,
+                 prediction_status, scoring_reasons)
+            VALUES (?, ?, ?, 0, 'low', 'predicted', '["batch_upload_csv"]')
+            """,
+            (vname, last_port, ais_destination),
+        )
+        active_norms.add(norm)   # prevent intra-file duplicates
+        inserted += 1
+
+    db.commit()
+    print(f'[admin] csv_upload inserted={inserted} dup={duplicates} rej={rejected}', flush=True)
+    return jsonify({
+        'ok':         True,
+        'inserted':   inserted,
+        'duplicates': duplicates,
+        'rejected':   rejected,
+        'errors':     errors,
+    })
 
 
 # ── Dev server ────────────────────────────────────────────────────────────────

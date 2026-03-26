@@ -3035,6 +3035,23 @@ function renderAdmin() {
 
       <div id="adm-preview-area"></div>
     </div>
+
+    <div class="card" style="max-width:700px;margin-top:16px">
+      <div class="card-header">
+        <span class="card-title">📡 Candidatos AIS — Batch CSV</span>
+        <span class="card-sub">Columnas: vessel_name · last_port · ais_destination</span>
+      </div>
+      <div style="margin-bottom:12px;font-size:11px;color:var(--text3);line-height:1.8">
+        Requerido: <code style="color:var(--cyan)">vessel_name</code>
+        &nbsp;·&nbsp; Opcionales: <code>last_port</code>, <code>ais_destination</code>,
+        <code>vessel_type</code>, <code>dwt</code><br>
+        Dedup automático: candidatos ya activos con el mismo nombre son ignorados.
+      </div>
+      <input id="adm-csv-file" type="file" accept=".csv"
+        style="color:var(--text2);font-size:12px;margin-bottom:10px;display:block">
+      <button class="admin-btn" onclick="doUploadCandidatesCSV()">📤 Subir CSV</button>
+      <div id="adm-csv-result" style="margin-top:12px"></div>
+    </div>
   `;
   if (_adminPreview) _renderAdminPreview(_adminPreview);
 }
@@ -3158,6 +3175,59 @@ async function doPublishLineup() {
   } catch (err) {
     if (resultDiv) resultDiv.innerHTML =
       `<div class="alert-banner">❌ ${err.message}</div>`;
+  }
+}
+
+async function doUploadCandidatesCSV() {
+  const fileInput = document.getElementById('adm-csv-file');
+  const token     = document.getElementById('adm-token').value
+                    || sessionStorage.getItem('admin_token') || '';
+  if (!token)                  { alert('Ingresá el ADMIN_TOKEN primero.'); return; }
+  if (!fileInput.files.length) { alert('Seleccioná un archivo CSV.');      return; }
+
+  const resultDiv = document.getElementById('adm-csv-result');
+  resultDiv.innerHTML = '<div style="color:var(--text3);font-size:12px">Subiendo…</div>';
+
+  const fd = new FormData();
+  fd.append('file', fileInput.files[0]);
+
+  try {
+    const res  = await fetch('/api/admin/upload_candidates_csv', {
+      method:  'POST',
+      headers: { 'X-Admin-Token': token },
+      body:    fd,
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      resultDiv.innerHTML =
+        `<div class="alert-banner">❌ ${data.error || res.status}</div>`;
+      return;
+    }
+    const errLines = (data.errors || [])
+      .map(e => `<div style="font-size:11px;color:var(--text3)">  fila ${e.row}: ${e.reason}</div>`)
+      .join('');
+    resultDiv.innerHTML = `
+      <div style="background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);
+                  border-radius:5px;padding:10px 14px;font-size:12px;color:var(--green)">
+        ✅ Listo &nbsp;·&nbsp;
+        <strong>${data.inserted}</strong> insertados &nbsp;·&nbsp;
+        ${data.duplicates} duplicados ignorados &nbsp;·&nbsp;
+        ${data.rejected} rechazados
+        ${errLines ? '<div style="margin-top:6px">' + errLines + '</div>' : ''}
+      </div>`;
+    // Refresh buques en ruta data so the new candidates appear immediately
+    if (data.inserted > 0) {
+      try {
+        const cRes = await fetch('/api/vessel_candidates');
+        if (cRes.ok) {
+          BUQUES_EN_RUTA_DATA = await cRes.json();
+          if (activeTab === 'buquesruta') renderBuquesEnRuta();
+        }
+      } catch (_) {}
+    }
+  } catch (err) {
+    resultDiv.innerHTML =
+      `<div class="alert-banner">❌ Error de red: ${err.message}</div>`;
   }
 }
 

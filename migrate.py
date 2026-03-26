@@ -38,6 +38,7 @@ DB_TMP   = BASE / 'hidroviadata.db.tmp'   # atomic swap target for --reset
 DATA     = BASE / 'output' / 'data.json'
 PROFILES = BASE / 'output' / 'vessel_profiles.json'
 BUQUES   = BASE / 'output' / 'buques_en_ruta.json'
+PDFS_DIR = BASE / 'pdfs'
 
 RESET   = '--reset'   in sys.argv
 PREVIEW = '--preview' in sys.argv
@@ -617,6 +618,18 @@ def migrate() -> None:
     if RESET:
         db_target.replace(DB_PATH)   # atomic on POSIX (Railway/Linux)
         print(f"  → swapped {db_target.name} → {DB_PATH.name}")
+
+        # ── 6. Upload backup to R2 (non-blocking — failure is logged, not fatal)
+        try:
+            import backup as _bk
+            _bk_result = _bk.backup(DB_PATH, PDFS_DIR)
+            if _bk_result['ok']:
+                print(f"  [backup] uploaded ok  prefix={_bk_result['prefix']}  "
+                      f"pdfs={_bk_result['n_pdfs']}", flush=True)
+            else:
+                print(f"  [backup] skipped: {_bk_result['error']}", flush=True)
+        except Exception as _bk_err:
+            print(f"  [backup] skipped ({_bk_err})", flush=True)
 
     print(f"\nDatabase written → {DB_PATH}")
 

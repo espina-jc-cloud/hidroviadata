@@ -110,6 +110,29 @@ def _bootstrap_db() -> None:
             print(f'[bootstrap] migrate.py FAILED:\n{res.stderr}', flush=True)
 
 
+def _try_restore_from_r2() -> None:
+    """
+    Before DB bootstrap: if DB is missing or pdfs/ has no PDFs, attempt to
+    restore from the latest R2 backup.  Failure is logged but never fatal —
+    _bootstrap_db() will fall back to rebuilding from data.json if needed.
+    """
+    try:
+        import backup as _bk
+        db_missing = not DATABASE.exists()
+        pdfs_empty = (not PDFS_DIR.exists()
+                      or not list(PDFS_DIR.glob('*.pdf')))
+        if not (db_missing or pdfs_empty):
+            return
+        reason = 'DB missing' if db_missing else 'pdfs/ empty'
+        print(f'[restore] {reason} — attempting R2 restore …', flush=True)
+        result = _bk.restore(DATABASE, PDFS_DIR)
+        if not result['ok']:
+            print(f'[restore] R2 not available: {result["error"]}', flush=True)
+    except Exception as exc:
+        print(f'[restore] unexpected error: {exc}', flush=True)
+
+
+_try_restore_from_r2()
 _bootstrap_db()
 
 
@@ -350,6 +373,12 @@ def api_debug() -> Response:
     ).fetchall():
         cand_by_status[r[0] or 'unknown'] = r[1]
 
+    try:
+        import backup as _bk
+        backup_status = _bk.get_status()
+    except Exception:
+        backup_status = {'error': 'backup module unavailable'}
+
     return jsonify({
         'git_sha':                     _git_sha(),
         'db_path':                     str(DATABASE),
@@ -362,6 +391,7 @@ def api_debug() -> Response:
         'vessel_candidates':           cand_count,
         'vessel_candidates_by_status': cand_by_status,
         'quality':                     _get_latest_quality(),
+        'backup':                      backup_status,
         'as_of':                       datetime.now().isoformat(timespec='seconds'),
     })
 

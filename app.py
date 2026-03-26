@@ -47,8 +47,13 @@ from flask import Flask, Response, g, jsonify, request, send_from_directory
 # Reuse the scoring helpers from the CLI pipeline — pure functions, no side effects.
 from detect_candidates import _score_observation, _load_core_fleet, _insert_candidate
 
-BASE_DIR = Path(__file__).parent
-DATABASE = BASE_DIR / 'hidroviadata.db'
+BASE_DIR    = Path(__file__).parent
+DATABASE    = BASE_DIR / 'hidroviadata.db'
+PDFS_DIR    = BASE_DIR / 'pdfs'
+ADMIN_TOKEN = os.environ.get('ADMIN_TOKEN', '')
+
+# In-memory preview state (lost on restart — intentional per spec)
+_last_preview: dict | None = None
 
 app = Flask(__name__, static_folder=None)
 
@@ -761,6 +766,17 @@ def api_status() -> Response:
     })
 
 
+# ── Admin helpers ─────────────────────────────────────────────────────────────
+
+def _check_admin_token() -> bool:
+    """Return True when the request carries the configured ADMIN_TOKEN."""
+    if not ADMIN_TOKEN:
+        return False  # token not set → all admin endpoints disabled
+    tok = (request.headers.get('X-Admin-Token')
+           or request.args.get('token', ''))
+    return tok == ADMIN_TOKEN
+
+
 # ── Admin endpoints ────────────────────────────────────────────────────────────
 
 @app.route('/api/admin/reset_candidates', methods=['POST'])
@@ -822,6 +838,135 @@ def api_admin_add_candidate() -> Response:
     d['lead_time_days']         = None
     d['id']                     = row_id
     return jsonify(d), 201
+
+
+# ── Admin: Upload / Preview / Publish ─────────────────────────────────────────
+
+@app.route('/api/admin/upload_lineup', methods=['POST'])
+def api_admin_upload_lineup() -> Response:
+    """
+    Accept multipart/form-data PDF upload, save to pdfs/, run parser.py,
+    then run migrate.py --preview to compute the quality report without
+    writing hidroviadata.db.
+
+    Returns: {preview: {source_id, source_date, n_rows, total_tons,
+                         quality:{status,blocks,warnings,summary}}}
+    """
+    global _last_preview
+    if not _check_admin_token():
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    f = request.files.get('file')
+    if not f or not f.filename:
+        return jsonify({'error': 'No file uploaded. Use multipart/form-data field "file".'}), 400
+
+    from werkzeug.utils import secure_filename
+    filename = secure_filename(f.filename)
+    if not filename.lower().endswith('.pdf'):
+        return jsonify({'error': 'Only PDF files are accepted.'}), 400
+
+    PDFS_DIR.mkdir(exist_ok=True)
+    dest = PDFS_DIR / filename
+    f.save(str(dest))
+    print(f'[admin] uploaded {filename} → {dest}', flush=True)
+
+    # Step 1: regenerate output/data.json
+    parser_res = subprocess.run(
+        [sys.executable, str(BASE_DIR / 'parser.py')],
+        capture_output=True, text=True, cwd=str(BASE_DIR),
+    )
+    if parser_res.returncode != 0:
+        return jsonify({
+            'error':  'parser.py failed',
+            'stderr': parser_res.stderr[-2000:],
+        }), 500
+
+    # Step 2: quality preview — NO DB write
+    preview_res = subprocess.run(
+        [sys.executable, str(BASE_DIR / 'migrate.py'), '--preview'],
+        capture_output=True, text=True, cwd=str(BASE_DIR),
+    )
+
+    preview_data: dict | None = None
+    for line in preview_res.stdout.splitlines():
+        if line.startswith('__PREVIEW_JSON__:'):
+            try:
+                preview_data = json.loads(line[len('__PREVIEW_JSON__:'):])
+            except json.JSONDecodeError:
+                pass
+            break
+
+    if preview_data is None:
+        return jsonify({
+            'error':  'migrate.py --preview did not return valid JSON',
+            'stdout': preview_res.stdout[-2000:],
+            'stderr': preview_res.stderr[-2000:],
+        }), 500
+
+    _last_preview = {**preview_data, 'uploaded_file': filename}
+    return jsonify({'preview': _last_preview})
+
+
+@app.route('/api/admin/publish_lineup', methods=['POST'])
+def api_admin_publish_lineup() -> Response:
+    """
+    Publish: run migrate.py --reset (safe atomic swap).
+    Only allowed when last preview status is PASS or WARNING.
+
+    Returns: {ok, git_sha, latest_source_date, latest_source_id}
+    """
+    global _last_preview
+    if not _check_admin_token():
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    if not _last_preview:
+        return jsonify({'error': 'No preview found. Upload a PDF first.'}), 400
+
+    pstatus = (_last_preview.get('quality') or {}).get('status', '')
+    if pstatus not in ('PASS', 'WARNING'):
+        return jsonify({
+            'error':   f'Publish blocked — last preview status is {pstatus!r}.',
+            'quality': _last_preview.get('quality'),
+        }), 400
+
+    pub_res = subprocess.run(
+        [sys.executable, str(BASE_DIR / 'migrate.py'), '--reset'],
+        capture_output=True, text=True, cwd=str(BASE_DIR),
+    )
+    if pub_res.returncode != 0:
+        return jsonify({
+            'error':  'migrate.py --reset failed',
+            'stdout': pub_res.stdout[-2000:],
+            'stderr': pub_res.stderr[-2000:],
+        }), 500
+
+    # Read updated DB state
+    try:
+        con    = sqlite3.connect(str(DATABASE))
+        latest = con.execute(
+            'SELECT source_date, source_id FROM shipments ORDER BY source_date DESC LIMIT 1'
+        ).fetchone()
+        con.close()
+        latest_source_date = latest[0] if latest else None
+        latest_source_id   = latest[1] if latest else None
+    except Exception:
+        latest_source_date = latest_source_id = None
+
+    _last_preview = None  # clear after successful publish
+    return jsonify({
+        'ok':                 True,
+        'git_sha':            _git_sha(),
+        'latest_source_date': latest_source_date,
+        'latest_source_id':   latest_source_id,
+    })
+
+
+@app.route('/api/admin/last_preview')
+def api_admin_last_preview() -> Response:
+    """Return the last in-memory preview result (lost on server restart)."""
+    if not _check_admin_token():
+        return jsonify({'error': 'Unauthorized'}), 401
+    return jsonify(_last_preview or {})
 
 
 # ── Dev server ────────────────────────────────────────────────────────────────

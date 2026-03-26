@@ -39,7 +39,8 @@ DATA     = BASE / 'output' / 'data.json'
 PROFILES = BASE / 'output' / 'vessel_profiles.json'
 BUQUES   = BASE / 'output' / 'buques_en_ruta.json'
 
-RESET = '--reset' in sys.argv
+RESET   = '--reset'   in sys.argv
+PREVIEW = '--preview' in sys.argv
 
 
 # ── Schema ────────────────────────────────────────────────────────────────────
@@ -621,6 +622,28 @@ def migrate() -> None:
 
 
 if __name__ == '__main__':
+    if PREVIEW:
+        # Preview mode: compute quality report from data.json vs real DB,
+        # print human-readable output, then emit a single JSON line for
+        # app.py to parse.  Does NOT touch hidroviadata.db.
+        _recs = json.loads(DATA.read_text(encoding='utf-8'))
+        _qr   = compute_quality_report(_recs)
+        _print_quality_report(_qr)
+        sys.stdout.write(
+            '__PREVIEW_JSON__:' + json.dumps({
+                'source_id':   _qr.get('source_id'),
+                'source_date': _qr.get('source_date'),
+                'n_rows':      _qr['summary'].get('n_rows', 0),
+                'total_tons':  _qr['summary'].get('total_tons', 0),
+                'quality': {
+                    'status':   _qr['status'],
+                    'blocks':   _qr['blocks'],
+                    'warnings': _qr['warnings'],
+                    'summary':  _qr['summary'],
+                },
+            }) + '\n'
+        )
+        sys.exit(0)
     print(f"Migrating to {DB_PATH} …")
     migrate()
     print("Done.")

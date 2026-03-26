@@ -617,6 +617,27 @@
       .grid-2, .grid-7030, .grid-3070 { grid-template-columns: 1fr; }
       #topbar-kpis { display: none; }
     }
+
+    /* ── ADMIN PANEL ──────────────────────────────────────────────── */
+    .admin-btn {
+      background: var(--primary);
+      border: 1px solid rgba(0,212,255,0.3);
+      color: var(--cyan);
+      border-radius: 5px;
+      padding: 8px 18px;
+      font-size: 12px;
+      font-family: var(--font);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .admin-btn:hover { background: #1e4aaa; }
+    .admin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .admin-btn.success {
+      background: rgba(0,255,136,0.10);
+      border-color: rgba(0,255,136,0.3);
+      color: var(--green);
+    }
   </style>
 </head>
 <body>
@@ -690,6 +711,7 @@
     <button class="tab-btn" onclick="switchTab('datos')">🔍 DATOS COMPLETOS</button>
     <button class="tab-btn" onclick="switchTab('oferta')">📦 OFERTA PRÓXIMA</button>
     <button class="tab-btn" onclick="switchTab('buquesruta')">🛰 BUQUES EN RUTA</button>
+    <button class="tab-btn" onclick="switchTab('admin')">⚙ ADMIN</button>
   </div>
 
   <!-- QUALITY GATE BANNER — shown when latest quality_report status is WARNING or BLOCK -->
@@ -741,6 +763,11 @@
     <!-- TAB 9: BUQUES EN RUTA -->
     <div id="tab-buquesruta" class="tab-panel">
       <div class="no-data">Cargando datos…</div>
+    </div>
+
+    <!-- TAB 10: ADMIN -->
+    <div id="tab-admin" class="tab-panel">
+      <div class="no-data">Cargando…</div>
     </div>
 
   </div><!-- /#content -->
@@ -1019,6 +1046,7 @@ function renderActiveTab() {
     case 'datos':       renderDatos();       break;
     case 'oferta':      renderOferta();      break;
     case 'buquesruta':  renderBuquesEnRuta(); break;
+    case 'admin':       renderAdmin();        break;
   }
 }
 
@@ -2969,6 +2997,168 @@ async function init() {
 
 function populateDatosFilters() {
   // Filter dropdowns are built lazily inside renderDatos() on first call
+}
+
+// =============================================================================
+// TAB 10 — ADMIN (Upload Lineup / Preview / Publish)
+// =============================================================================
+
+let _adminPreview = null;
+
+function renderAdmin() {
+  const panel = document.getElementById('tab-admin');
+  const savedTok = sessionStorage.getItem('admin_token') || '';
+  panel.innerHTML = `
+    <div class="card" style="max-width:700px">
+      <div class="card-header">
+        <span class="card-title">⚙ Cargar Lineup (Admin)</span>
+        <span class="card-sub">Subir PDF → previsualizar → publicar</span>
+      </div>
+
+      <div style="margin-bottom:18px">
+        <div class="section-label">Token de acceso</div>
+        <input id="adm-token" type="password" class="search-input" style="width:240px"
+          placeholder="ADMIN_TOKEN" value="${savedTok}">
+        <button class="admin-btn" style="margin-left:8px"
+          onclick="sessionStorage.setItem('admin_token',document.getElementById('adm-token').value);
+                   this.textContent='✓ Guardado'">
+          Guardar
+        </button>
+      </div>
+
+      <div style="margin-bottom:18px">
+        <div class="section-label">Paso 1 — Seleccionar PDF</div>
+        <input id="adm-file" type="file" accept=".pdf"
+          style="color:var(--text2);font-size:12px;margin-bottom:10px;display:block">
+        <button class="admin-btn" onclick="doUploadLineup()">📤 Cargar y Previsualizar</button>
+      </div>
+
+      <div id="adm-preview-area"></div>
+    </div>
+  `;
+  if (_adminPreview) _renderAdminPreview(_adminPreview);
+}
+
+async function doUploadLineup() {
+  const fileInput = document.getElementById('adm-file');
+  const token     = document.getElementById('adm-token').value
+                    || sessionStorage.getItem('admin_token') || '';
+  if (!token)                  { alert('Ingresá el ADMIN_TOKEN primero.');  return; }
+  if (!fileInput.files.length) { alert('Seleccioná un archivo PDF.'); return; }
+
+  const area = document.getElementById('adm-preview-area');
+  area.innerHTML = `<div class="no-data" style="padding:20px 0">
+    <div class="spinner" style="margin:0 auto"></div>
+    <div style="margin-top:10px;color:var(--text3)">Procesando PDF… (puede tardar 20–40 s)</div>
+  </div>`;
+
+  const fd = new FormData();
+  fd.append('file', fileInput.files[0]);
+
+  try {
+    const res  = await fetch('/api/admin/upload_lineup', {
+      method:  'POST',
+      headers: { 'X-Admin-Token': token },
+      body:    fd,
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      area.innerHTML = `<div class="alert-banner">❌ Error: ${data.error || res.status}
+        <pre style="font-size:10px;color:var(--text3);margin-top:6px;white-space:pre-wrap">${
+          (data.stderr || '').slice(0, 800)}</pre></div>`;
+      return;
+    }
+    _adminPreview = data.preview;
+    _renderAdminPreview(_adminPreview);
+  } catch (err) {
+    area.innerHTML = `<div class="alert-banner">❌ Error de red: ${err.message}</div>`;
+  }
+}
+
+function _renderAdminPreview(p) {
+  const area = document.getElementById('adm-preview-area');
+  if (!area) return;
+  const q       = p.quality || {};
+  const status  = q.status || '?';
+  const isBlock = status === 'BLOCK';
+  const statusColor = status === 'PASS' ? 'var(--green)'
+                    : status === 'WARNING' ? 'var(--yellow)'
+                    : 'var(--red)';
+  const icon = status === 'PASS' ? '✅' : status === 'WARNING' ? '⚠️' : '❌';
+
+  const issueLines = [
+    ...(q.blocks   || []).map(b => `<div style="color:var(--red);font-size:11px;margin:2px 0">  • BLOCK: ${b}</div>`),
+    ...(q.warnings || []).map(w => `<div style="color:var(--yellow);font-size:11px;margin:2px 0">  • AVISO: ${w}</div>`),
+  ].join('');
+
+  const publishBtn = !isBlock
+    ? `<button class="admin-btn success" style="margin-top:14px" onclick="doPublishLineup()">
+         🚀 Publicar (migrate --reset)
+       </button>`
+    : `<div style="margin-top:10px;color:var(--red);font-size:12px">
+         ❌ Publicación bloqueada — corregí los issues y volvé a cargar el PDF.
+       </div>`;
+
+  area.innerHTML = `
+    <div style="border:1px solid var(--border);border-radius:6px;padding:14px 18px;margin-top:4px">
+      <div class="card-header" style="margin-bottom:12px;padding-bottom:8px">
+        <span class="card-title">Paso 2 — Preview</span>
+        <span style="color:${statusColor};font-weight:700;font-size:13px">${icon} ${status}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <div class="section-label">Fuente</div>
+          <div style="color:var(--text);font-size:11px;word-break:break-all">${p.source_id || '—'}</div>
+        </div>
+        <div>
+          <div class="section-label">Fecha</div>
+          <div style="color:var(--cyan)">${p.source_date || '—'}</div>
+        </div>
+        <div>
+          <div class="section-label">Filas / Toneladas</div>
+          <div style="color:var(--text)">${p.n_rows || 0} filas · ${(p.total_tons || 0).toLocaleString('es-AR')} t</div>
+        </div>
+      </div>
+      ${issueLines}
+      <div id="adm-publish-result"></div>
+      ${publishBtn}
+    </div>
+  `;
+}
+
+async function doPublishLineup() {
+  const token = document.getElementById('adm-token').value
+                || sessionStorage.getItem('admin_token') || '';
+  if (!token) { alert('Token requerido.'); return; }
+
+  const resultDiv = document.getElementById('adm-publish-result');
+  if (resultDiv) resultDiv.innerHTML =
+    '<div style="color:var(--text3);font-size:12px;margin:8px 0">Publicando… (puede tardar 30–60 s)</div>';
+
+  try {
+    const res  = await fetch('/api/admin/publish_lineup', {
+      method:  'POST',
+      headers: { 'X-Admin-Token': token },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (resultDiv) resultDiv.innerHTML =
+        `<div class="alert-banner">❌ ${data.error || res.status}</div>`;
+      return;
+    }
+    _adminPreview = null;
+    if (resultDiv) resultDiv.innerHTML = `
+      <div style="background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);
+                  border-radius:5px;padding:10px 14px;margin:10px 0;font-size:12px;color:var(--green)">
+        ✅ Publicado correctamente<br>
+        sha=${data.git_sha} &nbsp;·&nbsp;
+        fecha=${data.latest_source_date} &nbsp;·&nbsp;
+        id=${data.latest_source_id}
+      </div>`;
+  } catch (err) {
+    if (resultDiv) resultDiv.innerHTML =
+      `<div class="alert-banner">❌ ${err.message}</div>`;
+  }
 }
 
 // Kick off

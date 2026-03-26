@@ -3052,8 +3052,19 @@ function renderAdmin() {
       <button class="admin-btn" onclick="doUploadCandidatesCSV()">📤 Subir CSV</button>
       <div id="adm-csv-result" style="margin-top:12px"></div>
     </div>
+
+    <div class="card" style="max-width:700px;margin-top:16px">
+      <div class="card-header">
+        <span class="card-title">🔍 Review Queue (sim 0.85–0.94)</span>
+        <span class="card-sub">Confirmaciones AIS pendientes de revisión manual</span>
+      </div>
+      <div id="adm-review-queue">
+        <div style="color:var(--text3);font-size:12px">Cargando…</div>
+      </div>
+    </div>
   `;
   if (_adminPreview) _renderAdminPreview(_adminPreview);
+  renderReviewQueue();
 }
 
 async function doUploadLineup() {
@@ -3229,6 +3240,133 @@ async function doUploadCandidatesCSV() {
     resultDiv.innerHTML =
       `<div class="alert-banner">❌ Error de red: ${err.message}</div>`;
   }
+}
+
+// =============================================================================
+// REVIEW QUEUE (Admin)
+// =============================================================================
+
+function _parseReviewReason(reason) {
+  // Expected format from migrate.py:
+  // "review: proposed=<vessel>  sim=<float>  src=<srcId>  date=<date>"
+  if (!reason) return null;
+  try {
+    const mVessel = reason.match(/proposed=(.+?)\s{2,}sim=/);
+    const mSim    = reason.match(/sim=([\d.]+)/);
+    const mSrc    = reason.match(/src=(.+?)\s{2,}date=/);
+    const mDate   = reason.match(/date=(\S+)/);
+    if (!mVessel || !mSim) return null;
+    return {
+      vessel:  mVessel[1].trim(),
+      sim:     parseFloat(mSim[1]),
+      srcId:   mSrc  ? mSrc[1].trim()  : '',
+      srcDate: mDate ? mDate[1].trim()  : '',
+    };
+  } catch (_) { return null; }
+}
+
+function renderReviewQueue() {
+  const div = document.getElementById('adm-review-queue');
+  if (!div) return;
+  const queue = (BUQUES_EN_RUTA_DATA || []).filter(r => r.prediction_status === 'review');
+  if (!queue.length) {
+    div.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin candidatos en revisión.</div>';
+    return;
+  }
+  div.innerHTML = queue.map(c => {
+    const p      = _parseReviewReason(c.confirmed_match_reason);
+    const simPct = p ? Math.round(p.sim * 100) + '%' : '?';
+    const reasonJson = JSON.stringify(c.confirmed_match_reason || '');
+    return `
+      <div style="border:1px solid var(--border);border-radius:5px;padding:10px 14px;margin-bottom:8px;font-size:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div style="font-weight:600;color:var(--text);margin-bottom:4px">${c.vessel_name}</div>
+            <div style="color:var(--text3);font-size:11px;line-height:1.6">
+              id=${c.id}
+              &nbsp;·&nbsp; last_port=${c.last_port||'—'}
+              &nbsp;·&nbsp; dest=${c.ais_destination||'—'}
+              &nbsp;·&nbsp; creado=${(c.created_at||'').slice(0,10)}
+            </div>
+            <div style="color:var(--yellow);font-size:11px;margin-top:3px;word-break:break-word">
+              Propuesto: <strong>${p?.vessel||'?'}</strong>
+              &nbsp;·&nbsp; sim=<strong>${simPct}</strong>
+              &nbsp;·&nbsp; fecha=${p?.srcDate||'?'}
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+            <button class="admin-btn success" style="padding:5px 12px;font-size:11px"
+              onclick="doReviewConfirm(${c.id}, ${reasonJson})">✅ Confirmar</button>
+            <button class="admin-btn" style="padding:5px 12px;font-size:11px;background:rgba(220,50,50,0.12);border-color:rgba(220,50,50,0.4);color:#ff7070"
+              onclick="doReviewReject(${c.id})">❌ Rechazar</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function _refreshCandidatesAndReview() {
+  try {
+    const cRes = await fetch('/api/vessel_candidates');
+    if (cRes.ok) {
+      BUQUES_EN_RUTA_DATA = await cRes.json();
+      if (activeTab === 'buquesruta') renderBuquesEnRuta();
+    }
+  } catch (_) {}
+  renderReviewQueue();
+}
+
+async function doReviewConfirm(candidateId, reason) {
+  const token = document.getElementById('adm-token')?.value
+                || sessionStorage.getItem('admin_token') || '';
+  if (!token) { alert('ADMIN_TOKEN requerido.'); return; }
+
+  const p = _parseReviewReason(reason);
+  // Always prompt for ETA (not stored in reason); pre-fill parsed fields
+  const matchedEta    = (prompt('ETA del lineup (YYYY-MM-DD o texto como "ABRIL"):\n' +
+                                'Dejá vacío si no aplica.') || '').trim();
+  const matchedVessel = p?.vessel  || (prompt('Nombre del buque en el lineup:') || '').trim();
+  const matchedSrcId  = p?.srcId   || (prompt('source_id (nombre del PDF):')    || '').trim();
+  const matchedDate   = p?.srcDate || (prompt('source_date (YYYY-MM-DD):')       || '').trim();
+  const sim           = p?.sim     ?? parseFloat(prompt('Similarity (0-1):') || '0');
+
+  if (!matchedVessel) return;
+
+  try {
+    const res  = await fetch('/api/admin/review/confirm', {
+      method:  'POST',
+      headers: { 'X-Admin-Token': token, 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        candidate_id:        candidateId,
+        matched_eta:         matchedEta || null,
+        matched_vessel_name: matchedVessel,
+        matched_source_date: matchedDate,
+        matched_source_id:   matchedSrcId,
+        similarity:          sim,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) { alert('Error: ' + (data.error || res.status)); return; }
+    await _refreshCandidatesAndReview();
+  } catch (err) { alert('Error de red: ' + err.message); }
+}
+
+async function doReviewReject(candidateId) {
+  const token = document.getElementById('adm-token')?.value
+                || sessionStorage.getItem('admin_token') || '';
+  if (!token) { alert('ADMIN_TOKEN requerido.'); return; }
+  const reason = (prompt('Motivo del rechazo (opcional — Enter para omitir):') || '').trim();
+
+  try {
+    const res  = await fetch('/api/admin/review/reject', {
+      method:  'POST',
+      headers: { 'X-Admin-Token': token, 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ candidate_id: candidateId, reason }),
+    });
+    const data = await res.json();
+    if (!res.ok) { alert('Error: ' + (data.error || res.status)); return; }
+    await _refreshCandidatesAndReview();
+  } catch (err) { alert('Error de red: ' + err.message); }
 }
 
 // Kick off

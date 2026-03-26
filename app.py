@@ -483,7 +483,7 @@ def api_vessel_candidates() -> Response:
     """
     print(f"[{datetime.now().isoformat(timespec='seconds')}] GET /api/vessel_candidates", flush=True)
     rows = get_db().execute(
-        'SELECT vessel_name, last_position, last_port, ais_destination, eta_estimated, '
+        'SELECT id, vessel_name, last_position, last_port, ais_destination, eta_estimated, '
         '       probable_product, probable_importer, probable_tonnage_range, '
         '       probability_score, probability_level, prediction_status, scoring_reasons, '
         '       confirmed_eta, confirmed_match_reason, created_at '
@@ -750,9 +750,11 @@ def api_status() -> Response:
         lf_rows = r[0] or 0
         lf_tons = int(round(r[1])) if r[1] else 0
 
-    n_pred = db.execute("SELECT count(*) FROM vessel_candidates WHERE prediction_status='predicted'").fetchone()[0]
-    n_conf = db.execute("SELECT count(*) FROM vessel_candidates WHERE prediction_status='confirmed'").fetchone()[0]
-    n_exp  = db.execute("SELECT count(*) FROM vessel_candidates WHERE prediction_status='expired'").fetchone()[0]
+    cand_by_status_status: dict = {}
+    for r in db.execute(
+        'SELECT prediction_status, count(*) FROM vessel_candidates GROUP BY prediction_status'
+    ).fetchall():
+        cand_by_status_status[r[0] or 'unknown'] = r[1]
 
     return jsonify({
         'total_shipments':          ship_count,
@@ -763,7 +765,7 @@ def api_status() -> Response:
         'latest_source_id':         latest_sid,
         'latest_lineup_fert_rows':  lf_rows,
         'latest_lineup_fert_tons':  lf_tons,
-        'candidates_by_status':     {'predicted': n_pred, 'confirmed': n_conf, 'expired': n_exp},
+        'candidates_by_status':     cand_by_status_status,
         'quality':                  _get_latest_quality(),
         'as_of':                    datetime.now().isoformat(timespec='seconds'),
     })
@@ -970,6 +972,94 @@ def api_admin_last_preview() -> Response:
     if not _check_admin_token():
         return jsonify({'error': 'Unauthorized'}), 401
     return jsonify(_last_preview or {})
+
+
+@app.route('/api/admin/review/confirm', methods=['POST'])
+def api_admin_review_confirm() -> Response:
+    """
+    Manually confirm a review candidate.
+    Body JSON: {candidate_id, matched_eta, matched_vessel_name,
+                matched_source_date, matched_source_id, similarity}
+    Only allowed when prediction_status == 'review'.
+    """
+    if not _check_admin_token():
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    body = request.get_json(force=True, silent=True) or {}
+    cid  = body.get('candidate_id')
+    if not cid:
+        return jsonify({'error': 'candidate_id is required'}), 400
+
+    db  = get_db()
+    row = db.execute(
+        'SELECT id, vessel_name, prediction_status FROM vessel_candidates WHERE id = ?', (cid,)
+    ).fetchone()
+    if not row:
+        return jsonify({'error': f'Candidate {cid} not found'}), 404
+    if row['prediction_status'] != 'review':
+        return jsonify({
+            'error': f'Candidate {cid} status is {row["prediction_status"]!r}, not "review"'
+        }), 400
+
+    matched_eta    = (body.get('matched_eta')          or '').strip() or None
+    matched_vessel = (body.get('matched_vessel_name')  or '').strip()
+    matched_src_id = (body.get('matched_source_id')    or '').strip()
+    matched_date   = (body.get('matched_source_date')  or '').strip()
+    sim            = body.get('similarity', 0)
+    reason = (
+        f"manual_confirm: {matched_vessel}  sim={float(sim):.2f}  "
+        f"src={matched_src_id}  date={matched_date}"
+    )
+
+    db.execute(
+        "UPDATE vessel_candidates "
+        "SET prediction_status='confirmed', confirmed_eta=?, confirmed_match_reason=? "
+        "WHERE id=?",
+        (matched_eta, reason, cid),
+    )
+    db.commit()
+    print(f'[admin] review confirmed id={cid} vessel={row["vessel_name"]}', flush=True)
+    return jsonify({'ok': True, 'id': cid, 'new_status': 'confirmed'})
+
+
+@app.route('/api/admin/review/reject', methods=['POST'])
+def api_admin_review_reject() -> Response:
+    """
+    Manually reject (mark false_positive) a review candidate.
+    Body JSON: {candidate_id, reason (optional)}
+    Only allowed when prediction_status == 'review'.
+    """
+    if not _check_admin_token():
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    body = request.get_json(force=True, silent=True) or {}
+    cid  = body.get('candidate_id')
+    if not cid:
+        return jsonify({'error': 'candidate_id is required'}), 400
+
+    db  = get_db()
+    row = db.execute(
+        'SELECT id, vessel_name, prediction_status FROM vessel_candidates WHERE id = ?', (cid,)
+    ).fetchone()
+    if not row:
+        return jsonify({'error': f'Candidate {cid} not found'}), 404
+    if row['prediction_status'] != 'review':
+        return jsonify({
+            'error': f'Candidate {cid} status is {row["prediction_status"]!r}, not "review"'
+        }), 400
+
+    raw_reason = (body.get('reason') or '').strip() or 'rejected'
+    reason     = f"manual_reject: {raw_reason}"
+
+    db.execute(
+        "UPDATE vessel_candidates "
+        "SET prediction_status='false_positive', confirmed_match_reason=? "
+        "WHERE id=?",
+        (reason, cid),
+    )
+    db.commit()
+    print(f'[admin] review rejected id={cid} vessel={row["vessel_name"]}', flush=True)
+    return jsonify({'ok': True, 'id': cid, 'new_status': 'false_positive'})
 
 
 def _norm_name(name: str | None) -> str:

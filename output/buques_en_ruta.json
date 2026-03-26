@@ -17,5 +17,35 @@
       "+10 — Vessel type 'BULK CARRIER' matches bulk fertilizer carrier",
       "+10 — DWT 45,000 within target range (25,000–60,000 t)"
     ]
+  },
+  {
+    "vessel_name": "BUNUN-WISDUM",
+    "last_port": "PARANAGUA",
+    "ais_destination": "SAN NICOLAS",
+    "eta_estimated": null,
+    "probable_product": null,
+    "probable_importer": null,
+    "probable_tonnage_range": null,
+    "probability_score": 0,
+    "probability_level": "low",
+    "prediction_status": "predicted",
+    "scoring_reasons": [
+      "test_review_case"
+    ]
+  },
+  {
+    "vessel_name": "BUNUN-WISDON",
+    "last_port": "SANTOS",
+    "ais_destination": "SAN NICOLAS",
+    "eta_estimated": null,
+    "probable_product": null,
+    "probable_importer": null,
+    "probable_tonnage_range": null,
+    "probability_score": 0,
+    "probability_level": "low",
+    "prediction_status": "predicted",
+    "scoring_reasons": [
+      "test_reject_case"
+    ]
   }
 ]

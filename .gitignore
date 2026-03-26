@@ -12,3 +12,4 @@ pdfs/
 .DS_Store
 *.tmp
 /tmp/
+.claude/settings.local.json

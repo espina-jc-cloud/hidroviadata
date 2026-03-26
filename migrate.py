@@ -619,17 +619,41 @@ def migrate() -> None:
         db_target.replace(DB_PATH)   # atomic on POSIX (Railway/Linux)
         print(f"  → swapped {db_target.name} → {DB_PATH.name}")
 
-        # ── 6. Upload backup to R2 (non-blocking — failure is logged, not fatal)
+        # ── 6. Upload backup to R2 (non-blocking — failure logged, never fatal)
         try:
-            import backup as _bk
-            _bk_result = _bk.backup(DB_PATH, PDFS_DIR)
-            if _bk_result['ok']:
-                print(f"  [backup] uploaded ok  prefix={_bk_result['prefix']}  "
-                      f"pdfs={_bk_result['n_pdfs']}", flush=True)
+            _ep  = __import__('os').environ.get('R2_ENDPOINT', '').strip()
+            _ak  = __import__('os').environ.get('R2_ACCESS_KEY_ID', '').strip()
+            _sk  = __import__('os').environ.get('R2_SECRET_ACCESS_KEY', '').strip()
+            _bkt = __import__('os').environ.get('R2_BUCKET', '').strip()
+            if all([_ep, _ak, _sk, _bkt]):
+                import boto3
+                from botocore.config import Config as _C
+                _cli = boto3.client(
+                    's3', endpoint_url=_ep, aws_access_key_id=_ak,
+                    aws_secret_access_key=_sk, region_name='auto',
+                    config=_C(connect_timeout=10, read_timeout=30,
+                              retries={'max_attempts': 1}),
+                )
+                _ts  = datetime.now().strftime('%Y%m%dT%H%M%SZ')
+                _pfx = f'backups/{_ts}'
+                _cli.upload_file(str(DB_PATH), _bkt,
+                                 f'{_pfx}/hidroviadata.db')
+                _np = 0
+                if PDFS_DIR.is_dir():
+                    for _pdf in sorted(PDFS_DIR.glob('*.pdf')):
+                        _cli.upload_file(str(_pdf), _bkt,
+                                         f'{_pfx}/pdfs/{_pdf.name}')
+                        _np += 1
+                _cli.put_object(Bucket=_bkt, Key='latest.json',
+                                Body=json.dumps({'timestamp': _ts,
+                                                 'prefix': _pfx}).encode(),
+                                ContentType='application/json')
+                print(f"  [backup] uploaded ok  prefix={_pfx}  pdfs={_np}",
+                      flush=True)
             else:
-                print(f"  [backup] skipped: {_bk_result['error']}", flush=True)
+                print("  [backup] skipped: R2 not configured", flush=True)
         except Exception as _bk_err:
-            print(f"  [backup] skipped ({_bk_err})", flush=True)
+            print(f"  [backup] upload FAILED: {_bk_err}", flush=True)
 
     print(f"\nDatabase written → {DB_PATH}")
 

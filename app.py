@@ -58,6 +58,74 @@ ADMIN_TOKEN = os.environ.get('ADMIN_TOKEN', '')
 # In-memory preview state (lost on restart — intentional per spec)
 _last_preview: dict | None = None
 
+# ── R2 backup/restore helpers (inlined — no external backup.py) ───────────────
+
+_r2_status: dict = {
+    'last_backup_at':  None,
+    'last_backup_ok':  None,
+    'last_restore_at': None,
+    'last_restore_ok': None,
+    'backup_error':    None,
+}
+
+
+def _r2_client():
+    """Return (boto3_s3_client, bucket) or (None, '') when not configured."""
+    ep  = os.environ.get('R2_ENDPOINT', '').strip()
+    ak  = os.environ.get('R2_ACCESS_KEY_ID', '').strip()
+    sk  = os.environ.get('R2_SECRET_ACCESS_KEY', '').strip()
+    bkt = os.environ.get('R2_BUCKET', '').strip()
+    if not all([ep, ak, sk, bkt]):
+        return None, bkt
+    try:
+        import boto3
+        from botocore.config import Config as _C
+        return boto3.client(
+            's3', endpoint_url=ep, aws_access_key_id=ak,
+            aws_secret_access_key=sk, region_name='auto',
+            config=_C(connect_timeout=10, read_timeout=30,
+                      retries={'max_attempts': 1}),
+        ), bkt
+    except ImportError:
+        return None, bkt
+
+
+def _r2_restore() -> None:
+    """Download latest R2 backup into DATABASE + PDFS_DIR.  Never raises."""
+    from datetime import timezone
+    client, bkt = _r2_client()
+    if client is None:
+        err = 'R2 not configured'
+        _r2_status.update({'last_restore_at': datetime.now(timezone.utc).isoformat(timespec='seconds'),
+                           'last_restore_ok': False, 'backup_error': err})
+        print(f'[restore] R2 not available: {err}', flush=True)
+        return
+    try:
+        resp    = client.get_object(Bucket=bkt, Key='latest.json')
+        pointer = json.loads(resp['Body'].read())
+        prefix  = pointer['prefix']
+        DATABASE.parent.mkdir(parents=True, exist_ok=True)
+        client.download_file(bkt, f'{prefix}/hidroviadata.db', str(DATABASE))
+        PDFS_DIR.mkdir(parents=True, exist_ok=True)
+        n_pdfs = 0
+        for page in client.get_paginator('list_objects_v2').paginate(
+                Bucket=bkt, Prefix=f'{prefix}/pdfs/'):
+            for obj in page.get('Contents', []):
+                fname = obj['Key'].split('/')[-1]
+                if fname:
+                    client.download_file(bkt, obj['Key'],
+                                         str(PDFS_DIR / fname))
+                    n_pdfs += 1
+        _r2_status.update({'last_restore_at': datetime.now(timezone.utc).isoformat(timespec='seconds'),
+                           'last_restore_ok': True, 'backup_error': None})
+        print(f'[restore] restored from backup  prefix={prefix}  '
+              f'db + {n_pdfs} pdfs', flush=True)
+    except Exception as exc:
+        err = str(exc)
+        _r2_status.update({'last_restore_at': datetime.now(timezone.utc).isoformat(timespec='seconds'),
+                           'last_restore_ok': False, 'backup_error': err})
+        print(f'[restore] FAILED: {err}', flush=True)
+
 app = Flask(__name__, static_folder=None)
 
 
@@ -116,20 +184,13 @@ def _try_restore_from_r2() -> None:
     restore from the latest R2 backup.  Failure is logged but never fatal —
     _bootstrap_db() will fall back to rebuilding from data.json if needed.
     """
-    try:
-        import backup as _bk
-        db_missing = not DATABASE.exists()
-        pdfs_empty = (not PDFS_DIR.exists()
-                      or not list(PDFS_DIR.glob('*.pdf')))
-        if not (db_missing or pdfs_empty):
-            return
-        reason = 'DB missing' if db_missing else 'pdfs/ empty'
-        print(f'[restore] {reason} — attempting R2 restore …', flush=True)
-        result = _bk.restore(DATABASE, PDFS_DIR)
-        if not result['ok']:
-            print(f'[restore] R2 not available: {result["error"]}', flush=True)
-    except Exception as exc:
-        print(f'[restore] unexpected error: {exc}', flush=True)
+    db_missing = not DATABASE.exists()
+    pdfs_empty = not PDFS_DIR.exists() or not list(PDFS_DIR.glob('*.pdf'))
+    if not (db_missing or pdfs_empty):
+        return
+    reason = 'DB missing' if db_missing else 'pdfs/ empty'
+    print(f'[restore] {reason} — attempting R2 restore …', flush=True)
+    _r2_restore()
 
 
 _try_restore_from_r2()
@@ -373,11 +434,7 @@ def api_debug() -> Response:
     ).fetchall():
         cand_by_status[r[0] or 'unknown'] = r[1]
 
-    try:
-        import backup as _bk
-        backup_status = _bk.get_status()
-    except Exception:
-        backup_status = {'error': 'backup module unavailable'}
+    backup_status = dict(_r2_status)
 
     return jsonify({
         'git_sha':                     _git_sha(),

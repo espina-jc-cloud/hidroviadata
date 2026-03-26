@@ -666,18 +666,52 @@ if __name__ == '__main__':
         _recs = json.loads(DATA.read_text(encoding='utf-8'))
         _qr   = compute_quality_report(_recs)
         _print_quality_report(_qr)
+
+        # ── Special case: duplicate-only BLOCK → ALREADY_PUBLISHED ────────
+        # If the sole BLOCK reason is a duplicate source_id (PDF re-upload)
+        # and the DB is present, downgrade to ALREADY_PUBLISHED so the UI
+        # can show a neutral info box instead of a blocking error.
+        _is_dup_only = (
+            _qr['status'] == 'BLOCK'
+            and len(_qr['blocks']) == 1
+            and _qr['blocks'][0].startswith('Duplicate PDF:')
+            and DB_PATH.exists()
+        )
+        _extra: dict = {}
+        if _is_dup_only:
+            try:
+                _con  = sqlite3.connect(str(DB_PATH))
+                _sid  = _qr.get('source_id')
+                _r    = _con.execute(
+                    'SELECT count(*), sum(tons) FROM shipments WHERE source_id=?',
+                    (_sid,),
+                ).fetchone()
+                _extra = {
+                    'already_published':      True,
+                    'published_source_id':    _sid,
+                    'published_source_date':  _qr.get('source_date'),
+                    'published_rows':         int(_r[0]) if _r and _r[0] else 0,
+                    'published_total_tons':   int(_r[1]) if _r and _r[1] else 0,
+                }
+                _con.close()
+            except Exception:
+                _is_dup_only = False   # DB unreadable → keep BLOCK
+
+        _preview_quality = {
+            'status':   'ALREADY_PUBLISHED' if _is_dup_only else _qr['status'],
+            'blocks':   [] if _is_dup_only else _qr['blocks'],
+            'warnings': _qr['warnings'],
+            'summary':  _qr['summary'],
+        }
+
         sys.stdout.write(
             '__PREVIEW_JSON__:' + json.dumps({
                 'source_id':   _qr.get('source_id'),
                 'source_date': _qr.get('source_date'),
                 'n_rows':      _qr['summary'].get('n_rows', 0),
                 'total_tons':  _qr['summary'].get('total_tons', 0),
-                'quality': {
-                    'status':   _qr['status'],
-                    'blocks':   _qr['blocks'],
-                    'warnings': _qr['warnings'],
-                    'summary':  _qr['summary'],
-                },
+                **_extra,
+                'quality': _preview_quality,
             }) + '\n'
         )
         sys.exit(0)

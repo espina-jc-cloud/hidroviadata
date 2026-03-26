@@ -1015,6 +1015,27 @@ def api_admin_publish_lineup() -> Response:
         return jsonify({'error': 'No preview found. Upload a PDF first.'}), 400
 
     pstatus = (_last_preview.get('quality') or {}).get('status', '')
+
+    # Idempotent: PDF already in DB — return ok without re-running migrate
+    if pstatus == 'ALREADY_PUBLISHED':
+        try:
+            con    = sqlite3.connect(str(DATABASE))
+            latest = con.execute(
+                'SELECT source_date, source_id FROM shipments ORDER BY source_date DESC LIMIT 1'
+            ).fetchone()
+            con.close()
+        except Exception:
+            latest = None
+        _last_preview = None
+        return jsonify({
+            'ok':                 True,
+            'noop':               True,
+            'message':            'Already published',
+            'latest_source_date': latest[0] if latest else None,
+            'latest_source_id':   latest[1] if latest else None,
+            'git_sha':            _git_sha(),
+        })
+
     if pstatus not in ('PASS', 'WARNING'):
         return jsonify({
             'error':   f'Publish blocked — last preview status is {pstatus!r}.',

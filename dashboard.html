@@ -3108,24 +3108,40 @@ function _renderAdminPreview(p) {
   if (!area) return;
   const q       = p.quality || {};
   const status  = q.status || '?';
+  const isAlreadyPublished = status === 'ALREADY_PUBLISHED';
   const isBlock = status === 'BLOCK';
-  const statusColor = status === 'PASS' ? 'var(--green)'
+  const statusColor = (status === 'PASS' || isAlreadyPublished) ? 'var(--green)'
                     : status === 'WARNING' ? 'var(--yellow)'
                     : 'var(--red)';
-  const icon = status === 'PASS' ? '✅' : status === 'WARNING' ? '⚠️' : '❌';
+  const icon = (status === 'PASS' || isAlreadyPublished) ? '✅'
+             : status === 'WARNING' ? '⚠️' : '❌';
 
   const issueLines = [
     ...(q.blocks   || []).map(b => `<div style="color:var(--red);font-size:11px;margin:2px 0">  • BLOCK: ${b}</div>`),
     ...(q.warnings || []).map(w => `<div style="color:var(--yellow);font-size:11px;margin:2px 0">  • AVISO: ${w}</div>`),
   ].join('');
 
-  const publishBtn = !isBlock
-    ? `<button class="admin-btn success" style="margin-top:14px" onclick="doPublishLineup()">
-         🚀 Publicar (migrate --reset)
+  const alreadyPublishedBox = isAlreadyPublished ? `
+    <div style="background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);
+                border-radius:5px;padding:10px 14px;margin:8px 0;font-size:12px;color:var(--green)">
+      ✅ Ya publicado — no hay nada para publicar.<br>
+      <span style="color:var(--text3);font-size:11px">
+        ${p.published_rows || 0} filas · ${(p.published_total_tons || 0).toLocaleString('es-AR')} t
+        ya están en la DB para esta fuente.
+      </span>
+    </div>` : '';
+
+  const publishBtn = isAlreadyPublished
+    ? `<button class="admin-btn" style="margin-top:10px;opacity:0.4;cursor:not-allowed" disabled>
+         ✅ Ya publicado
        </button>`
-    : `<div style="margin-top:10px;color:var(--red);font-size:12px">
-         ❌ Publicación bloqueada — corregí los issues y volvé a cargar el PDF.
-       </div>`;
+    : !isBlock
+      ? `<button class="admin-btn success" style="margin-top:14px" onclick="doPublishLineup()">
+           🚀 Publicar (migrate --reset)
+         </button>`
+      : `<div style="margin-top:10px;color:var(--red);font-size:12px">
+           ❌ Publicación bloqueada — corregí los issues y volvé a cargar el PDF.
+         </div>`;
 
   area.innerHTML = `
     <div style="border:1px solid var(--border);border-radius:6px;padding:14px 18px;margin-top:4px">
@@ -3147,6 +3163,7 @@ function _renderAdminPreview(p) {
           <div style="color:var(--text)">${p.n_rows || 0} filas · ${(p.total_tons || 0).toLocaleString('es-AR')} t</div>
         </div>
       </div>
+      ${alreadyPublishedBox}
       ${issueLines}
       <div id="adm-publish-result"></div>
       ${publishBtn}

@@ -8,7 +8,6 @@ Extrae, limpia y consolida registros de buques con fertilizantes.
 import json
 import re
 import os
-import sqlite3
 from datetime import datetime, timedelta
 from pathlib import Path
 from collections import defaultdict
@@ -17,11 +16,9 @@ import pdfplumber
 
 # ─── PATHS ────────────────────────────────────────────────────────────────────
 
-PDF_DIR        = Path("pdfs")
-OUTPUT_DIR     = Path("output")
+PDF_DIR    = Path("pdfs")
+OUTPUT_DIR = Path("output")
 OUTPUT_DIR.mkdir(exist_ok=True)
-DB_PATH        = Path("hidroviadata.db")
-QUALITY_REPORT = OUTPUT_DIR / "quality_report.json"
 
 
 # ─── LIMPIEZA ─────────────────────────────────────────────────────────────────
@@ -694,183 +691,7 @@ def strip_internal(r: dict) -> dict:
     return {k: v for k, v in r.items() if not k.startswith("_")}
 
 
-# ─── QUALITY GATE ─────────────────────────────────────────────────────────────
-
-def run_quality_gate(output_data: list[dict]) -> dict:
-    """
-    Quality gate: run BLOCK / WARNING / PASS checks on the freshly-parsed data.
-
-    BLOCK  — writes quality_report.json and returns; migrate.py will refuse to
-             publish until the issue is fixed (DB stays untouched).
-    WARNING — publishes with a banner shown in the dashboard.
-    PASS    — silent; publishes normally.
-
-    Writes output/quality_report.json and returns the report dict.
-    """
-    now_str = datetime.now().isoformat(timespec="seconds")
-
-    # ── Identify newest source_date and its rows ───────────────────────────
-    dates = sorted(
-        {r.get("source_date") for r in output_data if r.get("source_date")},
-        reverse=True,
-    )
-    if not dates:
-        report = {
-            "timestamp": now_str, "source_date": None, "source_id": None,
-            "status": "BLOCK",
-            "blocks": ["No source_date found in any parsed record."],
-            "warnings": [], "summary": {},
-        }
-        QUALITY_REPORT.write_text(json.dumps(report, ensure_ascii=False, indent=2))
-        return report
-
-    newest_date  = dates[0]
-    newest_rows  = [r for r in output_data if r.get("source_date") == newest_date]
-    source_ids   = sorted({r.get("source_id") for r in newest_rows if r.get("source_id")})
-    source_id    = source_ids[0] if source_ids else None
-    n_rows       = len(newest_rows)
-    tons_list    = [r["tons"] for r in newest_rows if r.get("tons") is not None]
-    total_tons   = sum(tons_list)
-
-    # ── Read previous lineup from existing DB (for delta checks) ──────────
-    prev_tons = None
-    dup_count = 0
-    if DB_PATH.exists():
-        try:
-            con = sqlite3.connect(str(DB_PATH))
-            row = con.execute(
-                "SELECT source_date FROM shipments ORDER BY source_date DESC LIMIT 1"
-            ).fetchone()
-            if row and row[0] and row[0] != newest_date:
-                pt = con.execute(
-                    "SELECT sum(tons) FROM shipments WHERE source_date=? AND tons IS NOT NULL",
-                    (row[0],),
-                ).fetchone()
-                prev_tons = float(pt[0]) if pt and pt[0] else None
-            if source_id:
-                dc = con.execute(
-                    "SELECT count(*) FROM shipments WHERE source_id=?", (source_id,)
-                ).fetchone()
-                dup_count = dc[0] if dc else 0
-            con.close()
-        except Exception:
-            pass  # DB may not have the expected tables yet
-
-    # ── Compute ton delta ─────────────────────────────────────────────────
-    delta_pct = None
-    if prev_tons and prev_tons > 0 and total_tons > 0:
-        delta_pct = (total_tons - prev_tons) / prev_tons
-
-    # ── Ratio metrics (always computed; 0 when n_rows==0) ─────────────────
-    miss_cli = sum(1 for r in newest_rows if not (r.get("cliente") or "").strip())
-    miss_mat = sum(1 for r in newest_rows
-                   if not (r.get("material") or "").strip()
-                   or r.get("material") == "UNKNOWN")
-
-    today    = datetime.now().date()
-    old_etas = []
-    for r in newest_rows:
-        try:
-            eta_dt = datetime.fromisoformat(r["eta"]).date()
-            if (today - eta_dt).days > 30:
-                old_etas.append(f"{r.get('buque')} eta={r['eta']}")
-        except (KeyError, ValueError, TypeError):
-            pass
-
-    # ── BLOCK checks ──────────────────────────────────────────────────────
-    blocks: list[str] = []
-
-    if n_rows == 0:
-        blocks.append("Newest lineup has 0 rows.")
-
-    if delta_pct is not None and abs(delta_pct) > 0.25:
-        blocks.append(
-            f"Tons delta {delta_pct:+.1%} exceeds ±25% "
-            f"(prev={prev_tons:,.0f}  new={total_tons:,.0f})."
-        )
-
-    short_names = [r.get("buque", "") for r in newest_rows if len(r.get("buque") or "") < 3]
-    if short_names:
-        blocks.append(f"Vessel name < 3 chars detected: {short_names[:5]}")
-
-    mega = [
-        (r.get("buque"), r.get("tons"))
-        for r in newest_rows if (r.get("tons") or 0) > 100_000
-    ]
-    if mega:
-        blocks.append(f"Single record tons > 100,000: {mega[:3]}")
-
-    if dup_count > 0:
-        blocks.append(f'Duplicate PDF: "{source_id}" already in DB ({dup_count} rows).')
-
-    # ── WARNING checks ────────────────────────────────────────────────────
-    warnings: list[str] = []
-
-    if delta_pct is not None and 0.10 <= abs(delta_pct) <= 0.25:
-        warnings.append(
-            f"Tons delta {delta_pct:+.1%} is in the 10–25% caution band "
-            f"(prev={prev_tons:,.0f}  new={total_tons:,.0f})."
-        )
-
-    if n_rows > 0:
-        p_cli = miss_cli / n_rows
-        if p_cli > 0.05:
-            warnings.append(
-                f"Missing cliente: {miss_cli}/{n_rows} rows ({p_cli:.1%}) — exceeds 5% threshold."
-            )
-        p_mat = miss_mat / n_rows
-        if p_mat > 0.03:
-            warnings.append(
-                f"Missing material: {miss_mat}/{n_rows} rows ({p_mat:.1%}) — exceeds 3% threshold."
-            )
-
-    if old_etas:
-        warnings.append(f"ETA >30 days in the past: {old_etas[:3]}")
-
-    # ── Build report ──────────────────────────────────────────────────────
-    status = "BLOCK" if blocks else ("WARNING" if warnings else "PASS")
-
-    report = {
-        "timestamp":   now_str,
-        "source_date": newest_date,
-        "source_id":   source_id,
-        "status":      status,
-        "blocks":      blocks,
-        "warnings":    warnings,
-        "summary": {
-            "n_rows":            n_rows,
-            "total_tons":        total_tons,
-            "prev_tons":         prev_tons,
-            "delta_pct":         round(delta_pct * 100, 2) if delta_pct is not None else None,
-            "missing_cliente":   miss_cli,
-            "missing_material":  miss_mat,
-            "old_eta_count":     len(old_etas),
-        },
-    }
-
-    QUALITY_REPORT.write_text(json.dumps(report, ensure_ascii=False, indent=2))
-    return report
-
-
-def _print_quality_report(report: dict) -> None:
-    """Pretty-print the quality report to stdout."""
-    status   = report["status"]
-    icon     = {"PASS": "✅", "WARNING": "⚠️ ", "BLOCK": "❌"}.get(status, "?")
-    divider  = "═" * 58
-    print(f"\n{divider}")
-    print(f"  {icon} QUALITY GATE: {status}   "
-          f"source={report.get('source_id') or '?'}")
-    for b in report.get("blocks", []):
-        print(f"     BLOCK   • {b}")
-    for w in report.get("warnings", []):
-        print(f"     WARNING • {w}")
-    s = report.get("summary", {})
-    print(f"     rows={s.get('n_rows')}  tons={s.get('total_tons'):,.0f}  "
-          f"delta={'+' if (s.get('delta_pct') or 0) >= 0 else ''}"
-          f"{s.get('delta_pct') or 'n/a'}%  "
-          f"miss_cli={s.get('missing_cliente')}  miss_mat={s.get('missing_material')}")
-    print(divider + "\n")
-
+# ─── (quality gate removed — now lives entirely in migrate.py) ────────────────
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 
@@ -995,11 +816,6 @@ def main():
 
     print(f"  → {OUTPUT_DIR}/data.json")
     print(f"  → {OUTPUT_DIR}/resumen.txt")
-
-    # ── Quality gate — always runs after data.json is written ─────────────
-    qr = run_quality_gate(output_data)
-    _print_quality_report(qr)
-    print(f"  → {QUALITY_REPORT}  (status={qr['status']})")
     print(f"\n✓ Listo.")
 
 

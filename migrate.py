@@ -25,16 +25,17 @@ from __future__ import annotations
 import json
 import sqlite3
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from build_core_fleet import build as _build_core_fleet
 
-BASE           = Path(__file__).parent
-DB_PATH        = BASE / 'hidroviadata.db'
-DATA           = BASE / 'output' / 'data.json'
-PROFILES       = BASE / 'output' / 'vessel_profiles.json'
-BUQUES         = BASE / 'output' / 'buques_en_ruta.json'
-QUALITY_REPORT = BASE / 'output' / 'quality_report.json'
+BASE     = Path(__file__).parent
+DB_PATH  = BASE / 'hidroviadata.db'
+DB_TMP   = BASE / 'hidroviadata.db.tmp'   # atomic swap target for --reset
+DATA     = BASE / 'output' / 'data.json'
+PROFILES = BASE / 'output' / 'vessel_profiles.json'
+BUQUES   = BASE / 'output' / 'buques_en_ruta.json'
 
 RESET = '--reset' in sys.argv
 
@@ -117,51 +118,164 @@ DROP TABLE IF EXISTS vessel_candidates;
 """
 
 
-def _check_quality_gate() -> dict | None:
+def compute_quality_report(records: list[dict]) -> dict:
     """
-    Read output/quality_report.json (written by parser.py).
-    - BLOCK  → print reasons and sys.exit(1) WITHOUT touching the DB.
-    - WARNING → print reasons but continue.
-    - PASS / missing report → continue silently.
-    Returns the report dict (or None if no report file).
+    Compute BLOCK / WARNING / PASS purely from the in-memory records list
+    (from output/data.json) and the existing real DB (if present).
+
+    No intermediate files. Source of truth is the DB for previous-lineup
+    comparison; the incoming records list for all new-lineup checks.
+
+    Duplicate-PDF check is skipped when RESET=True because the DB is
+    being fully rebuilt — re-importing all source_ids is expected.
     """
-    if not QUALITY_REPORT.exists():
-        print("[quality] No quality_report.json found — run python3 parser.py first.")
-        return None
+    now_str = datetime.now().isoformat(timespec='seconds')
 
-    report = json.loads(QUALITY_REPORT.read_text(encoding='utf-8'))
-    status = report.get('status', 'PASS')
+    # ── Newest source_date and its rows ───────────────────────────────────
+    dates = sorted(
+        {r.get('source_date') for r in records if r.get('source_date')}, reverse=True
+    )
+    if not dates:
+        return {
+            'timestamp': now_str, 'source_date': None, 'source_id': None,
+            'status': 'BLOCK',
+            'blocks': ['No source_date found in any record.'],
+            'warnings': [], 'summary': {},
+        }
 
-    # When --reset is used, the DB will be fully rebuilt from data.json, so a
-    # "Duplicate PDF" block is expected and safe — waive it only for --reset.
-    blocks = report.get('blocks', [])
-    if RESET:
-        dup_blocks = [b for b in blocks if b.startswith('Duplicate PDF')]
-        if dup_blocks:
-            blocks = [b for b in blocks if not b.startswith('Duplicate PDF')]
-            print(f'[quality] --reset mode: waiving duplicate-PDF block '
-                  f'(DB will be fully rebuilt).')
-            status = 'BLOCK' if blocks else ('WARNING' if report.get('warnings') else 'PASS')
-            # Update report so the effective status is stored in the DB
-            report = {**report, 'status': status, 'blocks': blocks}
+    newest_date = dates[0]
+    newest_rows = [r for r in records if r.get('source_date') == newest_date]
+    source_ids  = sorted({r.get('source_id') for r in newest_rows if r.get('source_id')})
+    source_id   = source_ids[0] if source_ids else None
+    n_rows      = len(newest_rows)
+    tons_list   = [r['tons'] for r in newest_rows if r.get('tons') is not None]
+    total_tons  = sum(tons_list)
 
-    if status == 'BLOCK':
-        print('\n' + '═' * 60)
-        print('  ❌  QUALITY GATE: BLOCK — DB NOT modified (previous DB kept intact)')
-        for reason in blocks:
-            print(f'       • {reason}')
-        print('  Fix the issues above, re-run parser.py, then retry migrate.py.')
-        print('═' * 60 + '\n')
-        sys.exit(1)
+    # ── Previous lineup from REAL DB (not the temp being built) ──────────
+    prev_tons = None
+    dup_count = 0
+    if DB_PATH.exists():
+        try:
+            con = sqlite3.connect(str(DB_PATH))
+            row = con.execute(
+                'SELECT source_date FROM shipments ORDER BY source_date DESC LIMIT 1'
+            ).fetchone()
+            if row and row[0] and row[0] != newest_date:
+                pt = con.execute(
+                    'SELECT sum(tons) FROM shipments WHERE source_date=? AND tons IS NOT NULL',
+                    (row[0],),
+                ).fetchone()
+                prev_tons = float(pt[0]) if pt and pt[0] else None
+            # Duplicate check — only meaningful for non-reset runs
+            if source_id and not RESET:
+                dc = con.execute(
+                    'SELECT count(*) FROM shipments WHERE source_id=?', (source_id,)
+                ).fetchone()
+                dup_count = dc[0] if dc else 0
+            con.close()
+        except Exception:
+            pass
 
-    if status == 'WARNING':
-        print('\n' + '─' * 60)
-        print('  ⚠   QUALITY GATE: WARNING — publishing with caveats')
-        for reason in report.get('warnings', []):
-            print(f'       • {reason}')
-        print('─' * 60)
+    # ── Ton delta ─────────────────────────────────────────────────────────
+    delta_pct = None
+    if prev_tons and prev_tons > 0 and total_tons > 0:
+        delta_pct = (total_tons - prev_tons) / prev_tons
 
-    return report
+    # ── Ratio metrics ─────────────────────────────────────────────────────
+    miss_cli = sum(1 for r in newest_rows if not (r.get('cliente') or '').strip())
+    miss_mat = sum(1 for r in newest_rows
+                   if not (r.get('material') or '').strip()
+                   or r.get('material') == 'UNKNOWN')
+
+    today    = datetime.now().date()
+    old_etas = []
+    for r in newest_rows:
+        try:
+            eta_dt = datetime.fromisoformat(r['eta']).date()
+            if (today - eta_dt).days > 30:
+                old_etas.append(f"{r.get('buque')} eta={r['eta']}")
+        except (KeyError, ValueError, TypeError):
+            pass
+
+    # ── BLOCK checks ──────────────────────────────────────────────────────
+    blocks: list[str] = []
+
+    if n_rows == 0:
+        blocks.append('Newest lineup has 0 rows.')
+    if delta_pct is not None and abs(delta_pct) > 0.25:
+        blocks.append(
+            f'Tons delta {delta_pct:+.1%} exceeds ±25% '
+            f'(prev={prev_tons:,.0f}  new={total_tons:,.0f}).'
+        )
+    short = [r.get('buque', '') for r in newest_rows if len(r.get('buque') or '') < 3]
+    if short:
+        blocks.append(f'Vessel name < 3 chars: {short[:5]}')
+    mega = [(r.get('buque'), r.get('tons'))
+            for r in newest_rows if (r.get('tons') or 0) > 100_000]
+    if mega:
+        blocks.append(f'Single record tons > 100,000: {mega[:3]}')
+    if dup_count > 0:
+        blocks.append(f'Duplicate PDF: "{source_id}" already in DB ({dup_count} rows).')
+
+    # ── WARNING checks ────────────────────────────────────────────────────
+    warnings: list[str] = []
+
+    if delta_pct is not None and 0.10 <= abs(delta_pct) <= 0.25:
+        warnings.append(
+            f'Tons delta {delta_pct:+.1%} in 10–25% caution band '
+            f'(prev={prev_tons:,.0f}  new={total_tons:,.0f}).'
+        )
+    if n_rows > 0:
+        if miss_cli / n_rows > 0.05:
+            warnings.append(
+                f'Missing cliente: {miss_cli}/{n_rows} rows ({miss_cli/n_rows:.1%}).'
+            )
+        if miss_mat / n_rows > 0.03:
+            warnings.append(
+                f'Missing material: {miss_mat}/{n_rows} rows ({miss_mat/n_rows:.1%}).'
+            )
+    if old_etas:
+        warnings.append(f'ETA >30 days in past: {old_etas[:3]}')
+
+    status = 'BLOCK' if blocks else ('WARNING' if warnings else 'PASS')
+
+    return {
+        'timestamp':   now_str,
+        'source_date': newest_date,
+        'source_id':   source_id,
+        'status':      status,
+        'blocks':      blocks,
+        'warnings':    warnings,
+        'summary': {
+            'n_rows':           n_rows,
+            'total_tons':       total_tons,
+            'prev_tons':        prev_tons,
+            'delta_pct':        round(delta_pct * 100, 2) if delta_pct is not None else None,
+            'missing_cliente':  miss_cli,
+            'missing_material': miss_mat,
+            'old_eta_count':    len(old_etas),
+        },
+    }
+
+
+def _print_quality_report(report: dict) -> None:
+    """Print quality report to stdout."""
+    status  = report['status']
+    icon    = {'PASS': '✅', 'WARNING': '⚠️ ', 'BLOCK': '❌'}.get(status, '?')
+    div     = '═' * 58
+    print(f'\n{div}')
+    print(f'  {icon} QUALITY GATE: {status}   '
+          f"source={report.get('source_id') or '?'}")
+    for b in report.get('blocks', []):
+        print(f'     BLOCK   • {b}')
+    for w in report.get('warnings', []):
+        print(f'     WARNING • {w}')
+    s = report.get('summary', {})
+    dpct = s.get('delta_pct')
+    print(f"     rows={s.get('n_rows')}  tons={s.get('total_tons') or 0:,.0f}  "
+          f"delta={f'{dpct:+}%' if dpct is not None else 'n/a'}  "
+          f"miss_cli={s.get('missing_cliente')}  miss_mat={s.get('missing_material')}")
+    print(div + '\n')
 
 
 def _write_quality_report(con: sqlite3.Connection, report: dict) -> None:
@@ -183,20 +297,36 @@ def _write_quality_report(con: sqlite3.Connection, report: dict) -> None:
 
 
 def migrate() -> None:
-    # ── Quality gate: abort on BLOCK before touching the DB ───────────────
-    quality_report = _check_quality_gate()
+    # ── 1. Load records from data.json into memory ────────────────────────
+    records = json.loads(DATA.read_text(encoding='utf-8'))
 
-    con = sqlite3.connect(DB_PATH)
+    # ── 2. Compute quality report (reads REAL DB for deltas; no temp file) ─
+    quality_report = compute_quality_report(records)
+    _print_quality_report(quality_report)
+
+    # ── 3. BLOCK → abort without touching any DB ─────────────────────────
+    if quality_report['status'] == 'BLOCK':
+        print('  ❌ BLOCK — DB NOT modified.  Fix issues above and re-run.')
+        sys.exit(1)
+
+    # ── 4. Choose write target ────────────────────────────────────────────
+    # --reset: build into a temp file first, then atomically swap → real DB
+    #   so the real DB is never half-built if something fails mid-migration.
+    # non-reset: write directly (CREATE TABLE IF NOT EXISTS + INSERT).
+    if RESET:
+        db_target = DB_TMP
+        if db_target.exists():
+            db_target.unlink()
+    else:
+        db_target = DB_PATH
+
+    con = sqlite3.connect(str(db_target))
     cur = con.cursor()
 
-    if RESET:
-        print("Dropping existing tables …")
-        cur.executescript(DROP_DDL)
-
+    # Temp DB (--reset) is always fresh. Non-reset uses CREATE TABLE IF NOT EXISTS.
     cur.executescript(DDL)
 
     # ── Shipments ──────────────────────────────────────────────────────────────
-    records = json.loads(DATA.read_text(encoding='utf-8'))
     cur.executemany(
         """
         INSERT INTO shipments
@@ -314,12 +444,17 @@ def migrate() -> None:
           f"(fertilizer_visits ≥ 2)")
 
     # ── Persist quality report ─────────────────────────────────────────────
-    if quality_report:
-        _write_quality_report(con, quality_report)
-        con.commit()
-        print(f"  quality_reports    :   1 row written  (status={quality_report.get('status')})")
+    _write_quality_report(con, quality_report)
+    con.commit()
+    print(f"  quality_reports    :   1 row written  (status={quality_report['status']})")
 
     con.close()
+
+    # ── 5. For --reset: atomic swap temp → real ───────────────────────────
+    if RESET:
+        db_target.replace(DB_PATH)   # atomic on POSIX (Railway/Linux)
+        print(f"  → swapped {db_target.name} → {DB_PATH.name}")
+
     print(f"\nDatabase written → {DB_PATH}")
 
 

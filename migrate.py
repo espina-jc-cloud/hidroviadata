@@ -372,6 +372,16 @@ def compute_quality_report(records: list[dict]) -> dict:
 
     status = 'BLOCK' if blocks else ('WARNING' if warnings else 'PASS')
 
+    # ── Alias hit counts (written by parser.py into output/alias_stats.json) ─
+    alias_stats_path = BASE / 'output' / 'alias_stats.json'
+    try:
+        _astats = json.loads(alias_stats_path.read_text(encoding='utf-8'))
+        alias_hits_v = int(_astats.get('vessels',   0))
+        alias_hits_c = int(_astats.get('clients',   0))
+        alias_hits_m = int(_astats.get('materials', 0))
+    except (FileNotFoundError, json.JSONDecodeError, ValueError):
+        alias_hits_v = alias_hits_c = alias_hits_m = 0
+
     return {
         'timestamp':   now_str,
         'source_date': newest_date,
@@ -380,13 +390,16 @@ def compute_quality_report(records: list[dict]) -> dict:
         'blocks':      blocks,
         'warnings':    warnings,
         'summary': {
-            'n_rows':           n_rows,
-            'total_tons':       total_tons,
-            'prev_tons':        prev_tons,
-            'delta_pct':        round(delta_pct * 100, 2) if delta_pct is not None else None,
-            'missing_cliente':  miss_cli,
-            'missing_material': miss_mat,
-            'old_eta_count':    len(old_etas),
+            'n_rows':               n_rows,
+            'total_tons':           total_tons,
+            'prev_tons':            prev_tons,
+            'delta_pct':            round(delta_pct * 100, 2) if delta_pct is not None else None,
+            'missing_cliente':      miss_cli,
+            'missing_material':     miss_mat,
+            'old_eta_count':        len(old_etas),
+            'alias_hits_vessels':   alias_hits_v,
+            'alias_hits_clients':   alias_hits_c,
+            'alias_hits_materials': alias_hits_m,
         },
     }
 

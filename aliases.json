@@ -1,0 +1,21 @@
+{
+  "vessels": {
+    "KEN-UN": "KEN UN",
+    "KEN  UN": "KEN UN",
+    "CLIPPER I STAR": "CLIPPER I-STAR"
+  },
+  "clients": {
+    "NUTRIEN SA": "NUTRIEN",
+    "NUTRIEN S.A.": "NUTRIEN",
+    "BUNGE ARG": "BUNGE",
+    "PTP SA": "PTP"
+  },
+  "materials": {
+    "MOP": "MOP",
+    "MAP": "MAP",
+    "DAP": "DAP",
+    "PROD.SIDRURGICO": "PROD. SIDRURGICO",
+    "FERTILIZANTE": "FERTILIZANTE",
+    "AMSUL": "AMSUL"
+  }
+}

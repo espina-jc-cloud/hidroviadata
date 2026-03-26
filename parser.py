@@ -23,6 +23,64 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 
 # ─── LIMPIEZA ─────────────────────────────────────────────────────────────────
 
+# ─── ALIASES ──────────────────────────────────────────────────────────────────
+# Load aliases.json once at import time (missing file → empty dicts, no crash).
+_ALIASES_PATH = Path(__file__).parent / 'aliases.json'
+try:
+    _ALIASES_RAW = json.loads(_ALIASES_PATH.read_text(encoding='utf-8'))
+except (FileNotFoundError, json.JSONDecodeError):
+    _ALIASES_RAW = {}
+
+_ALIAS_VESSELS:   dict[str, str] = {k.upper(): v for k, v in _ALIASES_RAW.get('vessels',   {}).items()}
+_ALIAS_CLIENTS:   dict[str, str] = {k.upper(): v for k, v in _ALIASES_RAW.get('clients',   {}).items()}
+_ALIAS_MATERIALS: dict[str, str] = {k.upper(): v for k, v in _ALIASES_RAW.get('materials', {}).items()}
+
+# Hit counters — reset at start of main(), incremented by helpers below.
+_alias_hits: dict[str, int] = {'vessels': 0, 'clients': 0, 'materials': 0}
+
+
+def _alias_vessel(name: str) -> str:
+    """Apply aliases.json vessel mapping. Treats hyphens == spaces for lookup."""
+    if not name:
+        return name
+    # Try exact key first, then hyphen-normalised key
+    key_exact = name.upper().strip()
+    key_norm  = re.sub(r'\s+', ' ', re.sub(r'-', ' ', key_exact))
+    for key in (key_exact, key_norm):
+        if key in _ALIAS_VESSELS:
+            canonical = _ALIAS_VESSELS[key]
+            if canonical.upper() != key_exact:
+                _alias_hits['vessels'] += 1
+            return canonical
+    return name
+
+
+def _alias_client(name: str) -> str:
+    """Apply aliases.json client mapping."""
+    if not name:
+        return name
+    key = name.upper().strip()
+    if key in _ALIAS_CLIENTS:
+        canonical = _ALIAS_CLIENTS[key]
+        if canonical.upper() != key:
+            _alias_hits['clients'] += 1
+        return canonical
+    return name
+
+
+def _alias_material(name: str) -> str:
+    """Apply aliases.json material mapping."""
+    if not name:
+        return name
+    key = name.upper().strip()
+    if key in _ALIAS_MATERIALS:
+        canonical = _ALIAS_MATERIALS[key]
+        if canonical.upper() != key:
+            _alias_hits['materials'] += 1
+        return canonical
+    return name
+
+
 # Client name corrections applied after X-artifact removal
 _CLIENT_CORRECTIONS: dict[str, str] = {
     'CARGIL': 'CARGILL',
@@ -555,11 +613,11 @@ def parse_pdf(pdf_path: Path) -> tuple[str | None, list[dict]]:
 
                     for cliente in clients:
                         records.append({
-                            "buque":       vessel_ctx["buque"],
+                            "buque":       _alias_vessel(vessel_ctx["buque"]),
                             "agencia":     vessel_ctx["agencia"],
                             "eta":         vessel_ctx["eta"],
-                            "material":    material,
-                            "cliente":     cliente,
+                            "material":    _alias_material(material),
+                            "cliente":     _alias_client(cliente),
                             "tons":        tons,
                             "operador":    operador or "",
                             "operacion":   operacion,
@@ -696,6 +754,9 @@ def strip_internal(r: dict) -> dict:
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 
 def main():
+    # Reset alias hit counters for this run
+    _alias_hits['vessels'] = _alias_hits['clients'] = _alias_hits['materials'] = 0
+
     pdf_files = sorted(PDF_DIR.glob("*.pdf")) + sorted(PDF_DIR.glob("*.PDF"))
 
     if not pdf_files:
@@ -814,8 +875,14 @@ def main():
                 w(f"  ✓ {s['archivo']:<55} ({s['fecha']})  "
                   f"raw:{s['filas_raw']:>4}  intra:{s['registros']:>4}")
 
+    # ── Write alias hit stats for migrate.py quality report ──────────────────
+    with open(OUTPUT_DIR / "alias_stats.json", "w", encoding="utf-8") as f:
+        json.dump(_alias_hits, f)
+
     print(f"  → {OUTPUT_DIR}/data.json")
     print(f"  → {OUTPUT_DIR}/resumen.txt")
+    print(f"  alias hits: vessels={_alias_hits['vessels']}  "
+          f"clients={_alias_hits['clients']}  materials={_alias_hits['materials']}")
     print(f"\n✓ Listo.")
 
 

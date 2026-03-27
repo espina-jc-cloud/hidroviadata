@@ -46,7 +46,13 @@
       "Bash(sqlite3 hidroviadata.db \"SELECT id, vessel_name, probability_score, probability_level, prediction_status, eta_estimated FROM vessel_candidates ORDER BY id DESC LIMIT 5;\")",
       "Bash(git -C /Users/juancruzespina/Desktop/hidroviadata log --oneline -5)",
       "Bash(git -C /Users/juancruzespina/Desktop/hidroviadata ls-files)",
-      "Bash(complete\"\\) — two commits before /health was added \\(e3bc5f4\\). All:*)"
+      "Bash(complete\"\\) — two commits before /health was added \\(e3bc5f4\\). All:*)",
+      "Bash(curl -s -X POST -H \"X-Admin-Token: abc\" -F \"file=@/Users/juancruzespina/Desktop/hidroviadata/pdfs/LINE UP PUERTO SAN NICOLAS 200326.pdf\" http://localhost:5001/api/admin/upload_lineup)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s -X POST -H \"X-Admin-Token: abc\" http://localhost:5001/api/admin/publish_lineup)",
+      "Bash(curl -s http://localhost:5001/api/changelog/latest)",
+      "Bash(curl -s http://localhost:5001/)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(f''''available={d[\"\"available\"\"]} new={d[\"\"summary\"\"][\"\"new\"\"]} removed={d[\"\"summary\"\"][\"\"removed\"\"]}''''\\)\")"
     ]
   }
 }

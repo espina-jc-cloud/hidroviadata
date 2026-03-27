@@ -16,7 +16,7 @@ import pdfplumber
 
 # ─── PATHS ────────────────────────────────────────────────────────────────────
 
-PDF_DIR    = Path("pdfs")
+PDF_DIR    = Path(os.environ.get('PDF_DIR', 'pdfs'))
 OUTPUT_DIR = Path("output")
 OUTPUT_DIR.mkdir(exist_ok=True)
 

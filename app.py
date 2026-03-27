@@ -51,8 +51,8 @@ from flask import Flask, Response, g, jsonify, request, send_from_directory
 from detect_candidates import _score_observation, _load_core_fleet, _insert_candidate
 
 BASE_DIR    = Path(__file__).parent
-DATABASE    = BASE_DIR / 'hidroviadata.db'
-PDFS_DIR    = BASE_DIR / 'pdfs'
+DATABASE    = Path(os.environ.get('DB_PATH',  str(BASE_DIR / 'hidroviadata.db')))
+PDFS_DIR    = Path(os.environ.get('PDF_DIR',  str(BASE_DIR / 'pdfs')))
 ADMIN_TOKEN = os.environ.get('ADMIN_TOKEN', '')
 
 # In-memory preview state (lost on restart — intentional per spec)
@@ -439,6 +439,10 @@ def api_debug() -> Response:
     return jsonify({
         'git_sha':                     _git_sha(),
         'db_path':                     str(DATABASE),
+        'db_exists':                   DATABASE.exists(),
+        'db_size_bytes':               os.path.getsize(str(DATABASE)) if DATABASE.exists() else None,
+        'pdf_dir':                     str(PDFS_DIR),
+        'pdf_count':                   len(list(PDFS_DIR.glob('*.pdf'))) if PDFS_DIR.exists() else 0,
         'shipments_count':             ship_count,
         'shipments_tons':              int(round(ship_tons))  if ship_tons  else 0,
         'fert_count':                  fert_count,
@@ -644,6 +648,7 @@ def _startup_log() -> None:
         print(f'[startup] sha={sha}  DB read failed: {exc}', flush=True)
 
 
+print(f'[STARTUP] DB_PATH={DATABASE} exists={os.path.exists(str(DATABASE))} PDF_DIR={PDFS_DIR}', flush=True)
 _startup_log()
 
 
@@ -787,6 +792,23 @@ def api_track_record() -> Response:
         'avg_lead_time_days':   round(sum(lead_times) / len(lead_times), 1) if lead_times else None,
         'recently_confirmed':   recently_confirmed[:5],
     })
+
+
+@app.route('/api/changelog/latest')
+def api_changelog_latest() -> Response:
+    row = get_db().execute(
+        'SELECT * FROM lineup_changes ORDER BY computed_at DESC LIMIT 1'
+    ).fetchone()
+    if row is None:
+        return jsonify({'available': False})
+    r = dict(row)
+    for field in ('new_items', 'removed_items', 'eta_changed', 'tons_changed', 'summary'):
+        try:
+            r[field] = json.loads(r[field]) if r[field] else []
+        except Exception:
+            r[field] = []
+    r['available'] = True
+    return jsonify(r)
 
 
 @app.route('/api/status')

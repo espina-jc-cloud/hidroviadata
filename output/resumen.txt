@@ -1,12 +1,12 @@
 ═══════════════════════════════════════════════════════
   RESUMEN — HidrovíaData Parser
-  Generado: 2026-03-26 10:33:16
+  Generado: 2026-03-26 12:58:32
 ═══════════════════════════════════════════════════════
 
-PDFs procesados:                  61
-Registros raw (suma todos PDFs):  3347
-Tras consolidación intra-PDF:     3013
-Duplicados inter-PDF eliminados:  2242
+PDFs procesados:                  62
+Registros raw (suma todos PDFs):  3397
+Tras consolidación intra-PDF:     3060
+Duplicados inter-PDF eliminados:  2289
 REGISTROS FINALES:                771
 Toneladas totales:                4,924,989
 
@@ -106,6 +106,7 @@ Toneladas totales:                4,924,989
 ─── Detalle por PDF ─────────────────────────────────
   ✓ LINE UP PUERTO SAN NICOLAS 180326.pdf                   (2026-03-18)  raw:  41  intra:  40
   ✓ LINE UP PUERTO SAN NICOLAS 200326.pdf                   (2026-03-20)  raw:  50  intra:  47
+  ✓ LINE_UP_PUERTO_SAN_NICOLAS_200326.pdf                   (2026-03-20)  raw:  50  intra:  47
   ✓ ✓_12882.pdf                                             (2025-08-22)  raw:  58  intra:  54
   ✓ ✓_12958.pdf                                             (2025-08-20)  raw:  56  intra:  51
   ✓ ✓_12975.pdf                                             (2025-08-18)  raw:  49  intra:  44

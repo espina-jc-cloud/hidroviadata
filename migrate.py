@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import difflib
 import json
+import os
 import re
 import sqlite3
 import sys
@@ -33,12 +34,12 @@ from pathlib import Path
 from build_core_fleet import build as _build_core_fleet
 
 BASE     = Path(__file__).parent
-DB_PATH  = BASE / 'hidroviadata.db'
-DB_TMP   = BASE / 'hidroviadata.db.tmp'   # atomic swap target for --reset
+DB_PATH  = Path(os.environ.get('DB_PATH', str(BASE / 'hidroviadata.db')))
+DB_TMP   = DB_PATH.with_name(DB_PATH.stem + '.db.tmp')  # atomic swap target for --reset
 DATA     = BASE / 'output' / 'data.json'
 PROFILES = BASE / 'output' / 'vessel_profiles.json'
 BUQUES   = BASE / 'output' / 'buques_en_ruta.json'
-PDFS_DIR = BASE / 'pdfs'
+PDFS_DIR = Path(os.environ.get('PDF_DIR', str(BASE / 'pdfs')))
 
 RESET   = '--reset'   in sys.argv
 PREVIEW = '--preview' in sys.argv
@@ -111,6 +112,18 @@ CREATE TABLE IF NOT EXISTS quality_reports (
     warnings_json TEXT,            -- JSON array of warning reasons
     summary_json  TEXT             -- JSON object with computed metrics
 );
+
+CREATE TABLE IF NOT EXISTS lineup_changes (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    computed_at   TEXT NOT NULL,
+    latest_date   TEXT NOT NULL,
+    prev_date     TEXT,
+    new_items     TEXT,   -- JSON array
+    removed_items TEXT,   -- JSON array
+    eta_changed   TEXT,   -- JSON array
+    tons_changed  TEXT,   -- JSON array
+    summary       TEXT    -- JSON {new, removed, eta_changed, tons_changed}
+);
 """
 
 DROP_DDL = """
@@ -119,6 +132,7 @@ DROP TABLE IF EXISTS quality_reports;
 DROP TABLE IF EXISTS shipments;
 DROP TABLE IF EXISTS vessel_profiles;
 DROP TABLE IF EXISTS vessel_candidates;
+DROP TABLE IF EXISTS lineup_changes;
 """
 
 
@@ -450,6 +464,116 @@ def _write_quality_report(con: sqlite3.Connection, report: dict) -> None:
     )
 
 
+# ── Changelog helpers ─────────────────────────────────────────────────────────
+
+def _ck_norm(s) -> str:
+    import re
+    if not s:
+        return ''
+    return re.sub(r'[\s\-]+', ' ', str(s).upper().strip())
+
+
+def _lineup_key(row) -> str:
+    return '|'.join([_ck_norm(row['buque']), _ck_norm(row['material']), _ck_norm(row['cliente'])])
+
+
+def _parse_eta_date(s):
+    if not s:
+        return None
+    try:
+        return datetime.fromisoformat(str(s)[:10]).date()
+    except Exception:
+        return None
+
+
+def compute_changelog(con) -> dict | None:
+    """Compare last two lineup source_dates. Returns dict or None if <2 lineups."""
+    dates = [r[0] for r in con.execute(
+        'SELECT DISTINCT source_date FROM shipments ORDER BY source_date DESC LIMIT 2'
+    ).fetchall()]
+    if len(dates) < 2:
+        return None
+    latest_date, prev_date = dates[0], dates[1]
+
+    def _load(src_date):
+        rows = con.execute(
+            'SELECT buque, material, cliente, eta, tons FROM shipments WHERE source_date=?',
+            (src_date,)
+        ).fetchall()
+        return {_lineup_key(r): dict(r) for r in rows}
+
+    latest = _load(latest_date)
+    prev   = _load(prev_date)
+
+    new_items     = [v for k, v in latest.items() if k not in prev]
+    removed_items = [v for k, v in prev.items()   if k not in latest]
+    eta_changed: list = []
+    tons_changed: list = []
+
+    for key in latest:
+        if key not in prev:
+            continue
+        l, p = latest[key], prev[key]
+        l_eta = _parse_eta_date(l.get('eta'))
+        p_eta = _parse_eta_date(p.get('eta'))
+        if l_eta and p_eta:
+            delta = (l_eta - p_eta).days
+            if abs(delta) >= 3:
+                eta_changed.append({
+                    'buque':      l['buque'],
+                    'material':   l['material'],
+                    'cliente':    l['cliente'],
+                    'old_eta':    p.get('eta'),
+                    'new_eta':    l.get('eta'),
+                    'delta_days': delta,
+                })
+        l_tons = l.get('tons') or 0
+        p_tons = p.get('tons') or 0
+        delta_t = l_tons - p_tons
+        if abs(delta_t) >= 500:
+            tons_changed.append({
+                'buque':    l['buque'],
+                'material': l['material'],
+                'cliente':  l['cliente'],
+                'old_tons': p_tons,
+                'new_tons': l_tons,
+                'delta':    delta_t,
+            })
+
+    return {
+        'latest_date':   latest_date,
+        'prev_date':     prev_date,
+        'new_items':     new_items,
+        'removed_items': removed_items,
+        'eta_changed':   eta_changed,
+        'tons_changed':  tons_changed,
+    }
+
+
+def _write_changelog(con, result: dict) -> None:
+    con.execute(
+        '''INSERT INTO lineup_changes
+           (computed_at, latest_date, prev_date, new_items, removed_items,
+            eta_changed, tons_changed, summary)
+           VALUES (datetime('now'), ?, ?, ?, ?, ?, ?, ?)''',
+        (
+            result['latest_date'],
+            result['prev_date'],
+            json.dumps(result['new_items'],    ensure_ascii=False),
+            json.dumps(result['removed_items'], ensure_ascii=False),
+            json.dumps(result['eta_changed'],  ensure_ascii=False),
+            json.dumps(result['tons_changed'], ensure_ascii=False),
+            json.dumps({
+                'new':          len(result['new_items']),
+                'removed':      len(result['removed_items']),
+                'eta_changed':  len(result['eta_changed']),
+                'tons_changed': len(result['tons_changed']),
+            }),
+        ),
+    )
+    con.commit()
+
+
 def migrate() -> None:
     # ── 1. Load records from data.json into memory ────────────────────────
     records = json.loads(DATA.read_text(encoding='utf-8'))
@@ -611,6 +735,18 @@ def migrate() -> None:
         f"{ais_result['expired']} expired  "
         f"(lineup={ais_result.get('latest_source_date', 'n/a')})"
     )
+
+    # ── Lineup changelog ───────────────────────────────────────────────────
+    _cl = compute_changelog(con)
+    if _cl:
+        _write_changelog(con, _cl)
+        print(
+            f"  [changelog]        : latest={_cl['latest_date']}  prev={_cl['prev_date']}  "
+            f"new={len(_cl['new_items'])}  removed={len(_cl['removed_items'])}  "
+            f"eta_changed={len(_cl['eta_changed'])}  tons_changed={len(_cl['tons_changed'])}"
+        )
+    else:
+        print("  [changelog]        : skipped (need ≥2 lineups)")
 
     con.close()
 

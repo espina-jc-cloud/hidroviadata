@@ -4,8 +4,8 @@
     {
       "name": "hidroviadata",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8181"],
-      "port": 8181
+      "runtimeArgs": ["app.py"],
+      "port": 5001
     }
   ]
 }

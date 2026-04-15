@@ -1117,6 +1117,7 @@ def api_admin_publish_lineup() -> Response:
     pub_res = subprocess.run(
         [sys.executable, str(BASE_DIR / 'migrate.py'), '--reset'],
         capture_output=True, text=True, cwd=str(BASE_DIR),
+        env=dict(os.environ, ADMIN_PUBLISH='1'),   # lenient delta threshold for admin uploads
     )
     if pub_res.returncode != 0:
         return jsonify({

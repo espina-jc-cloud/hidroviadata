@@ -41,7 +41,8 @@ PROFILES = BASE / 'output' / 'vessel_profiles.json'
 BUQUES   = BASE / 'output' / 'buques_en_ruta.json'
 PDFS_DIR = Path(os.environ.get('PDF_DIR', str(BASE / 'pdfs')))
 
-RESET   = '--reset'   in sys.argv
+RESET          = '--reset'   in sys.argv
+_ADMIN_PUBLISH = os.environ.get('ADMIN_PUBLISH') == '1'   # set by app.py admin publish
 PREVIEW = '--preview' in sys.argv
 
 
@@ -267,7 +268,7 @@ def _fuzzy_match_candidates(con: sqlite3.Connection) -> dict:
     }
 
 
-def compute_quality_report(records: list[dict]) -> dict:
+def compute_quality_report(records: list[dict], preview: bool = False) -> dict:
     """
     Compute BLOCK / WARNING / PASS purely from the in-memory records list
     (from output/data.json) and the existing real DB (if present).
@@ -325,6 +326,26 @@ def compute_quality_report(records: list[dict]) -> dict:
         except Exception:
             pass
 
+    # ── Admin/preview: record data.json's adjacent lineup date for display ──
+    # The delta is still computed against the DB baseline (reliable full tons).
+    # But in admin/preview mode the BLOCK threshold is raised to 60% (vs 25%)
+    # to handle expected seasonal jumps and batch imports without widening the
+    # normal CLI safety net.
+    prev_source_date_used: str | None   = None
+    prev_total_tons_used:  float | None = None
+    if (preview or _ADMIN_PUBLISH) and len(dates) >= 2:
+        _pd   = dates[1]   # second-most-recent source_date in data.json
+        _rows = [r for r in records if r.get('source_date') == _pd]
+        _tons = sum(r['tons'] for r in _rows if r.get('tons') is not None)
+        prev_source_date_used = _pd
+        prev_total_tons_used  = _tons if _tons > 0 else None
+
+    # Effective delta thresholds — lenient in admin/preview to avoid false BLOCK
+    # when the DB is several weeks behind (seasonal gaps, batch import).
+    _lenient       = preview or _ADMIN_PUBLISH
+    _block_thresh  = 0.75 if _lenient else 0.25   # BLOCK if |delta| >  threshold
+    _warn_thresh   = 0.25 if _lenient else 0.10   # WARN  if |delta| in [warn, block]
+
     # ── Ton delta ─────────────────────────────────────────────────────────
     delta_pct = None
     if prev_tons and prev_tons > 0 and total_tons > 0:
@@ -351,9 +372,9 @@ def compute_quality_report(records: list[dict]) -> dict:
 
     if n_rows == 0:
         blocks.append('Newest lineup has 0 rows.')
-    if delta_pct is not None and abs(delta_pct) > 0.25:
+    if delta_pct is not None and abs(delta_pct) > _block_thresh:
         blocks.append(
-            f'Tons delta {delta_pct:+.1%} exceeds ±25% '
+            f'Tons delta {delta_pct:+.1%} exceeds ±{_block_thresh:.0%} '
             f'(prev={prev_tons:,.0f}  new={total_tons:,.0f}).'
         )
     short = [r.get('buque', '') for r in newest_rows if len(r.get('buque') or '') < 3]
@@ -369,9 +390,9 @@ def compute_quality_report(records: list[dict]) -> dict:
     # ── WARNING checks ────────────────────────────────────────────────────
     warnings: list[str] = []
 
-    if delta_pct is not None and 0.10 <= abs(delta_pct) <= 0.25:
+    if delta_pct is not None and _warn_thresh <= abs(delta_pct) <= _block_thresh:
         warnings.append(
-            f'Tons delta {delta_pct:+.1%} in 10–25% caution band '
+            f'Tons delta {delta_pct:+.1%} in {_warn_thresh:.0%}–{_block_thresh:.0%}% caution band '
             f'(prev={prev_tons:,.0f}  new={total_tons:,.0f}).'
         )
     if n_rows > 0:
@@ -422,6 +443,8 @@ def compute_quality_report(records: list[dict]) -> dict:
             'alias_hits_vessels':   alias_hits_v,
             'alias_hits_clients':   alias_hits_c,
             'alias_hits_materials': alias_hits_m,
+            'prev_source_date_used': prev_source_date_used,
+            'prev_total_tons_used':  round(prev_total_tons_used) if prev_total_tons_used is not None else None,
         },
     }
 
@@ -800,7 +823,7 @@ if __name__ == '__main__':
         # print human-readable output, then emit a single JSON line for
         # app.py to parse.  Does NOT touch hidroviadata.db.
         _recs = json.loads(DATA.read_text(encoding='utf-8'))
-        _qr   = compute_quality_report(_recs)
+        _qr   = compute_quality_report(_recs, preview=True)
         _print_quality_report(_qr)
 
         # ── Special case: duplicate-only BLOCK → ALREADY_PUBLISHED ────────

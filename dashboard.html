@@ -537,6 +537,18 @@
     #quality-banner.qb-block   { background:rgba(220,50,50,0.12);
       border-bottom:2px solid rgba(220,50,50,0.50); color:#ff7070; }
 
+    /* ── FRESHNESS BANNER ────────────────────────────────────────── */
+    #freshness-banner {
+      display:none; padding:5px 20px;
+      background:rgba(15,23,42,0.85); border-bottom:1px solid #1e2d45;
+      font-size:12px; color:#94a3b8;
+      display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    }
+    #freshness-banner .fb-dot {
+      width:8px; height:8px; border-radius:50%; flex-shrink:0; display:inline-block;
+    }
+    #freshness-banner .fb-stale { color:#f87171; font-weight:700; letter-spacing:.02em; }
+
     /* ── IMPORTER BAR ROW ─────────────────────────────────────────── */
     .imp-bar-row {
       display: grid;
@@ -716,6 +728,9 @@
 
   <!-- QUALITY GATE BANNER — shown when latest quality_report status is WARNING or BLOCK -->
   <div id="quality-banner"></div>
+
+  <!-- FRESHNESS BANNER — always visible, shows data age + quality status -->
+  <div id="freshness-banner"></div>
 
   <!-- CONTENT -->
   <div id="content">
@@ -1062,6 +1077,49 @@ function onFilterChange() {
 // =============================================================================
 // TAB RENDER STUBS (to be filled in subsequent parts)
 // =============================================================================
+
+// =============================================================================
+// FRESHNESS BANNER
+// =============================================================================
+
+function renderFreshnessBanner(sourceDate, quality) {
+  const el = document.getElementById('freshness-banner');
+  if (!el) return;
+  if (!sourceDate) { el.style.display = 'none'; return; }
+
+  // Age in days (compare against today)
+  const todayMs  = Date.now();
+  const srcMs    = new Date(sourceDate + 'T00:00:00').getTime();
+  const ageDays  = Math.floor((todayMs - srcMs) / 86400000);
+
+  const dotColor = ageDays < 5 ? '#4ade80' : ageDays <= 10 ? '#fbbf24' : '#f87171';
+  const staleMsg = ageDays > 10 ? ' <span class="fb-stale">· DATOS DESACTUALIZADOS</span>' : '';
+
+  // Format date nicely: "20-mar-2026"
+  const months   = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const d        = new Date(sourceDate + 'T00:00:00');
+  const dateFmt  = `${String(d.getDate()).padStart(2,'0')}-${months[d.getMonth()]}-${d.getFullYear()}`;
+
+  // Quality pill
+  let qualPill = '';
+  if (quality && quality.status) {
+    const qs    = quality.status;
+    const qc    = qs === 'PASS' ? '#4ade80' : qs === 'WARNING' ? '#fbbf24' : '#f87171';
+    const qIcon = qs === 'PASS' ? '✓' : qs === 'WARNING' ? '⚠' : '✗';
+    qualPill = `<span style="background:${qc}18;border:1px solid ${qc}55;color:${qc};
+                  border-radius:4px;padding:1px 8px;font-size:11px;font-weight:700">
+                  ${qIcon} Calidad: ${qs}
+                </span>`;
+  }
+
+  el.innerHTML = `
+    <span class="fb-dot" style="background:${dotColor}"></span>
+    <span>Datos actualizados al: <strong style="color:#e2e8f0">${dateFmt}</strong>
+      <span style="color:#64748b;font-size:11px"> (hace ${ageDays}d)</span>${staleMsg}
+    </span>
+    ${qualPill}`;
+  el.style.display = 'flex';
+}
 
 // =============================================================================
 // TAB 1 — ESTA SEMANA
@@ -3086,6 +3144,9 @@ async function init() {
     LINEUP_DATA         = lineupPayload.rows || [];
     TRACK_RECORD_DATA   = await trackRes.json();
 
+    // ── Freshness banner (uses data already in memory — no extra fetch) ──
+    renderFreshnessBanner(LINEUP_META.latest_source_date, lineupPayload.quality || null);
+
     // ── Changelog (non-fatal — missing table on old DB is OK) ────────────
     try {
       const clRes = await fetch('/api/changelog/latest');
@@ -3330,6 +3391,13 @@ function _renderAdminPreview(p) {
           <div style="color:var(--text)">${p.n_rows || 0} filas · ${(p.total_tons || 0).toLocaleString('es-AR')} t</div>
         </div>
       </div>
+      ${(q.summary && q.summary.prev_source_date_used) ? `
+      <div style="font-size:11px;color:var(--text3);margin:0 0 8px 0">
+        Δ comparado contra:
+        <strong style="color:var(--text)">${q.summary.prev_source_date_used}</strong>
+        · ${((q.summary.prev_total_tons_used) || 0).toLocaleString('es-AR')} t
+        <span style="color:var(--cyan);font-size:10px;margin-left:4px">(lineup anterior en data.json)</span>
+      </div>` : ''}
       ${alreadyPublishedBox}
       ${issueLines}
       <div id="adm-publish-result"></div>

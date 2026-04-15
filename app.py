@@ -55,8 +55,58 @@ DATABASE    = Path(os.environ.get('DB_PATH',  str(BASE_DIR / 'hidroviadata.db'))
 PDFS_DIR    = Path(os.environ.get('PDF_DIR',  str(BASE_DIR / 'pdfs')))
 ADMIN_TOKEN = os.environ.get('ADMIN_TOKEN', '')
 
-# In-memory preview state (lost on restart — intentional per spec)
-_last_preview: dict | None = None
+# Ensure directories exist as early as possible (critical for Railway Volume on /data)
+DATABASE.parent.mkdir(parents=True, exist_ok=True)
+PDFS_DIR.mkdir(parents=True, exist_ok=True)
+
+# ── Preview persistence (quality_reports table, status='PREVIEW') ─────────────
+# Survives process restarts — no in-memory state needed.
+
+def _save_preview(preview: dict) -> None:
+    """Persist preview dict to quality_reports (replaces any existing PREVIEW row)."""
+    q = preview.get('quality') or {}
+    con = sqlite3.connect(str(DATABASE))
+    con.execute("DELETE FROM quality_reports WHERE status='PREVIEW'")
+    con.execute(
+        "INSERT INTO quality_reports "
+        "(timestamp, source_date, source_id, status, blocks_json, warnings_json, summary_json) "
+        "VALUES (datetime('now'), ?, ?, 'PREVIEW', ?, ?, ?)",
+        (
+            preview.get('source_date'),
+            'PREVIEW::' + (preview.get('source_id') or ''),
+            json.dumps(q.get('blocks',   []), ensure_ascii=False),
+            json.dumps(q.get('warnings', []), ensure_ascii=False),
+            json.dumps(preview,               ensure_ascii=False),   # full blob
+        ),
+    )
+    con.commit()
+    con.close()
+
+
+def _load_preview() -> dict | None:
+    """Load the persisted preview dict from quality_reports, or None if absent."""
+    try:
+        con = sqlite3.connect(str(DATABASE))
+        row = con.execute(
+            "SELECT summary_json FROM quality_reports "
+            "WHERE status='PREVIEW' ORDER BY timestamp DESC LIMIT 1"
+        ).fetchone()
+        con.close()
+        return json.loads(row[0]) if row else None
+    except Exception:
+        return None
+
+
+def _clear_preview() -> None:
+    """Delete PREVIEW rows from quality_reports (after publish or on new upload)."""
+    try:
+        con = sqlite3.connect(str(DATABASE))
+        con.execute("DELETE FROM quality_reports WHERE status='PREVIEW'")
+        con.commit()
+        con.close()
+    except Exception:
+        pass
+
 
 # ── R2 backup/restore helpers (inlined — no external backup.py) ───────────────
 
@@ -966,7 +1016,6 @@ def api_admin_upload_lineup() -> Response:
     Returns: {preview: {source_id, source_date, n_rows, total_tons,
                          quality:{status,blocks,warnings,summary}}}
     """
-    global _last_preview
     if not _check_admin_token():
         return jsonify({'error': 'Unauthorized'}), 401
 
@@ -979,7 +1028,7 @@ def api_admin_upload_lineup() -> Response:
     if not filename.lower().endswith('.pdf'):
         return jsonify({'error': 'Only PDF files are accepted.'}), 400
 
-    PDFS_DIR.mkdir(exist_ok=True)
+    PDFS_DIR.mkdir(parents=True, exist_ok=True)
     dest = PDFS_DIR / filename
     f.save(str(dest))
     print(f'[admin] uploaded {filename} → {dest}', flush=True)
@@ -1017,8 +1066,9 @@ def api_admin_upload_lineup() -> Response:
             'stderr': preview_res.stderr[-2000:],
         }), 500
 
-    _last_preview = {**preview_data, 'uploaded_file': filename}
-    return jsonify({'preview': _last_preview})
+    preview_to_save = {**preview_data, 'uploaded_file': filename}
+    _save_preview(preview_to_save)
+    return jsonify({'preview': preview_to_save})
 
 
 @app.route('/api/admin/publish_lineup', methods=['POST'])
@@ -1029,10 +1079,10 @@ def api_admin_publish_lineup() -> Response:
 
     Returns: {ok, git_sha, latest_source_date, latest_source_id}
     """
-    global _last_preview
     if not _check_admin_token():
         return jsonify({'error': 'Unauthorized'}), 401
 
+    _last_preview = _load_preview()
     if not _last_preview:
         return jsonify({'error': 'No preview found. Upload a PDF first.'}), 400
 
@@ -1048,7 +1098,7 @@ def api_admin_publish_lineup() -> Response:
             con.close()
         except Exception:
             latest = None
-        _last_preview = None
+        _clear_preview()
         return jsonify({
             'ok':                 True,
             'noop':               True,
@@ -1087,7 +1137,7 @@ def api_admin_publish_lineup() -> Response:
     except Exception:
         latest_source_date = latest_source_id = None
 
-    _last_preview = None  # clear after successful publish
+    _clear_preview()   # migrate.py --reset already wiped quality_reports; this is a no-op but safe
     return jsonify({
         'ok':                 True,
         'git_sha':            _git_sha(),
@@ -1098,10 +1148,10 @@ def api_admin_publish_lineup() -> Response:
 
 @app.route('/api/admin/last_preview')
 def api_admin_last_preview() -> Response:
-    """Return the last in-memory preview result (lost on server restart)."""
+    """Return the last preview result (persisted in quality_reports, survives restarts)."""
     if not _check_admin_token():
         return jsonify({'error': 'Unauthorized'}), 401
-    return jsonify(_last_preview or {})
+    return jsonify(_load_preview() or {})
 
 
 @app.route('/api/admin/review/confirm', methods=['POST'])

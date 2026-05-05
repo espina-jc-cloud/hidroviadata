@@ -406,7 +406,7 @@ def run_scrape(db_path: Path = DB_PATH) -> dict:
         'ports_covered':         sorted({r['sector'] for r in new_rows}) if new_rows else [],
         'total_fertilizer_rows': total,
         'source_id':             SOURCE_ID,
-        'source_date':           today_iso,
+        'as_of':                 today_iso,   # scrape date (source_date stored in DB)
     }
 
 

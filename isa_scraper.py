@@ -1,37 +1,41 @@
 """
 isa_scraper.py
 ──────────────
-Scrapes the ISA Agents lineup page and imports FERTILIZERS / DISCH rows
-into the isa_shipments table.  Can be imported by app.py or run standalone.
+Scrapes the ISA Agents lineup page and feeds FERTILIZERS / DISCH rows
+directly into the shipments table — the same table used by the PDF pipeline.
 
 Usage
 ─────
-    python3 isa_scraper.py              # scrape → print stats (no DB write)
-    python3 isa_scraper.py --insert     # scrape → dedup → insert into DB
+    python3 isa_scraper.py              # fetch + print sample, no DB write
+    python3 isa_scraper.py --insert     # fetch → dedup → insert into shipments
     python3 isa_scraper.py --insert --dry-run  # parse only, skip DB
 
 Design notes
 ────────────
-• No third-party deps — uses stdlib only (urllib, html.parser).
-• Dedup is against the isa_shipments table only (not the PDF shipments table).
-  Same scraper run twice in a day inserts 0 new rows.
-• isa_shipments table is created on first scrape; it survives app restarts
-  but is wiped when migrate.py --reset rebuilds the DB from scratch.
-  Re-run the scraper after each publish to restore ISA data.
-• source_id  = "isa_scraper_YYYY-MM-DD"  (today's scrape date)
-• source      = "isa_scraper"             (distinguishes from "pdf_lineup")
+• Stdlib only — no new dependencies (urllib, html.parser).
+• Target table  : shipments  (same as PDF pipeline, no schema change).
+• source_id     : 'ISA_LINEUP'  (stable, clearly identifies ISA rows).
+• source_date   : YYYY-MM-DD of the scrape (today).
+• Dedup         : vessel (normalised exact match) + material (normalised) +
+                  ETA ±5 days.  If ISA row has no ETA, match on
+                  vessel+material when any shipments row exists with the
+                  same keys and source_date within the last 14 days.
+• ISA Port      : stored in the `sector` column (reuses existing column;
+                  PDF sector values are zone labels like "NORTE"/"SUR",
+                  ISA sector values are port city names like "SAN NICOLAS").
+• ISA Berth     : stored in `muelle`.
+• Extra ISA fields (etb, ets, remarks) are not stored — no schema change.
 """
 
 from __future__ import annotations
 
-import difflib
 import json
 import os
 import re
 import sqlite3
 import ssl
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.error import URLError
@@ -41,9 +45,10 @@ BASE_DIR     = Path(__file__).parent
 DB_PATH      = Path(os.environ.get('DB_PATH', str(BASE_DIR / 'hidroviadata.db')))
 ALIASES_FILE = BASE_DIR / 'aliases.json'
 
-ISA_URL = 'https://www.isa-agents.com.ar/info/line_up_mndrn.php?lang=es'
+ISA_URL   = 'https://www.isa-agents.com.ar/info/line_up_mndrn.php?lang=es'
+SOURCE_ID = 'ISA_LINEUP'   # stable identifier for all ISA-sourced rows
 
-# ── Spanish month abbreviations used by ISA ───────────────────────────────────
+# ── Spanish month abbreviations ───────────────────────────────────────────────
 _MONTHS_ES: dict[str, int] = {
     'ene': 1, 'feb': 2, 'mar': 3, 'abr': 4, 'may': 5, 'jun': 6,
     'jul': 7, 'ago': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dic': 12,
@@ -55,7 +60,6 @@ _MONTHS_ES: dict[str, int] = {
 def _load_vessel_aliases() -> dict[str, str]:
     try:
         data = json.loads(ALIASES_FILE.read_text(encoding='utf-8'))
-        # Upper-case both keys and values for case-insensitive lookup
         return {k.upper().strip(): v.upper().strip()
                 for k, v in data.get('vessels', {}).items()}
     except Exception:
@@ -76,6 +80,11 @@ def _norm_vessel(name: str | None) -> str:
     return re.sub(r'\s+', ' ', s).strip()
 
 
+def _norm_material(name: str | None) -> str:
+    """Normalise material name for dedup comparison."""
+    return (name or '').strip().upper()
+
+
 def _apply_vessel_alias(name: str) -> str:
     """Return canonical vessel name from aliases.json when available."""
     return _VESSEL_ALIASES.get(name.upper().strip(), name.strip())
@@ -85,10 +94,10 @@ def _apply_vessel_alias(name: str) -> str:
 
 def _parse_isa_date(text: str | None) -> str | None:
     """
-    Convert ISA date string (e.g. "26-abr", "3-may") to ISO format YYYY-MM-DD.
+    Convert ISA date string (e.g. "26-abr", "3-may") to ISO YYYY-MM-DD.
 
     Year inference: if the candidate date is more than 60 days in the past,
-    bump the year by 1 (handles December → January rollovers etc.).
+    bump the year by 1 (handles December→January rollovers).
     Returns None for TBC / TBA / empty / unrecognised formats.
     """
     if not text:
@@ -121,12 +130,12 @@ class _TableParser(HTMLParser):
 
     def __init__(self) -> None:
         super().__init__()
-        self.rows:   list[list[str]] = []
-        self._in_t   = False
-        self._in_r   = False
-        self._in_c   = False
+        self.rows:  list[list[str]] = []
+        self._in_t  = False
+        self._in_r  = False
+        self._in_c  = False
         self._cur_r: list[str] = []
-        self._cur_c  = ''
+        self._cur_c = ''
 
     def handle_starttag(self, tag: str, attrs) -> None:
         if tag == 'table':
@@ -159,19 +168,20 @@ class _TableParser(HTMLParser):
 def scrape_isa() -> list[dict]:
     """
     Fetch the ISA lineup page and return all FERTILIZERS + DISCH rows as
-    pipeline-compatible dicts.
+    dicts ready for INSERT INTO shipments.
 
-    Pipeline-compatible keys (match shipments table + extra ISA fields):
-        buque, buque_raw, agencia, eta, material, cliente, tons,
-        operador, operacion, muelle, sector, origen, source_id, source_date,
-        source,   ← 'isa_scraper'
-        etb, ets, remarks, isa_area
+    Returned keys match shipments columns exactly:
+        buque, agencia, eta, material, cliente, tons,
+        operador, operacion, muelle, sector, origen,
+        source_id, source_date
 
-    Raises: urllib.error.URLError, ValueError on fetch/parse failure.
+    Raises: URLError, ValueError on fetch/parse failure.
     """
     req = Request(ISA_URL, headers={'User-Agent': 'HidroviaData/1.0 (scraper)'})
-    # ISA's server is slow — allow up to 60 s.  On macOS the system SSL root
-    # certs may not cover ISA's CA; fall back to unverified context (dev only).
+
+    # ISA's server is slow — allow 60 s.  On macOS the system SSL root certs
+    # may not cover ISA's CA; fall back to an unverified context (dev only —
+    # Railway/Linux verifies correctly with the system bundle).
     _NO_VERIFY_CTX = ssl.create_default_context()
     _NO_VERIFY_CTX.check_hostname = False
     _NO_VERIFY_CTX.verify_mode    = ssl.CERT_NONE
@@ -183,9 +193,10 @@ def scrape_isa() -> list[dict]:
 
     html: str = ''
     last_exc: Exception | None = None
-    for _attempt in range(2):          # up to 2 attempts
+    for _attempt in range(2):
         try:
             html = _fetch()
+            last_exc = None
             break
         except URLError as exc:
             last_exc = exc
@@ -198,7 +209,6 @@ def scrape_isa() -> list[dict]:
                     break
                 except Exception as exc2:
                     last_exc = exc2
-            # non-SSL URLError or second attempt — retry
         except Exception as exc:
             last_exc = exc
     if last_exc is not None:
@@ -211,12 +221,10 @@ def scrape_isa() -> list[dict]:
         raise ValueError('No table found on ISA lineup page.')
 
     header = parser.rows[0]
-    # Sanity-check the header
     if len(header) < 14 or header[0].strip().lower() not in ('port', 'puerto'):
         raise ValueError(f'Unexpected ISA table header: {header}')
 
     today_iso = datetime.now().strftime('%Y-%m-%d')
-    source_id = f'isa_scraper_{today_iso}'
 
     result: list[dict] = []
     for raw_row in parser.rows[1:]:
@@ -224,28 +232,23 @@ def scrape_isa() -> list[dict]:
             continue
 
         (port, berth, vessel_raw, ops, cat,
-         cargo, qty, dest_orig, area, shipper,
-         eta_raw, etb_raw, ets_raw, remarks) = raw_row[:14]
+         cargo, qty, dest_orig, _area, shipper,
+         eta_raw, _etb, _ets, _remarks) = raw_row[:14]
 
-        # Filter: FERTILIZERS + DISCH only
         if cat.strip().upper() != 'FERTILIZERS':
             continue
         if ops.strip().upper() != 'DISCH':
             continue
 
-        # Vessel: apply alias then keep raw for audit
         vessel_clean = _apply_vessel_alias(vessel_raw.strip())
 
-        # Quantity → tons (strip commas, dots as decimal separator is '.')
         try:
             tons: float | None = float(qty.replace(',', '').strip())
         except (ValueError, TypeError):
             tons = None
 
         result.append({
-            # ── Pipeline-compatible keys ───────────────────────────────────
             'buque':       vessel_clean,
-            'buque_raw':   vessel_raw.strip(),
             'agencia':     'ISA',
             'eta':         _parse_isa_date(eta_raw),
             'material':    cargo.strip().upper() or 'UNKNOWN',
@@ -254,144 +257,124 @@ def scrape_isa() -> list[dict]:
             'operador':    '',
             'operacion':   'DESCARGA',
             'muelle':      berth.strip().upper(),
-            'sector':      port.strip().upper(),    # ISA Port → stored in sector
+            'sector':      port.strip().upper(),   # ISA Port city → sector column
             'origen':      dest_orig.strip().upper() or '',
-            'source_id':   source_id,
+            'source_id':   SOURCE_ID,
             'source_date': today_iso,
-            # ── ISA-specific extras ────────────────────────────────────────
-            'source':      'isa_scraper',
-            'etb':         _parse_isa_date(etb_raw),
-            'ets':         _parse_isa_date(ets_raw),
-            'remarks':     remarks.strip(),
-            'isa_area':    area.strip().upper(),
         })
 
     return result
 
 
-# ── DB table management ────────────────────────────────────────────────────────
+# ── Deduplication against shipments table ────────────────────────────────────
 
-_ISA_DDL = """
-CREATE TABLE IF NOT EXISTS isa_shipments (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    buque       TEXT,
-    buque_raw   TEXT,
-    agencia     TEXT DEFAULT 'ISA',
-    eta         TEXT,
-    etb         TEXT,
-    ets         TEXT,
-    material    TEXT,
-    cliente     TEXT,
-    tons        REAL,
-    operacion   TEXT DEFAULT 'DESCARGA',
-    muelle      TEXT,
-    sector      TEXT,
-    origen      TEXT,
-    isa_area    TEXT,
-    remarks     TEXT,
-    source      TEXT DEFAULT 'isa_scraper',
-    source_id   TEXT,
-    source_date TEXT,
-    scraped_at  TEXT DEFAULT (datetime('now'))
-);
-"""
-
-
-def ensure_isa_table(con: sqlite3.Connection) -> None:
-    """Create isa_shipments table if it doesn't exist."""
-    con.executescript(_ISA_DDL)
-    con.commit()
-
-
-# ── Deduplication ──────────────────────────────────────────────────────────────
-
-def _is_duplicate(row: dict, existing: list[dict]) -> bool:
+def _is_dup_in_shipments(row: dict, existing: list[dict], today: datetime) -> bool:
     """
-    Return True if row matches any entry in existing:
-      - Same sector (port), AND
-      - Vessel name similarity ≥ 0.85 (after normalisation), AND
-      - ETA within ± 5 days (or both null).
+    Return True if row already exists in the existing shipments rows.
+
+    Match criteria:
+      • Normalised vessel name  (exact match after _norm_vessel)
+      • Normalised material     (exact match after _norm_material)
+      • If new row has ETA: existing row ETA within ±5 days
+      • If new row has no ETA: any existing row with same vessel+material
+        whose source_date is within the last 14 days
     """
-    norm_new = _norm_vessel(row.get('buque'))
-    port_new = (row.get('sector') or '').strip().upper()
+    norm_v = _norm_vessel(row.get('buque'))
+    norm_m = _norm_material(row.get('material'))
+
     try:
-        eta_new = datetime.fromisoformat(row['eta'][:10]) if row.get('eta') else None
+        eta_new = datetime.fromisoformat(row['eta'][:10]).date() if row.get('eta') else None
     except (ValueError, TypeError):
         eta_new = None
 
+    cutoff_14 = (today - timedelta(days=14)).date()
+
     for ex in existing:
-        port_ex = (ex.get('sector') or '').strip().upper()
-        if port_new != port_ex:
+        if _norm_vessel(ex.get('buque')) != norm_v:
+            continue
+        if _norm_material(ex.get('material')) != norm_m:
             continue
 
-        try:
-            eta_ex = datetime.fromisoformat(str(ex.get('eta') or '')[:10]) if ex.get('eta') else None
-        except (ValueError, TypeError):
-            eta_ex = None
-
-        if eta_new and eta_ex:
-            if abs((eta_new - eta_ex).days) > 5:
-                continue
-        elif eta_new or eta_ex:
-            # One has ETA and the other doesn't — treat as different records
-            continue
-
-        norm_ex = _norm_vessel(ex.get('buque'))
-        if norm_new == norm_ex:
-            return True
-        if difflib.SequenceMatcher(None, norm_new, norm_ex).ratio() >= 0.85:
-            return True
+        if eta_new is not None:
+            # Both must have ETA within ±5 days
+            try:
+                eta_ex = datetime.fromisoformat(str(ex.get('eta') or '')[:10]).date() if ex.get('eta') else None
+            except (ValueError, TypeError):
+                eta_ex = None
+            if eta_ex is not None and abs((eta_new - eta_ex).days) <= 5:
+                return True
+        else:
+            # No ETA — match if existing row is recent (≤14 days old)
+            try:
+                sd = datetime.fromisoformat(str(ex.get('source_date') or '')[:10]).date() if ex.get('source_date') else None
+            except (ValueError, TypeError):
+                sd = None
+            if sd is not None and sd >= cutoff_14:
+                return True
 
     return False
 
 
-def dedup_rows(
+def dedup_against_shipments(
     rows: list[dict],
     con: sqlite3.Connection,
 ) -> tuple[list[dict], int]:
     """
-    Filter rows that are already in isa_shipments (dedup across repeated scrapes).
-    Returns (new_rows, skipped_count).
+    Filter out rows already present in shipments (from any source: PDF or ISA).
+    Returns (new_rows, duplicates_count).
     """
-    # Load existing ISA rows for comparison
     existing: list[dict] = []
     try:
-        for r in con.execute('SELECT buque, sector, eta FROM isa_shipments').fetchall():
-            existing.append({'buque': r[0], 'sector': r[1], 'eta': r[2]})
+        for r in con.execute(
+            'SELECT buque, material, eta, source_date FROM shipments'
+        ).fetchall():
+            existing.append({
+                'buque':       r[0],
+                'material':    r[1],
+                'eta':         r[2],
+                'source_date': r[3],
+            })
     except sqlite3.OperationalError:
-        pass   # table not yet created — all rows are new
+        pass   # empty or missing table — all rows are new
 
+    today = datetime.now()
     new_rows: list[dict] = []
-    skipped = 0
+    duplicates = 0
+
     for row in rows:
-        if _is_duplicate(row, existing):
-            skipped += 1
+        if _is_dup_in_shipments(row, existing, today):
+            duplicates += 1
         else:
             new_rows.append(row)
-            # Register in-memory so intra-batch duplicates (same vessel, two cargo
-            # lines for the same call) are NOT skipped — they are distinct records.
-            # We intentionally do NOT add to existing here because the same vessel
-            # loading multiple products is valid and all should be inserted.
+            # Add to in-memory set so intra-batch dedup works correctly.
+            # Same vessel can appear with multiple cargoes (TSP + MAP) — those
+            # are distinct records and both should be inserted.
+            existing.append({
+                'buque':       row['buque'],
+                'material':    row['material'],
+                'eta':         row['eta'],
+                'source_date': row['source_date'],
+            })
 
-    return new_rows, skipped
+    return new_rows, duplicates
 
 
-def insert_rows(rows: list[dict], con: sqlite3.Connection) -> int:
-    """Insert rows into isa_shipments. Returns count of rows inserted."""
+# ── Insert into shipments ─────────────────────────────────────────────────────
+
+def insert_into_shipments(rows: list[dict], con: sqlite3.Connection) -> int:
+    """Insert rows into shipments table. Returns count of rows inserted."""
     if not rows:
         return 0
     con.executemany(
         """
-        INSERT INTO isa_shipments
-            (buque, buque_raw, agencia, eta, etb, ets,
-             material, cliente, tons, operacion,
-             muelle, sector, origen, isa_area, remarks,
-             source, source_id, source_date)
+        INSERT INTO shipments
+            (buque, agencia, eta, material, cliente, tons,
+             operador, operacion, muelle, sector, origen,
+             source_id, source_date)
         VALUES
-            (:buque, :buque_raw, :agencia, :eta, :etb, :ets,
-             :material, :cliente, :tons, :operacion,
-             :muelle, :sector, :origen, :isa_area, :remarks,
-             :source, :source_id, :source_date)
+            (:buque, :agencia, :eta, :material, :cliente, :tons,
+             :operador, :operacion, :muelle, :sector, :origen,
+             :source_id, :source_date)
         """,
         rows,
     )
@@ -399,43 +382,31 @@ def insert_rows(rows: list[dict], con: sqlite3.Connection) -> int:
     return len(rows)
 
 
-# ── Convenience: run a full scrape+dedup+insert cycle ─────────────────────────
+# ── Full pipeline (used by app.py) ────────────────────────────────────────────
 
-def run_scrape(
-    db_path: Path = DB_PATH,
-    dry_run: bool = False,
-) -> dict:
+def run_scrape(db_path: Path = DB_PATH) -> dict:
     """
-    Full pipeline: fetch → parse → dedup → insert.
-    Returns a stats dict (same shape as the /api/admin/scrape_isa response).
+    Fetch → parse → dedup against shipments → insert into shipments.
+    Returns a stats dict matching the /api/admin/scrape_isa response shape.
     """
-    rows = scrape_isa()
-    ports_all = sorted({r['sector'] for r in rows})
+    rows      = scrape_isa()
+    today_iso = datetime.now().strftime('%Y-%m-%d')
     total     = len(rows)
-
-    if dry_run or not rows:
-        return {
-            'status':               'ok',
-            'dry_run':              dry_run,
-            'new_rows':             0,
-            'skipped_rows':         0,
-            'ports_covered':        ports_all,
-            'total_fertilizer_rows': total,
-        }
+    ports_all = sorted({r['sector'] for r in rows})
 
     con = sqlite3.connect(str(db_path))
-    ensure_isa_table(con)
-    new_rows, skipped = dedup_rows(rows, con)
-    inserted = insert_rows(new_rows, con)
+    new_rows, duplicates = dedup_against_shipments(rows, con)
+    inserted = insert_into_shipments(new_rows, con)
     con.close()
 
     return {
         'status':                'ok',
-        'dry_run':               False,
         'new_rows':              inserted,
-        'skipped_rows':          skipped,
+        'duplicates':            duplicates,
         'ports_covered':         sorted({r['sector'] for r in new_rows}) if new_rows else [],
         'total_fertilizer_rows': total,
+        'source_id':             SOURCE_ID,
+        'source_date':           today_iso,
     }
 
 
@@ -455,7 +426,6 @@ if __name__ == '__main__':
     _ports = sorted({r['sector'] for r in _rows})
     print(f'[isa_scraper] Found {len(_rows)} FERTILIZERS+DISCH rows  ports={_ports}')
 
-    # Always print a sample
     for r in _rows[:5]:
         print(
             f"  {r['sector']:20s} | {r['buque']:28s} | ETA={r['eta']} "
@@ -465,7 +435,7 @@ if __name__ == '__main__':
         print(f'  … {len(_rows) - 5} more rows')
 
     if not _insert:
-        print('\n[isa_scraper] Tip: pass --insert to write to DB.')
+        print('\n[isa_scraper] Tip: pass --insert to write to DB (shipments table).')
         sys.exit(0)
 
     if _dry_run:
@@ -473,8 +443,8 @@ if __name__ == '__main__':
         sys.exit(0)
 
     _con = sqlite3.connect(str(DB_PATH))
-    ensure_isa_table(_con)
-    _new, _skip = dedup_rows(_rows, _con)
-    _n = insert_rows(_new, _con)
+    _new, _dup = dedup_against_shipments(_rows, _con)
+    _n = insert_into_shipments(_new, _con)
     _con.close()
-    print(f'\n[isa_scraper] Done — inserted={_n}  skipped(dup)={_skip}  db={DB_PATH}')
+    print(f'\n[isa_scraper] Done — inserted={_n}  duplicates={_dup}  '
+          f'source_id={SOURCE_ID}  db={DB_PATH}')

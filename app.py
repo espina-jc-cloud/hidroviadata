@@ -49,6 +49,7 @@ from flask import Flask, Response, g, jsonify, request, send_from_directory
 
 # Reuse the scoring helpers from the CLI pipeline — pure functions, no side effects.
 from detect_candidates import _score_observation, _load_core_fleet, _insert_candidate
+from isa_scraper import run_scrape as _isa_run_scrape, ensure_isa_table as _isa_ensure_table
 
 BASE_DIR    = Path(__file__).parent
 DATABASE    = Path(os.environ.get('DB_PATH',  str(BASE_DIR / 'hidroviadata.db')))
@@ -1341,6 +1342,51 @@ def api_admin_upload_candidates_csv() -> Response:
         'rejected':   rejected,
         'errors':     errors,
     })
+
+
+# ── Admin: ISA scraper ────────────────────────────────────────────────────────
+
+@app.route('/api/admin/scrape_isa')
+def api_admin_scrape_isa() -> Response:
+    """
+    Trigger a live scrape of the ISA Agents lineup page and import
+    FERTILIZERS + DISCH rows into the isa_shipments table.
+
+    Auth: X-Admin-Token header or ?token= query param.
+
+    Returns
+    ───────
+    {
+      "status":                "ok",
+      "new_rows":              N,          ← newly inserted (not duplicates)
+      "skipped_rows":          N,          ← already in isa_shipments (deduped)
+      "ports_covered":         ["SAN NICOLAS", "SAN LORENZO", …],
+      "total_fertilizer_rows": N           ← total found on ISA page before dedup
+    }
+    """
+    if not _check_admin_token():
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    # Ensure isa_shipments table exists (created on first call; survives restarts
+    # but not a migrate.py --reset rebuild — just call this endpoint again after).
+    try:
+        _isa_ensure_table(sqlite3.connect(str(DATABASE)))
+    except Exception as exc:
+        return jsonify({'error': f'DB table init failed: {exc}'}), 500
+
+    try:
+        result = _isa_run_scrape(db_path=DATABASE)
+    except Exception as exc:
+        print(f'[admin/scrape_isa] FAILED: {exc}', flush=True)
+        return jsonify({'error': str(exc)}), 502
+
+    print(
+        f'[admin/scrape_isa] new={result["new_rows"]}  '
+        f'skipped={result["skipped_rows"]}  '
+        f'total_fert={result["total_fertilizer_rows"]}',
+        flush=True,
+    )
+    return jsonify(result)
 
 
 # ── Dev server ────────────────────────────────────────────────────────────────

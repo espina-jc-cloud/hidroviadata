@@ -125,6 +125,14 @@ CREATE TABLE IF NOT EXISTS lineup_changes (
     tons_changed  TEXT,   -- JSON array
     summary       TEXT    -- JSON {new, removed, eta_changed, tons_changed}
 );
+
+CREATE TABLE IF NOT EXISTS fertilizer_prices (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    material   TEXT NOT NULL,
+    price_usd  REAL NOT NULL,
+    source     TEXT DEFAULT 'seed',
+    as_of      TEXT NOT NULL
+);
 """
 
 DROP_DDL = """
@@ -770,6 +778,27 @@ def migrate() -> None:
         )
     else:
         print("  [changelog]        : skipped (need ≥2 lineups)")
+
+    # ── Fertilizer reference prices (seed defaults if table is empty) ──────────
+    _fp_count = con.execute('SELECT COUNT(*) FROM fertilizer_prices').fetchone()[0]
+    if _fp_count == 0:
+        _today_iso = datetime.now().strftime('%Y-%m-%d')
+        _price_seeds = [
+            ('UREA', 320.0, 'seed', _today_iso),
+            ('MAP',  590.0, 'seed', _today_iso),
+            ('DAP',  580.0, 'seed', _today_iso),
+            ('MOP',  280.0, 'seed', _today_iso),
+            ('TSP',  370.0, 'seed', _today_iso),
+            ('AN',   280.0, 'seed', _today_iso),
+        ]
+        con.executemany(
+            'INSERT INTO fertilizer_prices (material, price_usd, source, as_of) VALUES (?, ?, ?, ?)',
+            _price_seeds,
+        )
+        con.commit()
+        print(f'  [fertilizer_prices]: seeded {len(_price_seeds)} default rows')
+    else:
+        print(f'  [fertilizer_prices]: {_fp_count} rows present — skipping seed')
 
     con.close()
 

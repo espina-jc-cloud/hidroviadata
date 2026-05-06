@@ -650,6 +650,29 @@
       border-color: rgba(0,255,136,0.3);
       color: var(--green);
     }
+    /* ── Market context cards ─────────────────────────────────────────── */
+    .mkt-ctx { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:16px; }
+    .mkt-card {
+      flex: 1 1 220px; min-width:180px; max-width:300px;
+      background: var(--panel);
+      border: 1px solid #1a2744;
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .mkt-card-title {
+      font-size:9px; font-weight:700; text-transform:uppercase;
+      letter-spacing:.8px; color:var(--cyan); margin-bottom:8px;
+    }
+    .mkt-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; }
+    .mkt-label { font-size:10px; color:var(--text3); }
+    .mkt-val   { font-size:13px; font-weight:700; color:var(--text1); }
+    .mkt-sub   { font-size:9px; color:var(--text3); margin-top:4px; }
+    .mkt-badge-stale {
+      display:inline-block; font-size:8px; padding:1px 5px;
+      background: rgba(255,170,0,.15); border:1px solid rgba(255,170,0,.3);
+      color:#ffaa00; border-radius:4px; margin-left:4px;
+    }
+    .mkt-err { font-size:10px; color:var(--text3); font-style:italic; }
   </style>
 </head>
 <body>
@@ -1731,7 +1754,9 @@ function renderMercado() {
     </div>`).join('');
 
   const signalsHtml = computeMarketSignals(fert);
-  panel.innerHTML = signalsHtml + kpiHtml + `
+  // Market context placeholder — filled async by _loadMarketContext()
+  const mktCtxHtml = '<div id="market-ctx" class="mkt-ctx"><div class="mkt-err">Cargando contexto de mercado…</div></div>';
+  panel.innerHTML = mktCtxHtml + signalsHtml + kpiHtml + `
     <div class="grid-7030 mb16">
       <div class="card">
         <div class="card-header">
@@ -1789,6 +1814,94 @@ function renderMercado() {
     }
   });
 }
+
+// =============================================================================
+// MARKET CONTEXT — async loader for tab-mercado
+// =============================================================================
+
+async function _loadMarketContext() {
+  const el = document.getElementById('market-ctx');
+  if (!el) return;
+
+  // Fetch all three in parallel (all non-fatal)
+  const [dolarRes, bcraRes, fertRes] = await Promise.allSettled([
+    fetch('/api/market/dolar'),
+    fetch('/api/market/bcra'),
+    fetch('/api/market/fertilizer_prices'),
+  ]);
+
+  // ── Dólar card ────────────────────────────────────────────────────────────
+  let dolarHtml = '';
+  try {
+    const dolarData = dolarRes.status === 'fulfilled' && dolarRes.value.ok
+      ? await dolarRes.value.json() : null;
+    if (Array.isArray(dolarData) && dolarData.length) {
+      const stale = dolarData.stale ? `<span class="mkt-badge-stale">STALE</span>` : '';
+      const rows  = dolarData.map(d => {
+        const nombre = d.nombre || d.type || d.casa || '?';
+        const compra = d.compra != null ? `$${Number(d.compra).toLocaleString('es-AR')}` : '—';
+        const venta  = d.venta  != null ? `$${Number(d.venta).toLocaleString('es-AR')}`  : '—';
+        return `<div class="mkt-row">
+          <span class="mkt-label">${nombre}</span>
+          <span class="mkt-val">${venta} <span style="font-size:9px;color:var(--text3)">venta</span></span>
+        </div>`;
+      }).join('');
+      dolarHtml = `<div class="mkt-card">
+        <div class="mkt-card-title">💵 Dólar${stale}</div>
+        ${rows}
+        <div class="mkt-sub" id="mkt-dolar-ts">Actualizado recién</div>
+      </div>`;
+    }
+  } catch (_) {}
+
+  // ── BCRA cotizaciones card ─────────────────────────────────────────────────
+  // API: GET /estadisticascambiarias/v1.0/Cotizaciones
+  // Shape: {status:200, results:{fecha, detalle:[{codigoMoneda, descripcion, tipoCotizacion}]}}
+  let bcraHtml = '';
+  try {
+    const bcraData = bcraRes.status === 'fulfilled' && bcraRes.value.ok
+      ? await bcraRes.value.json() : null;
+    const detalle = bcraData?.results?.detalle || [];
+    const fecha   = bcraData?.results?.fecha   || '';
+    // Show USD official, EUR, BRL, CNY — relevant for fertilizer trade context
+    const SHOW_COD = ['REF', 'EUR', 'BRL', 'CNY'];
+    const shown = SHOW_COD.map(c => detalle.find(i => i.codigoMoneda === c)).filter(Boolean);
+    if (shown.length) {
+      const bRows = shown.map(i => `<div class="mkt-row">
+        <span class="mkt-label">${i.descripcion || i.codigoMoneda}</span>
+        <span class="mkt-val">$${i.tipoCotizacion != null ? Number(i.tipoCotizacion).toLocaleString('es-AR', {maximumFractionDigits:2}) : '—'}</span>
+      </div>`).join('');
+      bcraHtml = `<div class="mkt-card">
+        <div class="mkt-card-title">🏦 BCRA Cotizaciones</div>
+        ${bRows}
+        <div class="mkt-sub">${fecha ? 'al ' + fecha : ''} · api.bcra.gob.ar</div>
+      </div>`;
+    }
+  } catch (_) {}
+
+  // ── Fertilizer prices card ─────────────────────────────────────────────────
+  let fertHtml = '';
+  try {
+    const fertData = fertRes.status === 'fulfilled' && fertRes.value.ok
+      ? await fertRes.value.json() : null;
+    if (Array.isArray(fertData) && fertData.length) {
+      const fRows = fertData.map(p => `<div class="mkt-row">
+        <span class="mkt-label">${p.material}</span>
+        <span class="mkt-val">USD ${Number(p.price_usd).toLocaleString('es-AR')}<span style="font-size:9px;color:var(--text3)">/t</span></span>
+      </div>`).join('');
+      const asOf = fertData[0]?.as_of || '';
+      fertHtml = `<div class="mkt-card">
+        <div class="mkt-card-title">🌾 Precios Referencia (FOB)</div>
+        ${fRows}
+        <div class="mkt-sub">${asOf ? 'al ' + asOf : ''} · vía admin para actualizar</div>
+      </div>`;
+    }
+  } catch (_) {}
+
+  const combined = dolarHtml + bcraHtml + fertHtml;
+  el.innerHTML = combined || '<div class="mkt-err">Datos de mercado no disponibles</div>';
+}
+
 // =============================================================================
 // TAB 3 — IMPORTADORES
 // =============================================================================
@@ -3221,6 +3334,11 @@ async function init() {
   // Show app
   document.getElementById('loading').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
+
+  // ── Market context (non-fatal — fires after app is visible) ──────────────
+  _loadMarketContext().catch(() => {});
+  // Refresh dólar every 5 min, BCRA every 60 min
+  setInterval(() => _loadMarketContext().catch(() => {}), 5 * 60 * 1000);
 }
 
 function populateDatosFilters() {

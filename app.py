@@ -40,8 +40,11 @@ import json
 import os
 import re
 import sqlite3
+import ssl
 import subprocess
 import sys
+import time
+import urllib.request as _urllib_req
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -55,6 +58,34 @@ BASE_DIR    = Path(__file__).parent
 DATABASE    = Path(os.environ.get('DB_PATH',  str(BASE_DIR / 'hidroviadata.db')))
 PDFS_DIR    = Path(os.environ.get('PDF_DIR',  str(BASE_DIR / 'pdfs')))
 ADMIN_TOKEN = os.environ.get('ADMIN_TOKEN', '')
+
+# ── Market data in-memory cache ───────────────────────────────────────────────
+# Keys: 'dolar' | 'bcra'   Values: {'data': ..., 'ts': float}
+_MARKET_CACHE: dict = {}
+_MARKET_TTL: dict   = {'dolar': 300, 'bcra': 3600}  # seconds
+
+
+def _fetch_json_url(url: str, timeout: int = 10):
+    """Fetch JSON from *url* via stdlib urllib.  Works on Railway (system CAs)
+    and on macOS dev (falls back to unverified context on SSL error)."""
+    req = _urllib_req.Request(url, headers={'User-Agent': 'HidroviaData/1.0'})
+
+    def _try(ctx=None):
+        kw = {'context': ctx} if ctx is not None else {}
+        with _urllib_req.urlopen(req, timeout=timeout, **kw) as r:
+            return json.loads(r.read().decode('utf-8', errors='replace'))
+
+    try:
+        return _try()
+    except Exception as exc:
+        import urllib.error as _ue
+        if isinstance(exc, _ue.URLError) and isinstance(getattr(exc, 'reason', None), ssl.SSLError):
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode    = ssl.CERT_NONE
+            return _try(ctx)
+        raise
+
 
 # Ensure directories exist as early as possible (critical for Railway Volume on /data)
 DATABASE.parent.mkdir(parents=True, exist_ok=True)
@@ -1382,6 +1413,147 @@ def api_admin_scrape_isa() -> Response:
         flush=True,
     )
     return jsonify(result)
+
+
+# ── Market context endpoints ──────────────────────────────────────────────────
+
+@app.route('/api/market/dolar')
+def api_market_dolar() -> Response:
+    """Proxy dolarapi.com — returns array of exchange-rate objects.
+    Cached 5 min in memory; returns stale + stale:true on network failure."""
+    key = 'dolar'
+    now = time.time()
+    cached = _MARKET_CACHE.get(key)
+    if cached and (now - cached['ts']) < _MARKET_TTL[key]:
+        return jsonify(cached['data'])
+    try:
+        data = _fetch_json_url('https://dolarapi.com/v1/dolares', timeout=10)
+        _MARKET_CACHE[key] = {'data': data, 'ts': now}
+        return jsonify(data)
+    except Exception as exc:
+        print(f'[market/dolar] fetch failed: {exc}', flush=True)
+        if cached:
+            return jsonify({'stale': True, 'data': cached['data'], 'error': str(exc)})
+        return jsonify({'ok': False, 'error': str(exc)}), 502
+
+
+@app.route('/api/market/bcra')
+def api_market_bcra() -> Response:
+    """Proxy BCRA estadísticas — cached 60 min."""
+    key = 'bcra'
+    now = time.time()
+    cached = _MARKET_CACHE.get(key)
+    if cached and (now - cached['ts']) < _MARKET_TTL[key]:
+        return jsonify(cached['data'])
+    try:
+        data = _fetch_json_url(
+            'https://api.bcra.gob.ar/estadisticascambiarias/v1.0/Cotizaciones',
+            timeout=10,
+        )
+        _MARKET_CACHE[key] = {'data': data, 'ts': now}
+        return jsonify(data)
+    except Exception as exc:
+        print(f'[market/bcra] fetch failed: {exc}', flush=True)
+        if cached:
+            return jsonify({'stale': True, 'data': cached['data'], 'error': str(exc)})
+        return jsonify({'ok': False, 'error': str(exc)}), 502
+
+
+@app.route('/api/market/fertilizer_prices')
+def api_market_fertilizer_prices() -> Response:
+    """Latest reference price per material from fertilizer_prices table."""
+    try:
+        rows = get_db().execute(
+            '''SELECT material, price_usd, source, as_of
+               FROM   fertilizer_prices
+               ORDER  BY material, as_of DESC'''
+        ).fetchall()
+        seen: dict = {}
+        result = []
+        for r in rows:
+            mat = r['material']
+            if mat not in seen:
+                seen[mat] = True
+                result.append({
+                    'material':  mat,
+                    'price_usd': r['price_usd'],
+                    'source':    r['source'],
+                    'as_of':     r['as_of'],
+                })
+        return jsonify(result)
+    except Exception as exc:
+        return jsonify({'ok': False, 'error': str(exc)}), 500
+
+
+@app.route('/api/admin/update_prices', methods=['POST'])
+def api_admin_update_prices() -> Response:
+    """Append a new price row.  Body JSON: {material, price_usd, source?, as_of?}"""
+    if not _check_admin_token():
+        return jsonify({'error': 'Unauthorized'}), 401
+    body      = request.get_json(force=True, silent=True) or {}
+    material  = (body.get('material') or '').strip().upper()
+    source    = (body.get('source')   or 'manual').strip()
+    as_of     = (body.get('as_of')    or datetime.now().strftime('%Y-%m-%d')).strip()
+    try:
+        price_usd = float(body['price_usd'])
+    except (KeyError, TypeError, ValueError):
+        return jsonify({'error': 'price_usd (numeric) required'}), 400
+    if not material:
+        return jsonify({'error': 'material required'}), 400
+    db = get_db()
+    db.execute(
+        'INSERT INTO fertilizer_prices (material, price_usd, source, as_of) VALUES (?, ?, ?, ?)',
+        (material, price_usd, source, as_of),
+    )
+    db.commit()
+    return jsonify({'ok': True, 'material': material, 'price_usd': price_usd, 'as_of': as_of})
+
+
+# ── CSV export endpoints ──────────────────────────────────────────────────────
+
+@app.route('/api/export/shipments.csv')
+def api_export_shipments_csv() -> Response:
+    """Download all shipments rows as CSV."""
+    cols = ['id', 'buque', 'agencia', 'eta', 'material', 'cliente', 'tons',
+            'operador', 'operacion', 'muelle', 'sector', 'origen',
+            'source_id', 'source_date']
+    rows = get_db().execute(
+        f'SELECT {", ".join(cols)} FROM shipments ORDER BY eta, id'
+    ).fetchall()
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(cols)
+    w.writerows(rows)
+    today = datetime.now().strftime('%Y%m%d')
+    return Response(
+        buf.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename=shipments_{today}.csv',
+                 'Cache-Control': 'no-store'},
+    )
+
+
+@app.route('/api/export/candidates.csv')
+def api_export_candidates_csv() -> Response:
+    """Download all vessel_candidates rows as CSV."""
+    cols = ['id', 'vessel_name', 'last_position', 'last_port', 'ais_destination',
+            'eta_estimated', 'probable_product', 'probable_importer',
+            'probable_tonnage_range', 'probability_score', 'probability_level',
+            'prediction_status', 'confirmed_eta', 'created_at']
+    rows = get_db().execute(
+        f'SELECT {", ".join(cols)} FROM vessel_candidates ORDER BY created_at DESC'
+    ).fetchall()
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(cols)
+    w.writerows(rows)
+    today = datetime.now().strftime('%Y%m%d')
+    return Response(
+        buf.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename=candidates_{today}.csv',
+                 'Cache-Control': 'no-store'},
+    )
 
 
 # ── Dev server ────────────────────────────────────────────────────────────────

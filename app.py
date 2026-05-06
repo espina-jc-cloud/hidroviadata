@@ -62,7 +62,11 @@ ADMIN_TOKEN = os.environ.get('ADMIN_TOKEN', '')
 # ── Market data in-memory cache ───────────────────────────────────────────────
 # Keys: 'dolar' | 'bcra'   Values: {'data': ..., 'ts': float}
 _MARKET_CACHE: dict = {}
-_MARKET_TTL: dict   = {'dolar': 300, 'bcra': 3600}  # seconds
+_MARKET_TTL: dict   = {
+    'dolar': 300,     # 5 min
+    'bcra':  3600,    # 60 min
+    'macro': 21600,   # 6 h (reserves changes daily; inflation monthly)
+}
 
 
 def _fetch_json_url(url: str, timeout: int = 10):
@@ -1457,6 +1461,96 @@ def api_market_bcra() -> Response:
         if cached:
             return jsonify({'stale': True, 'data': cached['data'], 'error': str(exc)})
         return jsonify({'ok': False, 'error': str(exc)}), 502
+
+
+@app.route('/api/market/macro')
+def api_market_macro() -> Response:
+    """Macro context: BCRA reserves + monthly + YoY inflation.
+
+    Shape:
+      {as_of, reserves_usd_m, reserves_fecha,
+       infl_mom:{fecha,valor}|null, infl_yoy:{fecha,valor}|null,
+       source:{reserves,inflation}, stale_seconds, errors:[]}
+
+    Cache: 6 h.  Never returns 5xx — failures return nulls + errors list.
+    """
+    key = 'macro'
+    now = time.time()
+    cached = _MARKET_CACHE.get(key)
+    if cached and (now - cached['ts']) < _MARKET_TTL[key]:
+        payload = dict(cached['data'])
+        payload['stale_seconds'] = int(now - cached['ts'])
+        return jsonify(payload)
+
+    errors: list[str] = []
+
+    # ── 1. BCRA Reservas (variable 1, latest 3 data-points) ──────────────────
+    reserves_usd_m: float | None = None
+    reserves_fecha: str | None   = None
+    try:
+        bcra_raw = _fetch_json_url(
+            'https://api.bcra.gob.ar/estadisticas/v4.0/monetarias/1?limit=3',
+            timeout=10,
+        )
+        detalle = (bcra_raw.get('results') or [{}])[0].get('detalle') or []
+        if detalle:
+            reserves_usd_m = float(detalle[0]['valor'])
+            reserves_fecha = detalle[0]['fecha']
+    except Exception as exc:
+        msg = f'BCRA reserves: {exc}'
+        errors.append(msg)
+        print(f'[market/macro] {msg}', flush=True)
+
+    # ── 2. Inflación mensual (ArgentinaDatos) ─────────────────────────────────
+    infl_mom: dict | None = None
+    try:
+        mom_raw = _fetch_json_url(
+            'https://api.argentinadatos.com/v1/finanzas/indices/inflacion',
+            timeout=10,
+        )
+        if mom_raw:
+            last = mom_raw[-1]
+            infl_mom = {'fecha': last['fecha'], 'valor': float(last['valor'])}
+    except Exception as exc:
+        msg = f'inflacion MoM: {exc}'
+        errors.append(msg)
+        print(f'[market/macro] {msg}', flush=True)
+
+    # ── 3. Inflación interanual (ArgentinaDatos) ──────────────────────────────
+    infl_yoy: dict | None = None
+    try:
+        yoy_raw = _fetch_json_url(
+            'https://api.argentinadatos.com/v1/finanzas/indices/inflacionInteranual',
+            timeout=10,
+        )
+        if yoy_raw:
+            last = yoy_raw[-1]
+            infl_yoy = {'fecha': last['fecha'], 'valor': float(last['valor'])}
+    except Exception as exc:
+        msg = f'inflacion YoY: {exc}'
+        errors.append(msg)
+        print(f'[market/macro] {msg}', flush=True)
+
+    data: dict = {
+        'as_of':          datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
+        'reserves_usd_m': reserves_usd_m,
+        'reserves_fecha': reserves_fecha,
+        'infl_mom':       infl_mom,
+        'infl_yoy':       infl_yoy,
+        'source': {
+            'reserves':  'BCRA v4.0/monetarias/1',
+            'inflation': 'ArgentinaDatos',
+        },
+        'stale_seconds':  0,
+    }
+    if errors:
+        data['errors'] = errors
+
+    # Only cache if at least one field came back (avoid caching full-null responses)
+    if reserves_usd_m is not None or infl_mom is not None or infl_yoy is not None:
+        _MARKET_CACHE[key] = {'data': data, 'ts': now}
+
+    return jsonify(data)
 
 
 @app.route('/api/market/fertilizer_prices')

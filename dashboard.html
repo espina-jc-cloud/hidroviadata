@@ -1823,11 +1823,12 @@ async function _loadMarketContext() {
   const el = document.getElementById('market-ctx');
   if (!el) return;
 
-  // Fetch all three in parallel (all non-fatal)
-  const [dolarRes, bcraRes, fertRes] = await Promise.allSettled([
+  // Fetch all four in parallel (all non-fatal)
+  const [dolarRes, bcraRes, fertRes, macroRes] = await Promise.allSettled([
     fetch('/api/market/dolar'),
     fetch('/api/market/bcra'),
     fetch('/api/market/fertilizer_prices'),
+    fetch('/api/market/macro'),
   ]);
 
   // ── Dólar card ────────────────────────────────────────────────────────────
@@ -1898,7 +1899,67 @@ async function _loadMarketContext() {
     }
   } catch (_) {}
 
-  const combined = dolarHtml + bcraHtml + fertHtml;
+  // ── MACRO card (Reservas + Inflación) ─────────────────────────────────────
+  let macroHtml = '';
+  try {
+    const macroData = macroRes.status === 'fulfilled' && macroRes.value.ok
+      ? await macroRes.value.json() : null;
+    const hasAny = macroData && (
+      macroData.reserves_usd_m != null ||
+      macroData.infl_mom != null ||
+      macroData.infl_yoy != null
+    );
+    if (hasAny) {
+      // Reserves: convert USD M → display as "USD X.X B" if ≥1000, else "X,XXX M"
+      let resLine = '<span style="color:var(--text3);font-style:italic">No disponible</span>';
+      if (macroData.reserves_usd_m != null) {
+        const m = macroData.reserves_usd_m;
+        const fmt = m >= 1000
+          ? `USD ${(m / 1000).toLocaleString('es-AR', {minimumFractionDigits:1, maximumFractionDigits:1})} B`
+          : `USD ${m.toLocaleString('es-AR')} M`;
+        const fd = macroData.reserves_fecha ? ` <span style="font-size:9px;color:var(--text3)">(al ${macroData.reserves_fecha})</span>` : '';
+        resLine = `<span class="mkt-val">${fmt}</span>${fd}`;
+      }
+      const momVal = macroData.infl_mom
+        ? `<span class="mkt-val">${macroData.infl_mom.valor.toFixed(1)}%</span> <span style="font-size:9px;color:var(--text3)">${macroData.infl_mom.fecha}</span>`
+        : '<span style="color:var(--text3);font-style:italic">No disponible</span>';
+      const yoyVal = macroData.infl_yoy
+        ? `<span class="mkt-val">${macroData.infl_yoy.valor.toFixed(1)}%</span> <span style="font-size:9px;color:var(--text3)">${macroData.infl_yoy.fecha}</span>`
+        : '<span style="color:var(--text3);font-style:italic">No disponible</span>';
+      const staleTag = (macroData.stale_seconds || 0) > 0
+        ? `<span class="mkt-badge-stale">STALE ${Math.round(macroData.stale_seconds/3600)}h</span>` : '';
+      macroHtml = `<div class="mkt-card" style="min-width:220px">
+        <div class="mkt-card-title">🏦 MACRO${staleTag}</div>
+        <div class="mkt-row" style="margin-bottom:6px">
+          <span class="mkt-label">Reservas BCRA</span>
+          ${resLine}
+        </div>
+        <div class="mkt-row" style="margin-bottom:6px">
+          <span class="mkt-label">Inflación mensual</span>
+          ${momVal}
+        </div>
+        <div class="mkt-row">
+          <span class="mkt-label">Inflación interanual</span>
+          ${yoyVal}
+        </div>
+        <div class="mkt-sub" style="margin-top:8px;font-style:italic;color:var(--text3)">
+          ⚠ Si reservas bajan → acceso a USD para importar fertilizantes se complica → posible restricción de oferta.
+        </div>
+      </div>`;
+    } else {
+      macroHtml = `<div class="mkt-card">
+        <div class="mkt-card-title">🏦 MACRO</div>
+        <div class="mkt-err">No disponible</div>
+      </div>`;
+    }
+  } catch (_) {
+    macroHtml = `<div class="mkt-card">
+      <div class="mkt-card-title">🏦 MACRO</div>
+      <div class="mkt-err">No disponible</div>
+    </div>`;
+  }
+
+  const combined = macroHtml + dolarHtml + bcraHtml + fertHtml;
   el.innerHTML = combined || '<div class="mkt-err">Datos de mercado no disponibles</div>';
 }
 
@@ -3337,8 +3398,8 @@ async function init() {
 
   // ── Market context (non-fatal — fires after app is visible) ──────────────
   _loadMarketContext().catch(() => {});
-  // Refresh dólar every 5 min, BCRA every 60 min
-  setInterval(() => _loadMarketContext().catch(() => {}), 5 * 60 * 1000);
+  // Refresh every 6 h — server-side cache handles finer-grained TTLs per source
+  setInterval(() => _loadMarketContext().catch(() => {}), 6 * 60 * 60 * 1000);
 }
 
 function populateDatosFilters() {

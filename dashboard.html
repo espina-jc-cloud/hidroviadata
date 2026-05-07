@@ -1813,23 +1813,45 @@ function renderMercado() {
       }
     }
   });
+
+  // #market-ctx was just stamped into panel.innerHTML above — load market data now
+  _loadMarketContext().catch(e => console.error('[market-ctx] load failed:', e));
 }
 
 // =============================================================================
 // MARKET CONTEXT — async loader for tab-mercado
 // =============================================================================
 
+let _mktCtxLastFetch = 0;  // ms timestamp of last successful render
+function _retryMarketCtx() {
+  _mktCtxLastFetch = 0;
+  _loadMarketContext().catch(e => console.error('[market-ctx] retry failed:', e));
+}
+
 async function _loadMarketContext() {
   const el = document.getElementById('market-ctx');
+  // #market-ctx is injected by renderMercado() — if the tab hasn't been
+  // rendered yet this will be null; renderMercado() calls us after render.
   if (!el) return;
 
+  // JS-side 60 s dedup: avoid re-fetching on rapid tab switches
+  if ((Date.now() - _mktCtxLastFetch) < 60_000 && el.querySelector('.mkt-card')) {
+    console.debug('[market-ctx] skipped — data fresh (<60 s)');
+    return;
+  }
+
+  el.innerHTML = '<div class="mkt-err" style="opacity:.6">Cargando…</div>';
+
   // Fetch all four in parallel (all non-fatal)
+  console.debug('[market-ctx] fetching dolar, bcra, fertilizer_prices, macro…');
   const [dolarRes, bcraRes, fertRes, macroRes] = await Promise.allSettled([
     fetch('/api/market/dolar'),
     fetch('/api/market/bcra'),
     fetch('/api/market/fertilizer_prices'),
     fetch('/api/market/macro'),
   ]);
+  console.debug('[market-ctx] settled:',
+    dolarRes.status, bcraRes.status, fertRes.status, macroRes.status);
 
   // ── Dólar card ────────────────────────────────────────────────────────────
   let dolarHtml = '';
@@ -1960,7 +1982,19 @@ async function _loadMarketContext() {
   }
 
   const combined = macroHtml + dolarHtml + bcraHtml + fertHtml;
-  el.innerHTML = combined || '<div class="mkt-err">Datos de mercado no disponibles</div>';
+  if (combined) {
+    el.innerHTML = combined;
+    _mktCtxLastFetch = Date.now();
+    console.debug('[market-ctx] rendered —', el.querySelectorAll('.mkt-card').length, 'cards');
+  } else {
+    el.innerHTML = `<div class="mkt-err">Datos de mercado no disponibles
+      <button onclick="_retryMarketCtx()"
+        style="margin-left:8px;padding:2px 10px;cursor:pointer;background:transparent;
+               border:1px solid var(--cyan);color:var(--cyan);border-radius:3px;font-size:11px">
+        Reintentar
+      </button></div>`;
+    console.warn('[market-ctx] all sources failed — showing retry button');
+  }
 }
 
 // =============================================================================

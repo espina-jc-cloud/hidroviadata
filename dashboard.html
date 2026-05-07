@@ -1285,98 +1285,203 @@ function renderResumen() {
   const s = STATUS_DATA || {};
   const q = s.quality || {};
 
-  // Freshness badge
-  const srcDate = s.latest_source_date || '';
+  // --- Card 1: Oferta Confirmada 30d ---
+  const today30 = new Date(); today30.setHours(0,0,0,0);
+  const cutoff30 = new Date(today30.getTime() + 30 * 86400000);
+  const fert30 = ALL_DATA.filter(r => {
+    if (!isFert(r)) return false;
+    const eta = parseETA(r.eta);
+    return eta && eta >= today30 && eta <= cutoff30;
+  });
+  const tons30 = fert30.reduce((acc, r) => acc + (r.tons || 0), 0);
+  const matBreak = {};
+  fert30.forEach(r => {
+    const m = (r.material || 'OTROS').toUpperCase();
+    matBreak[m] = (matBreak[m] || 0) + (r.tons || 0);
+  });
+  const matOrder = ['UREA','MAP','DAP','MOP','TSP','AMSUL'];
+  const matBreakHtml = [
+    ...matOrder.filter(m => matBreak[m]),
+    ...Object.keys(matBreak).filter(m => !matOrder.includes(m))
+  ].slice(0,6).map(m =>
+    `<div style="display:flex;justify-content:space-between;margin-top:3px">
+      <span style="color:var(--text3);font-size:11px">${m}</span>
+      <span style="font-size:11px;font-weight:600">${((matBreak[m]||0)/1000).toFixed(0)}k t</span>
+    </div>`
+  ).join('');
+
+  // --- Card 2: En Ruta AIS ---
+  const cands = BUQUES_EN_RUTA_DATA || [];
+  const byStatus = {};
+  cands.forEach(r => { const st = r.status || 'unknown'; byStatus[st] = (byStatus[st]||0)+1; });
+  const enRutaTotal = cands.length;
+  const pendingReview = byStatus['review'] || 0;
+  const statusRows = Object.entries(byStatus).map(([st, n]) =>
+    `<div style="display:flex;justify-content:space-between;margin-top:3px">
+      <span style="color:var(--text3);font-size:11px">${st}</span>
+      <span style="font-size:11px;font-weight:600">${n}</span>
+    </div>`
+  ).join('');
+
+  // --- Card 3: Novedades (changelog) ---
+  const cl = CHANGELOG_DATA || {};
+  const cls = cl.summary || {};
+  const clAvail = cl.available;
+  const clAdded   = cls.added   || 0;
+  const clRemoved = cls.removed || 0;
+  const clEtaChg  = cls.eta_changed  || 0;
+  const clTonsChg = cls.tons_changed || 0;
+  const clDate = cl.source_date || '—';
+  let novedadesBody;
+  if (!clAvail) {
+    novedadesBody = '<div style="color:var(--text3);font-size:11px;margin-top:8px">Sin datos de novedades</div>';
+  } else {
+    novedadesBody = `
+      <div style="display:flex;justify-content:space-between;margin-top:8px">
+        <span style="color:var(--text3);font-size:11px">Nuevos</span>
+        <span style="font-size:11px;font-weight:600;color:var(--green)">+${clAdded}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px">
+        <span style="color:var(--text3);font-size:11px">Eliminados</span>
+        <span style="font-size:11px;font-weight:600;color:var(--red)">-${clRemoved}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px">
+        <span style="color:var(--text3);font-size:11px">Cambios ETA</span>
+        <span style="font-size:11px;font-weight:600">${clEtaChg}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px">
+        <span style="color:var(--text3);font-size:11px">Cambios tons</span>
+        <span style="font-size:11px;font-weight:600">${clTonsChg}</span>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:5px">${clDate}</div>`;
+  }
+
+  // --- Card 4: Freshness ---
+  const srcDate = LINEUP_META?.latest_source_date || s.latest_source_date || '';
   const ageDays = srcDate
     ? Math.floor((Date.now() - new Date(srcDate + 'T00:00:00').getTime()) / 86400000)
     : null;
-  const ageBadge = ageDays === null
-    ? '<span style="color:var(--text3)">—</span>'
-    : ageDays <= 4
-      ? `<span class="badge-pass">≤${ageDays}d</span>`
-      : ageDays <= 10
-        ? `<span class="badge-warn">${ageDays}d</span>`
-        : `<span class="badge-block">${ageDays}d DESACT.</span>`;
+  const ageColor = ageDays === null ? 'var(--text3)' : ageDays <= 4 ? 'var(--green)' : ageDays <= 10 ? 'var(--yellow)' : 'var(--red)';
+  const ageBadge = ageDays === null ? '<span style="color:var(--text3)">—</span>'
+    : ageDays <= 4  ? `<span class="badge-pass">≤${ageDays}d</span>`
+    : ageDays <= 10 ? `<span class="badge-warn">${ageDays}d</span>`
+    : `<span class="badge-block">${ageDays}d DESACT.</span>`;
+  const freshAC = ageDays === null ? '' : ageDays <= 4 ? 'ac-green' : ageDays <= 10 ? 'ac-yellow' : 'ac-red';
 
-  // Quality badge
+  // --- Card 5: Calidad ---
   const qst = (q.status || '').toUpperCase();
-  const qBadge = qst === 'PASS'
-    ? '<span class="badge-pass">PASS</span>'
-    : qst === 'WARNING'
-      ? '<span class="badge-warn">WARNING</span>'
-      : qst === 'BLOCK'
-        ? '<span class="badge-block">BLOCK</span>'
-        : '<span style="color:var(--text3)">—</span>';
+  const qBadge = qst === 'PASS'    ? '<span class="badge-pass">PASS</span>'
+    : qst === 'WARNING' ? '<span class="badge-warn">WARNING</span>'
+    : qst === 'BLOCK'   ? '<span class="badge-block">BLOCK</span>'
+    : '<span style="color:var(--text3)">—</span>';
+  const qAC = qst === 'PASS' ? 'ac-green' : qst === 'WARNING' ? 'ac-yellow' : qst === 'BLOCK' ? 'ac-red' : '';
+  const qWarnHtml = (q.warnings || []).slice(0,2).map(w =>
+    `<div style="font-size:10px;color:var(--yellow);margin-top:2px">⚠ ${w}</div>`).join('');
+  const qBlkHtml = (q.blocks || []).slice(0,1).map(b =>
+    `<div style="font-size:10px;color:var(--red);margin-top:2px">✗ ${b}</div>`).join('');
 
-  // Candidates by status
-  const cbs = s.candidates_by_status || {};
-  const candTotal = Object.values(cbs).reduce((a, b) => a + b, 0);
-  const candSub = Object.entries(cbs).map(([k, v]) => `${k}: ${v}`).join(' · ') || '—';
-
-  // Ports from ISA data (unique sectors in ALL_DATA where source_id=ISA_LINEUP)
-  const isaPorts = [...new Set(ALL_DATA
-    .filter(r => r.source_id === 'ISA_LINEUP' && r.sector)
-    .map(r => r.sector)
-  )];
+  // --- Card 6: Cobertura ISA ---
+  const isaRows  = ALL_DATA.filter(r => r.source_id === 'ISA_LINEUP');
+  const isaPorts = [...new Set(isaRows.filter(r => r.sector).map(r => r.sector))].sort();
+  const isaCount = isaRows.length;
+  let isaBody;
+  if (isaCount === 0) {
+    isaBody = `
+      <div style="color:var(--yellow);font-size:11px;margin-top:8px">ISA no cargado aún</div>
+      <button onclick="_doScrapeISA()" style="margin-top:10px;padding:5px 12px;background:var(--cyan-dim);border:1px solid rgba(0,212,255,.35);color:var(--cyan);border-radius:5px;cursor:pointer;font-size:11px;font-family:var(--font)">
+        📡 Cargar ISA ahora
+      </button>`;
+  } else {
+    isaBody = `
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span style="color:var(--text3);font-size:11px">Puertos</span>
+        <span style="font-size:11px;font-weight:600">${isaPorts.length}</span>
+      </div>
+      <div style="font-size:10px;color:var(--text2);margin-top:4px;line-height:1.5">${isaPorts.join(' · ') || '—'}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:4px">${isaCount} registros activos</div>`;
+  }
 
   panel.innerHTML = `
     <div style="margin-bottom:20px">
-      <div style="font-size:18px;font-weight:700;margin-bottom:4px">Panel de Control</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px">Resumen Operativo</div>
       <div style="font-size:11px;color:var(--text3)">Actualizado: ${new Date().toLocaleString('es-AR')}</div>
     </div>
-
     <div class="res-grid">
+
       <div class="res-card ac-cyan">
-        <div class="res-val" style="color:var(--cyan)">${srcDate || '—'}</div>
-        <div class="res-label">Último lineup</div>
-        <div class="res-sub">Frescura: ${ageBadge}</div>
+        <div class="res-label">Oferta Confirmada 30d</div>
+        <div class="res-val" style="color:var(--cyan);font-size:26px;margin-top:6px">${tons30 > 0 ? (tons30/1000).toFixed(0)+'k t' : '—'}</div>
+        <div style="margin-top:8px">${matBreakHtml || '<span style="font-size:11px;color:var(--text3)">Sin cargas próximas</span>'}</div>
       </div>
-      <div class="res-card ${qst === 'PASS' ? 'ac-green' : qst === 'WARNING' ? 'ac-yellow' : 'ac-red'}">
+
+      <div class="res-card ${enRutaTotal > 0 ? 'ac-orange' : ''}">
+        <div class="res-label">En Ruta (AIS)</div>
+        <div class="res-val" style="color:${enRutaTotal>0?'var(--orange)':'var(--text3)'};font-size:26px;margin-top:6px">${enRutaTotal}</div>
+        <div style="margin-top:8px">${statusRows || '<span style="font-size:11px;color:var(--text3)">Sin candidatos AIS</span>'}</div>
+        ${pendingReview > 0 ? `<div style="font-size:10px;color:var(--yellow);margin-top:6px">⚠ ${pendingReview} pendientes de revisión</div>` : ''}
+      </div>
+
+      <div class="res-card">
+        <div class="res-label">Novedades</div>
+        ${novedadesBody}
+        ${clAvail ? `<button onclick="switchTab('semana')" style="margin-top:8px;padding:3px 10px;background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:4px;cursor:pointer;font-size:10px;font-family:var(--font)">Ver detalles →</button>` : ''}
+      </div>
+
+      <div class="res-card ${freshAC}">
+        <div class="res-label">Frescura de datos</div>
+        <div class="res-val" style="font-size:18px;margin-top:6px;color:${ageColor}">${srcDate || '—'}</div>
+        <div style="margin-top:8px">${ageBadge}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">Fuente: ${LINEUP_META?.latest_source_id || s.latest_source_id || '—'}</div>
+      </div>
+
+      <div class="res-card ${qAC}">
+        <div class="res-label">Calidad</div>
         <div class="res-val" style="font-size:22px;padding-top:4px">${qBadge}</div>
-        <div class="res-label">Quality Gate</div>
-        <div class="res-sub">${(q.warnings || []).slice(0,1).map(w => '⚠ ' + w).join('') || 'Sin alertas'}</div>
+        ${qBlkHtml}${qWarnHtml}
+        ${qst ? `<button onclick="switchTab('semana')" style="margin-top:8px;padding:3px 10px;background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:4px;cursor:pointer;font-size:10px;font-family:var(--font)">Ver detalles →</button>` : ''}
       </div>
-      <div class="res-card ac-cyan">
-        <div class="res-val" style="color:var(--text1)">${((s.latest_lineup_fert_tons || 0) / 1000).toFixed(0)}k t</div>
-        <div class="res-label">Tons confirmadas</div>
-        <div class="res-sub">Último lineup · ${(s.latest_lineup_fert_rows || 0)} filas</div>
+
+      <div class="res-card ${isaCount > 0 ? 'ac-cyan' : 'ac-yellow'}">
+        <div class="res-label">Cobertura ISA</div>
+        <div class="res-val" style="font-size:26px;margin-top:6px;color:${isaCount>0?'var(--cyan)':'var(--yellow)'}">${isaCount > 0 ? isaPorts.length : '!'}</div>
+        ${isaBody}
       </div>
-      <div class="res-card">
-        <div class="res-val">${s.latest_lineup_fert_rows || '—'}</div>
-        <div class="res-label">Buques confirmados</div>
-        <div class="res-sub">Fuente: ${s.latest_source_id || '—'}</div>
-      </div>
-      <div class="res-card ac-orange">
-        <div class="res-val" style="color:var(--orange)">${candTotal}</div>
-        <div class="res-label">Candidatos AIS activos</div>
-        <div class="res-sub">${candSub}</div>
-      </div>
-      <div class="res-card">
-        <div class="res-val">${isaPorts.length || '—'}</div>
-        <div class="res-label">Puertos ISA cubiertos</div>
-        <div class="res-sub" style="font-size:10px">${isaPorts.slice(0,4).join(' · ') || 'Sin datos ISA'}</div>
-      </div>
+
     </div>
 
-    <div class="card" style="max-width:600px">
-      <div class="card-header">
-        <span class="card-title">Estado de fuentes</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px 0 4px">
-        <div>
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:6px">Shipments DB</div>
-          <div style="font-size:13px;font-weight:600">Total: ${(s.total_shipments || 0).toLocaleString('es-AR')}</div>
-          <div style="font-size:11px;color:var(--text2)">${((s.total_tons || 0)/1e6).toFixed(2)} M t históricas</div>
-          <div style="font-size:11px;color:var(--text2)">Fertilizantes: ${(s.fert_shipments || 0).toLocaleString('es-AR')} rows</div>
-        </div>
-        <div>
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:6px">ISA Line-up</div>
-          <div style="font-size:13px;font-weight:600">${isaPorts.length} puertos</div>
-          <div style="font-size:11px;color:var(--text2)">${ALL_DATA.filter(r => r.source_id === 'ISA_LINEUP').length} registros actuales</div>
-          <button onclick="switchTab('lineup')" style="margin-top:8px;padding:4px 12px;background:var(--cyan-dim);border:1px solid rgba(0,212,255,.3);color:var(--cyan);border-radius:5px;cursor:pointer;font-size:11px;font-family:var(--font)">Ver Line-up →</button>
-        </div>
+    <div class="card" style="max-width:480px">
+      <div class="card-header"><span class="card-title">Accesos rápidos</span></div>
+      <div style="display:flex;gap:10px;padding:12px 0 4px;flex-wrap:wrap">
+        <button onclick="switchTab('lineup')"  style="padding:6px 16px;background:var(--cyan-dim);border:1px solid rgba(0,212,255,.3);color:var(--cyan);border-radius:5px;cursor:pointer;font-size:12px;font-family:var(--font)">🚢 Line-up</button>
+        <button onclick="switchTab('mercado')" style="padding:6px 16px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.3);color:var(--orange);border-radius:5px;cursor:pointer;font-size:12px;font-family:var(--font)">📊 Mercado</button>
+        <button onclick="switchTab('semana')"  style="padding:6px 16px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);border-radius:5px;cursor:pointer;font-size:12px;font-family:var(--font)">📋 Esta semana</button>
       </div>
     </div>`;
+}
+
+// Helper: trigger ISA scrape from Resumen card (requires session token)
+async function _doScrapeISA() {
+  const tok = sessionStorage.getItem('admin_token') || '';
+  if (!tok) {
+    const t = prompt('Ingresá el ADMIN_TOKEN para continuar:');
+    if (!t) return;
+    sessionStorage.setItem('admin_token', t);
+  }
+  const token = sessionStorage.getItem('admin_token');
+  const btn = document.querySelector('[onclick="_doScrapeISA()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Cargando…'; }
+  try {
+    const res = await fetch(`/api/admin/scrape_isa?token=${encodeURIComponent(token)}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.status);
+    alert(`✅ ISA cargado — ${data.new_rows} nuevos · ${data.ports_covered?.length || 0} puertos`);
+    // Reload data
+    const r2 = await fetch('/api/shipments');
+    if (r2.ok) { ALL_DATA = await r2.json(); renderResumen(); }
+  } catch (err) {
+    alert(`❌ Error: ${err.message}`);
+    if (btn) { btn.disabled = false; btn.textContent = '📡 Cargar ISA ahora'; }
+  }
 }
 
 // =============================================================================
@@ -1431,6 +1536,7 @@ function renderLineup() {
         const matKey  = (r.material || '').toLowerCase().replace(/[^a-z]/g,'');
         const matCls  = ['urea','map','dap','mop','tsp','an'].includes(matKey) ? `lu-mat-${matKey}` : 'lu-mat-other';
         return `<tr>
+          <td><span class="lu-src ${srcCls}">${srcLbl}</span></td>
           <td>${puerto}</td>
           <td style="color:var(--text3)">${r.muelle || '—'}</td>
           <td style="font-weight:600;color:var(--text1)">${r.buque || '—'}</td>
@@ -1438,7 +1544,6 @@ function renderLineup() {
           <td style="text-align:right">${tons}</td>
           <td>${r.cliente || '—'}</td>
           <td style="font-family:monospace;font-size:11px">${etaStr}</td>
-          <td><span class="lu-src ${srcCls}">${srcLbl}</span></td>
         </tr>`;
       }).join('')
     : `<tr><td colspan="8" class="lu-empty">Sin resultados para los filtros seleccionados.</td></tr>`;
@@ -1470,8 +1575,8 @@ function renderLineup() {
     <div class="lu-table-wrap">
       <table class="lu-table">
         <thead><tr>
-          <th>Puerto</th><th>Muelle</th><th>Buque</th><th>Carga</th>
-          <th style="text-align:right">Tons</th><th>Cliente</th><th>ETA</th><th>Fuente</th>
+          <th>Fuente</th><th>Puerto</th><th>Muelle</th><th>Buque</th>
+          <th>Producto</th><th style="text-align:right">Tons</th><th>Cliente</th><th>ETA</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -3899,9 +4004,49 @@ function renderAdmin() {
         <div style="color:var(--text3);font-size:12px">Cargando…</div>
       </div>
     </div>
+
+    <div class="card" style="max-width:700px;margin-top:16px">
+      <div class="card-header">
+        <span class="card-title">📡 ISA Line-up — Scrape Manual</span>
+        <span class="card-sub">Importar buques ISA Agents directamente</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">
+        Importa buques con material FERTILIZERS en estado DISCH desde la página ISA Agents.<br>
+        El scrape también corre automáticamente cada vez que se publica un lineup PDF.
+      </div>
+      <button class="admin-btn" onclick="doScrapeISAAdmin()">📡 Cargar ISA ahora</button>
+      <div id="adm-isa-result" style="margin-top:12px"></div>
+    </div>
   `;
   if (_adminPreview) _renderAdminPreview(_adminPreview);
   renderReviewQueue();
+}
+
+async function doScrapeISAAdmin() {
+  const token = document.getElementById('adm-token')?.value
+                || sessionStorage.getItem('admin_token') || '';
+  if (!token) { alert('Ingresá el ADMIN_TOKEN primero.'); return; }
+  const resultDiv = document.getElementById('adm-isa-result');
+  if (resultDiv) resultDiv.innerHTML = '<div style="color:var(--text3);font-size:12px">⏳ Scrapeando…</div>';
+  try {
+    const res  = await fetch(`/api/admin/scrape_isa?token=${encodeURIComponent(token)}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.status);
+    const portList = (data.ports_covered || []).join(', ') || '—';
+    if (resultDiv) resultDiv.innerHTML = `
+      <div style="background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);border-radius:6px;padding:10px 14px;font-size:12px">
+        <div style="color:var(--green);font-weight:700;margin-bottom:6px">✅ ISA scrape completado</div>
+        <div>Nuevos: <strong>${data.new_rows}</strong> &nbsp;·&nbsp; Duplicados: <strong>${data.duplicates}</strong></div>
+        <div>Total fert en página: <strong>${data.total_fertilizer_rows}</strong></div>
+        <div>Puertos: <span style="color:var(--cyan)">${portList}</span></div>
+        <div style="color:var(--text3);margin-top:4px;font-size:11px">Fuente: ${data.source_id} · ${data.source_date}</div>
+      </div>`;
+    // Refresh in-memory data so Resumen card updates
+    const r2 = await fetch('/api/shipments');
+    if (r2.ok) ALL_DATA = await r2.json();
+  } catch (err) {
+    if (resultDiv) resultDiv.innerHTML = `<div class="alert-banner">❌ Error: ${err.message}</div>`;
+  }
 }
 
 async function doUploadLineup() {

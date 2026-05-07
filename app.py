@@ -572,7 +572,7 @@ def api_shipments() -> Response:
     print(f"[{datetime.now().isoformat(timespec='seconds')}] GET /api/shipments", flush=True)
     rows = get_db().execute(
         'SELECT buque, agencia, eta, material, cliente, tons, '
-        '       operador, operacion, muelle, sector, origen '
+        '       operador, operacion, muelle, sector, origen, source_id '
         'FROM shipments'
     ).fetchall()
     return jsonify([normalize_shipment(dict(r)) for r in rows])
@@ -1176,19 +1176,18 @@ def api_admin_publish_lineup() -> Response:
 
     _clear_preview()   # migrate.py --reset already wiped quality_reports; this is a no-op but safe
 
-    # ── Optional: auto-scrape ISA after successful publish ─────────────────
+    # ── Always auto-scrape ISA after successful publish (non-fatal) ───────────
     isa_result: dict | None = None
-    if os.environ.get('ISA_ENABLE') == '1':
-        try:
-            isa_result = _isa_run_scrape(db_path=DATABASE)
-            print(
-                f'[publish] ISA auto-scrape ok — new={isa_result["new_rows"]}  '
-                f'dup={isa_result["duplicates"]}  total_fert={isa_result["total_fertilizer_rows"]}',
-                flush=True,
-            )
-        except Exception as _isa_exc:
-            print(f'[publish] ISA auto-scrape FAILED (non-fatal): {_isa_exc}', flush=True)
-            isa_result = {'error': str(_isa_exc)}
+    try:
+        isa_result = _isa_run_scrape(db_path=DATABASE)
+        print(
+            f'[publish] ISA auto-scrape ok — new={isa_result["new_rows"]}  '
+            f'dup={isa_result["duplicates"]}  total_fert={isa_result["total_fertilizer_rows"]}',
+            flush=True,
+        )
+    except Exception as _isa_exc:
+        print(f'[publish] ISA auto-scrape FAILED (non-fatal): {_isa_exc}', flush=True)
+        isa_result = {'error': str(_isa_exc)}
 
     resp: dict = {
         'ok':                 True,

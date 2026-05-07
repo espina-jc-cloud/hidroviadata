@@ -673,6 +673,110 @@
       color:#ffaa00; border-radius:4px; margin-left:4px;
     }
     .mkt-err { font-size:10px; color:var(--text3); font-style:italic; }
+
+    /* ── BODY ROW + SIDEBAR ───────────────────────────────────── */
+    #app { height: 100vh; overflow: hidden; flex-direction: column; }
+    #body-row { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 64px); }
+    #sidebar {
+      width: 210px; flex-shrink: 0;
+      background: var(--panel); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow-y: auto;
+      padding-bottom: 20px; transition: width .2s ease;
+    }
+    #sidebar.collapsed { width: 0; overflow: hidden; }
+    #main-col { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+    #content   { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+    /* Sidebar items */
+    .sb-section { padding: 14px 0 4px; }
+    .sb-section-title {
+      font-size: 9px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--text3); padding: 0 14px 6px;
+    }
+    .sb-item {
+      display: flex; align-items: center; gap: 9px; width: 100%;
+      padding: 7px 14px; border: none; background: none; cursor: pointer;
+      color: var(--text2); font-size: 12px; font-family: var(--font); text-align: left;
+      transition: background .12s;
+    }
+    .sb-item:hover { background: var(--panel2); color: var(--text1); }
+    .sb-item.active { background: var(--cyan-dim); color: var(--cyan); border-right: 2px solid var(--cyan); font-weight: 600; }
+    .sb-icon { font-size: 13px; flex-shrink: 0; }
+
+    /* Primary nav (topbar) */
+    #primary-nav { display: flex; gap: 2px; align-items: center; }
+    .pnav-btn {
+      padding: 6px 14px; border: none; background: transparent; cursor: pointer;
+      color: var(--text3); font-size: 13px; font-weight: 500; font-family: var(--font);
+      border-radius: 6px; transition: all .15s; white-space: nowrap;
+    }
+    .pnav-btn:hover { background: var(--panel2); color: var(--text2); }
+    .pnav-btn.active { background: var(--cyan-dim); color: var(--cyan); font-weight: 600; }
+
+    /* Status pill */
+    #status-pill {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 700; color: var(--green);
+      text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0;
+    }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+      animation: blink 2.5s ease-in-out infinite; flex-shrink: 0;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* Sidebar toggle */
+    #sb-toggle {
+      background: none; border: none; cursor: pointer; color: var(--text3);
+      font-size: 18px; flex-shrink: 0; line-height: 1; padding: 0 4px;
+    }
+    #sb-toggle:hover { color: var(--text2); }
+
+    /* Line-up tab */
+    .lu-filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .lu-select {
+      background: var(--panel2); border: 1px solid var(--border2); border-radius: 5px;
+      color: var(--text); padding: 5px 10px; font-size: 11px; font-family: var(--font); cursor: pointer;
+    }
+    .lu-table-wrap { overflow-x: auto; }
+    .lu-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .lu-table th {
+      text-align: left; padding: 8px 10px; background: var(--panel2); color: var(--text3);
+      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1;
+    }
+    .lu-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: middle; }
+    .lu-table tbody tr:hover td { background: var(--panel2); }
+    .lu-src, .lu-mat {
+      font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 3px; white-space: nowrap;
+    }
+    .lu-src-isa  { background: rgba(0,212,255,.12); color: var(--cyan); }
+    .lu-src-pdf  { background: rgba(107,127,153,.15); color: var(--text3); }
+    .lu-mat-urea { background: rgba(0,212,255,.15); color: var(--cyan); }
+    .lu-mat-map  { background: rgba(0,255,136,.12);  color: var(--green); }
+    .lu-mat-dap  { background: rgba(251,191,36,.12); color: var(--yellow); }
+    .lu-mat-mop  { background: rgba(255,107,53,.12); color: var(--orange); }
+    .lu-mat-tsp  { background: rgba(192,100,255,.12);color: #c064ff; }
+    .lu-mat-an   { background: rgba(255,68,85,.12);  color: var(--red); }
+    .lu-mat-other{ background: rgba(107,127,153,.15); color: var(--text3); }
+
+    /* Resumen tab */
+    .res-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .res-card {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+      padding: 18px 16px; transition: border-color .15s;
+    }
+    .res-card.ac-cyan   { border-color: rgba(0,212,255,.3); }
+    .res-card.ac-green  { border-color: rgba(0,255,136,.3); }
+    .res-card.ac-yellow { border-color: rgba(251,191,36,.3); }
+    .res-card.ac-orange { border-color: rgba(255,107,53,.3); }
+    .res-card.ac-red    { border-color: rgba(255,68,85,.3);  }
+    .res-val   { font-size: 30px; font-weight: 800; line-height: 1.1; margin-bottom: 4px; }
+    .res-label { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--text3); font-weight: 600; }
+    .res-sub   { font-size: 11px; color: var(--text2); margin-top: 8px; }
+    .badge-pass  { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; background:rgba(0,255,136,.15); color:var(--green); }
+    .badge-warn  { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; background:rgba(251,191,36,.15); color:var(--yellow); }
+    .badge-block { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; background:rgba(255,68,85,.15); color:var(--red); }
   </style>
 </head>
 <body>
@@ -697,9 +801,17 @@
 
   <!-- TOPBAR -->
   <div id="topbar">
+    <button id="sb-toggle" onclick="toggleSidebar()" title="Mostrar/ocultar sidebar">☰</button>
     <div id="logo">
       <div id="logo-name">HidrovíaData</div>
       <div id="logo-sub">Inteligencia de Fertilizantes — Hidrovía Argentina</div>
+    </div>
+
+    <div id="primary-nav">
+      <button class="pnav-btn active" data-tab="resumen" onclick="switchTab('resumen')">📋 Resumen</button>
+      <button class="pnav-btn" data-tab="lineup"  onclick="switchTab('lineup')">🚢 Line-up</button>
+      <button class="pnav-btn" data-tab="mercado" onclick="switchTab('mercado')">📊 Mercado</button>
+      <button class="pnav-btn" data-tab="admin"   onclick="switchTab('admin')">⚙ Admin</button>
     </div>
 
     <div id="topbar-kpis">
@@ -721,6 +833,8 @@
       </div>
     </div>
 
+    <div id="status-pill"><span class="status-dot"></span>LIVE</div>
+
     <div id="topbar-filters">
       <select id="f-period" onchange="onFilterChange()">
         <option value="1">Último mes</option>
@@ -735,80 +849,124 @@
     </div>
   </div>
 
-  <!-- TAB NAV -->
-  <div id="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('semana')">📅 ESTA SEMANA</button>
-    <button class="tab-btn" onclick="switchTab('mercado')">📊 MERCADO</button>
-    <button class="tab-btn" onclick="switchTab('importadores')">🏢 IMPORTADORES</button>
-    <button class="tab-btn" onclick="switchTab('buques')">🚢 BUQUES &amp; FLOTA</button>
-    <button class="tab-btn" onclick="switchTab('origenes')">🌍 ORÍGENES</button>
-    <button class="tab-btn" onclick="switchTab('timeline')">📈 TIMELINE</button>
-    <button class="tab-btn" onclick="switchTab('datos')">🔍 DATOS COMPLETOS</button>
-    <button class="tab-btn" onclick="switchTab('oferta')">📦 OFERTA PRÓXIMA</button>
-    <button class="tab-btn" onclick="switchTab('buquesruta')">🛰 BUQUES EN RUTA</button>
-    <button class="tab-btn" onclick="switchTab('admin')">⚙ ADMIN</button>
-  </div>
+  <!-- BODY ROW: sidebar + main column -->
+  <div id="body-row">
 
-  <!-- QUALITY GATE BANNER — shown when latest quality_report status is WARNING or BLOCK -->
-  <div id="quality-banner"></div>
+    <!-- SIDEBAR -->
+    <nav id="sidebar">
+      <div class="sb-section">
+        <div class="sb-section-title">Principal</div>
+        <button class="sb-item active" data-tab="resumen"    onclick="switchTab('resumen')"><span class="sb-icon">📋</span> Resumen</button>
+        <button class="sb-item"        data-tab="lineup"     onclick="switchTab('lineup')"><span class="sb-icon">🚢</span> Line-up</button>
+        <button class="sb-item"        data-tab="mercado"    onclick="switchTab('mercado')"><span class="sb-icon">📊</span> Mercado</button>
+        <button class="sb-item"        data-tab="admin"      onclick="switchTab('admin')"><span class="sb-icon">⚙</span> Admin</button>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-title">Análisis</div>
+        <button class="sb-item" data-tab="semana"       onclick="switchTab('semana')"><span class="sb-icon">📅</span> Esta semana</button>
+        <button class="sb-item" data-tab="oferta"       onclick="switchTab('oferta')"><span class="sb-icon">📦</span> Oferta próxima</button>
+        <button class="sb-item" data-tab="importadores" onclick="switchTab('importadores')"><span class="sb-icon">🏢</span> Importadores</button>
+        <button class="sb-item" data-tab="buques"       onclick="switchTab('buques')"><span class="sb-icon">⚓</span> Buques &amp; flota</button>
+        <button class="sb-item" data-tab="origenes"     onclick="switchTab('origenes')"><span class="sb-icon">🌍</span> Orígenes</button>
+        <button class="sb-item" data-tab="timeline"     onclick="switchTab('timeline')"><span class="sb-icon">📈</span> Timeline</button>
+        <button class="sb-item" data-tab="datos"        onclick="switchTab('datos')"><span class="sb-icon">🔍</span> Datos completos</button>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-title">Sistema</div>
+        <button class="sb-item" data-tab="buquesruta"   onclick="switchTab('buquesruta')"><span class="sb-icon">🛰</span> Buques en ruta</button>
+        <button class="sb-item" onclick="window.open('/api/export/shipments.csv','_blank')"><span class="sb-icon">⬇</span> Export CSV</button>
+      </div>
+    </nav><!-- /#sidebar -->
 
-  <!-- FRESHNESS BANNER — always visible, shows data age + quality status -->
-  <div id="freshness-banner"></div>
+    <!-- MAIN COLUMN -->
+    <div id="main-col">
 
-  <!-- CONTENT -->
-  <div id="content">
+      <!-- Hidden legacy tab-nav (still used internally) -->
+      <div id="tab-nav" style="display:none">
+        <button class="tab-btn" data-tab="semana"       onclick="switchTab('semana')">ESTA SEMANA</button>
+        <button class="tab-btn" data-tab="mercado"      onclick="switchTab('mercado')">MERCADO</button>
+        <button class="tab-btn" data-tab="importadores" onclick="switchTab('importadores')">IMPORTADORES</button>
+        <button class="tab-btn" data-tab="buques"       onclick="switchTab('buques')">BUQUES</button>
+        <button class="tab-btn" data-tab="origenes"     onclick="switchTab('origenes')">ORÍGENES</button>
+        <button class="tab-btn" data-tab="timeline"     onclick="switchTab('timeline')">TIMELINE</button>
+        <button class="tab-btn" data-tab="datos"        onclick="switchTab('datos')">DATOS</button>
+        <button class="tab-btn" data-tab="oferta"       onclick="switchTab('oferta')">OFERTA</button>
+        <button class="tab-btn" data-tab="buquesruta"   onclick="switchTab('buquesruta')">BUQUES EN RUTA</button>
+        <button class="tab-btn" data-tab="admin"        onclick="switchTab('admin')">ADMIN</button>
+      </div>
 
-    <!-- TAB 1: ESTA SEMANA -->
-    <div id="tab-semana" class="tab-panel active">
-      <div class="no-data">Cargando datos…</div>
-    </div>
+      <!-- Quality + freshness banners -->
+      <div id="quality-banner"></div>
+      <div id="freshness-banner"></div>
 
-    <!-- TAB 2: MERCADO -->
-    <div id="tab-mercado" class="tab-panel">
-      <div class="no-data">Cargando datos…</div>
-    </div>
+      <!-- CONTENT -->
+      <div id="content">
 
-    <!-- TAB 3: IMPORTADORES -->
-    <div id="tab-importadores" class="tab-panel">
-      <div class="no-data">Cargando datos…</div>
-    </div>
+        <!-- NEW: RESUMEN (home) -->
+        <div id="tab-resumen" class="tab-panel active">
+          <div class="no-data">Cargando resumen…</div>
+        </div>
 
-    <!-- TAB 4: BUQUES & FLOTA -->
-    <div id="tab-buques" class="tab-panel">
-      <div class="no-data">Cargando datos…</div>
-    </div>
+        <!-- NEW: LINE-UP filtrable -->
+        <div id="tab-lineup" class="tab-panel">
+          <div class="no-data">Cargando line-up…</div>
+        </div>
 
-    <!-- TAB 5: ORÍGENES -->
-    <div id="tab-origenes" class="tab-panel">
-      <div class="no-data">Cargando datos…</div>
-    </div>
+        <!-- TAB: ESTA SEMANA -->
+        <div id="tab-semana" class="tab-panel">
+          <div class="no-data">Cargando datos…</div>
+        </div>
 
-    <!-- TAB 6: TIMELINE -->
-    <div id="tab-timeline" class="tab-panel">
-      <div class="no-data">Cargando datos…</div>
-    </div>
+        <!-- TAB: MERCADO -->
+        <div id="tab-mercado" class="tab-panel">
+          <div class="no-data">Cargando datos…</div>
+        </div>
 
-    <!-- TAB 7: DATOS COMPLETOS -->
-    <div id="tab-datos" class="tab-panel">
-      <div class="no-data">Cargando datos…</div>
-    </div>
+        <!-- TAB: IMPORTADORES -->
+        <div id="tab-importadores" class="tab-panel">
+          <div class="no-data">Cargando datos…</div>
+        </div>
 
-    <!-- TAB 8: OFERTA PRÓXIMA -->
-    <div id="tab-oferta" class="tab-panel">
-      <div class="no-data">Cargando datos…</div>
-    </div>
+        <!-- TAB: BUQUES & FLOTA -->
+        <div id="tab-buques" class="tab-panel">
+          <div class="no-data">Cargando datos…</div>
+        </div>
 
-    <!-- TAB 9: BUQUES EN RUTA -->
-    <div id="tab-buquesruta" class="tab-panel">
-      <div class="no-data">Cargando datos…</div>
-    </div>
+        <!-- TAB: ORÍGENES -->
+        <div id="tab-origenes" class="tab-panel">
+          <div class="no-data">Cargando datos…</div>
+        </div>
 
-    <!-- TAB 10: ADMIN -->
-    <div id="tab-admin" class="tab-panel">
-      <div class="no-data">Cargando…</div>
-    </div>
+        <!-- TAB: TIMELINE -->
+        <div id="tab-timeline" class="tab-panel">
+          <div class="no-data">Cargando datos…</div>
+        </div>
 
-  </div><!-- /#content -->
+        <!-- TAB: DATOS COMPLETOS -->
+        <div id="tab-datos" class="tab-panel">
+          <div class="no-data">Cargando datos…</div>
+        </div>
+
+        <!-- TAB: OFERTA PRÓXIMA -->
+        <div id="tab-oferta" class="tab-panel">
+          <div class="no-data">Cargando datos…</div>
+        </div>
+
+        <!-- TAB: BUQUES EN RUTA -->
+        <div id="tab-buquesruta" class="tab-panel">
+          <div class="no-data">Cargando datos…</div>
+        </div>
+
+        <!-- TAB: ADMIN -->
+        <div id="tab-admin" class="tab-panel">
+          <div class="no-data">Cargando…</div>
+        </div>
+
+      </div><!-- /#content -->
+
+    </div><!-- /#main-col -->
+
+  </div><!-- /#body-row -->
 
   <footer id="dashboard-footer">
     HidrovíaData © 2025 — Puerto San Nicolás — Datos actualizados al <span id="footer-date">—</span>
@@ -1058,16 +1216,30 @@ function renderTopbarKPIs() {
 // TAB SWITCHING
 // =============================================================================
 
+// Analytics tabs that show the global filter bar (period + material)
+const FILTER_TABS = new Set(['semana','mercado','importadores','buques','origenes','timeline','datos','oferta']);
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
 function switchTab(name) {
   if (activeTab === name) return;
 
-  // Update buttons
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  // Deactivate ALL nav elements
+  document.querySelectorAll('.pnav-btn, .sb-item, .tab-btn').forEach(b => b.classList.remove('active'));
 
-  // Update panels
+  // Activate matching elements by data-tab attribute
+  document.querySelectorAll('[data-tab="' + name + '"]').forEach(b => b.classList.add('active'));
+
+  // Switch panels
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
+  const panel = document.getElementById('tab-' + name);
+  if (panel) panel.classList.add('active');
+
+  // Show/hide global filter bar
+  const filtersEl = document.getElementById('topbar-filters');
+  if (filtersEl) filtersEl.style.display = FILTER_TABS.has(name) ? '' : 'none';
 
   activeTab = name;
   renderActiveTab();
@@ -1075,16 +1247,18 @@ function switchTab(name) {
 
 function renderActiveTab() {
   switch (activeTab) {
-    case 'semana':      renderSemana();      break;
-    case 'mercado':     renderMercado();     break;
-    case 'importadores':renderImportadores();break;
-    case 'buques':      renderBuques();      break;
-    case 'origenes':    renderOrigenes();    break;
-    case 'timeline':    renderTimeline();    break;
-    case 'datos':       renderDatos();       break;
-    case 'oferta':      renderOferta();      break;
-    case 'buquesruta':  renderBuquesEnRuta(); break;
-    case 'admin':       renderAdmin();        break;
+    case 'resumen':      renderResumen();      break;
+    case 'lineup':       renderLineup();       break;
+    case 'semana':       renderSemana();       break;
+    case 'mercado':      renderMercado();      break;
+    case 'importadores': renderImportadores(); break;
+    case 'buques':       renderBuques();       break;
+    case 'origenes':     renderOrigenes();     break;
+    case 'timeline':     renderTimeline();     break;
+    case 'datos':        renderDatos();        break;
+    case 'oferta':       renderOferta();       break;
+    case 'buquesruta':   renderBuquesEnRuta(); break;
+    case 'admin':        renderAdmin();        break;
   }
 }
 
@@ -1100,6 +1274,220 @@ function onFilterChange() {
 // =============================================================================
 // TAB RENDER STUBS (to be filled in subsequent parts)
 // =============================================================================
+
+// =============================================================================
+// =============================================================================
+// TAB: RESUMEN (home — live status dashboard)
+// =============================================================================
+
+function renderResumen() {
+  const panel = document.getElementById('tab-resumen');
+  const s = STATUS_DATA || {};
+  const q = s.quality || {};
+
+  // Freshness badge
+  const srcDate = s.latest_source_date || '';
+  const ageDays = srcDate
+    ? Math.floor((Date.now() - new Date(srcDate + 'T00:00:00').getTime()) / 86400000)
+    : null;
+  const ageBadge = ageDays === null
+    ? '<span style="color:var(--text3)">—</span>'
+    : ageDays <= 4
+      ? `<span class="badge-pass">≤${ageDays}d</span>`
+      : ageDays <= 10
+        ? `<span class="badge-warn">${ageDays}d</span>`
+        : `<span class="badge-block">${ageDays}d DESACT.</span>`;
+
+  // Quality badge
+  const qst = (q.status || '').toUpperCase();
+  const qBadge = qst === 'PASS'
+    ? '<span class="badge-pass">PASS</span>'
+    : qst === 'WARNING'
+      ? '<span class="badge-warn">WARNING</span>'
+      : qst === 'BLOCK'
+        ? '<span class="badge-block">BLOCK</span>'
+        : '<span style="color:var(--text3)">—</span>';
+
+  // Candidates by status
+  const cbs = s.candidates_by_status || {};
+  const candTotal = Object.values(cbs).reduce((a, b) => a + b, 0);
+  const candSub = Object.entries(cbs).map(([k, v]) => `${k}: ${v}`).join(' · ') || '—';
+
+  // Ports from ISA data (unique sectors in ALL_DATA where source_id=ISA_LINEUP)
+  const isaPorts = [...new Set(ALL_DATA
+    .filter(r => r.source_id === 'ISA_LINEUP' && r.sector)
+    .map(r => r.sector)
+  )];
+
+  panel.innerHTML = `
+    <div style="margin-bottom:20px">
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px">Panel de Control</div>
+      <div style="font-size:11px;color:var(--text3)">Actualizado: ${new Date().toLocaleString('es-AR')}</div>
+    </div>
+
+    <div class="res-grid">
+      <div class="res-card ac-cyan">
+        <div class="res-val" style="color:var(--cyan)">${srcDate || '—'}</div>
+        <div class="res-label">Último lineup</div>
+        <div class="res-sub">Frescura: ${ageBadge}</div>
+      </div>
+      <div class="res-card ${qst === 'PASS' ? 'ac-green' : qst === 'WARNING' ? 'ac-yellow' : 'ac-red'}">
+        <div class="res-val" style="font-size:22px;padding-top:4px">${qBadge}</div>
+        <div class="res-label">Quality Gate</div>
+        <div class="res-sub">${(q.warnings || []).slice(0,1).map(w => '⚠ ' + w).join('') || 'Sin alertas'}</div>
+      </div>
+      <div class="res-card ac-cyan">
+        <div class="res-val" style="color:var(--text1)">${((s.latest_lineup_fert_tons || 0) / 1000).toFixed(0)}k t</div>
+        <div class="res-label">Tons confirmadas</div>
+        <div class="res-sub">Último lineup · ${(s.latest_lineup_fert_rows || 0)} filas</div>
+      </div>
+      <div class="res-card">
+        <div class="res-val">${s.latest_lineup_fert_rows || '—'}</div>
+        <div class="res-label">Buques confirmados</div>
+        <div class="res-sub">Fuente: ${s.latest_source_id || '—'}</div>
+      </div>
+      <div class="res-card ac-orange">
+        <div class="res-val" style="color:var(--orange)">${candTotal}</div>
+        <div class="res-label">Candidatos AIS activos</div>
+        <div class="res-sub">${candSub}</div>
+      </div>
+      <div class="res-card">
+        <div class="res-val">${isaPorts.length || '—'}</div>
+        <div class="res-label">Puertos ISA cubiertos</div>
+        <div class="res-sub" style="font-size:10px">${isaPorts.slice(0,4).join(' · ') || 'Sin datos ISA'}</div>
+      </div>
+    </div>
+
+    <div class="card" style="max-width:600px">
+      <div class="card-header">
+        <span class="card-title">Estado de fuentes</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px 0 4px">
+        <div>
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:6px">Shipments DB</div>
+          <div style="font-size:13px;font-weight:600">Total: ${(s.total_shipments || 0).toLocaleString('es-AR')}</div>
+          <div style="font-size:11px;color:var(--text2)">${((s.total_tons || 0)/1e6).toFixed(2)} M t históricas</div>
+          <div style="font-size:11px;color:var(--text2)">Fertilizantes: ${(s.fert_shipments || 0).toLocaleString('es-AR')} rows</div>
+        </div>
+        <div>
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:6px">ISA Line-up</div>
+          <div style="font-size:13px;font-weight:600">${isaPorts.length} puertos</div>
+          <div style="font-size:11px;color:var(--text2)">${ALL_DATA.filter(r => r.source_id === 'ISA_LINEUP').length} registros actuales</div>
+          <button onclick="switchTab('lineup')" style="margin-top:8px;padding:4px 12px;background:var(--cyan-dim);border:1px solid rgba(0,212,255,.3);color:var(--cyan);border-radius:5px;cursor:pointer;font-size:11px;font-family:var(--font)">Ver Line-up →</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// =============================================================================
+// TAB: LINE-UP (vessel lineup filterable table)
+// =============================================================================
+
+let _luFilters = { puerto: '', material: '', ventana: 60, fuente: '' };
+
+function renderLineup() {
+  const panel = document.getElementById('tab-lineup');
+
+  // Compute filter options
+  const allFert = ALL_DATA.filter(r => isFert(r));
+
+  // Puerto options: ISA rows use r.sector directly; PDF rows show sector or "SAN NICOLAS (PDF)"
+  const puertos = [...new Set(allFert.map(r => _luPuerto(r)))].filter(Boolean).sort();
+  const materials = [...new Set(allFert.map(r => r.material).filter(Boolean))].sort();
+
+  // Apply filters
+  const today = new Date(); today.setHours(0,0,0,0);
+  const cutoff = new Date(today.getTime() + _luFilters.ventana * 86400000);
+
+  const filtered = allFert.filter(r => {
+    if (_luFilters.puerto && _luPuerto(r) !== _luFilters.puerto) return false;
+    if (_luFilters.material && r.material !== _luFilters.material) return false;
+    if (_luFilters.fuente  && r.source_id !== _luFilters.fuente)  return false;
+    if (_luFilters.ventana > 0) {
+      const eta = parseETA(r.eta);
+      if (!eta || eta < today || eta > cutoff) return false;
+    }
+    return true;
+  });
+
+  // Sort by ETA
+  filtered.sort((a, b) => {
+    const ea = parseETA(a.eta), eb = parseETA(b.eta);
+    if (!ea && !eb) return 0;
+    if (!ea) return 1; if (!eb) return -1;
+    return ea - eb;
+  });
+
+  const pOpts = puertos.map(p => `<option value="${p}" ${_luFilters.puerto===p?'selected':''}>${p}</option>`).join('');
+  const mOpts = materials.map(m => `<option value="${m}" ${_luFilters.material===m?'selected':''}>${m}</option>`).join('');
+
+  const rows = filtered.length
+    ? filtered.map(r => {
+        const puerto  = _luPuerto(r);
+        const etaStr  = r.eta ? r.eta.slice(0, 10) : '—';
+        const tons    = r.tons ? Number(r.tons).toLocaleString('es-AR') + ' t' : '—';
+        const srcCls  = r.source_id === 'ISA_LINEUP' ? 'lu-src-isa' : 'lu-src-pdf';
+        const srcLbl  = r.source_id === 'ISA_LINEUP' ? 'ISA' : 'PDF';
+        const matKey  = (r.material || '').toLowerCase().replace(/[^a-z]/g,'');
+        const matCls  = ['urea','map','dap','mop','tsp','an'].includes(matKey) ? `lu-mat-${matKey}` : 'lu-mat-other';
+        return `<tr>
+          <td>${puerto}</td>
+          <td style="color:var(--text3)">${r.muelle || '—'}</td>
+          <td style="font-weight:600;color:var(--text1)">${r.buque || '—'}</td>
+          <td><span class="lu-mat ${matCls}">${r.material || '—'}</span></td>
+          <td style="text-align:right">${tons}</td>
+          <td>${r.cliente || '—'}</td>
+          <td style="font-family:monospace;font-size:11px">${etaStr}</td>
+          <td><span class="lu-src ${srcCls}">${srcLbl}</span></td>
+        </tr>`;
+      }).join('')
+    : `<tr><td colspan="8" class="lu-empty">Sin resultados para los filtros seleccionados.</td></tr>`;
+
+  panel.innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700;margin-bottom:2px">Line-up Fertilizantes</div>
+      <div style="font-size:11px;color:var(--text3)">${filtered.length} registros · ${allFert.length} total fertilizantes</div>
+    </div>
+    <div class="lu-filters">
+      <select class="lu-select" onchange="_luSetFilter('puerto',this.value)">
+        <option value="">Todos los puertos</option>${pOpts}
+      </select>
+      <select class="lu-select" onchange="_luSetFilter('material',this.value)">
+        <option value="">Todos los materiales</option>${mOpts}
+      </select>
+      <select class="lu-select" onchange="_luSetFilter('ventana',+this.value)">
+        <option value="15"  ${_luFilters.ventana===15?'selected':''}>Próx 15 días</option>
+        <option value="30"  ${_luFilters.ventana===30?'selected':''}>Próx 30 días</option>
+        <option value="60"  ${_luFilters.ventana===60?'selected':''}>Próx 60 días</option>
+        <option value="0"   ${_luFilters.ventana===0 ?'selected':''}>Sin límite</option>
+      </select>
+      <select class="lu-select" onchange="_luSetFilter('fuente',this.value)">
+        <option value="">Todas las fuentes</option>
+        <option value="ISA_LINEUP" ${_luFilters.fuente==='ISA_LINEUP'?'selected':''}>ISA</option>
+      </select>
+      <span style="font-size:10px;color:var(--text3);margin-left:auto">${filtered.length} resultados</span>
+    </div>
+    <div class="lu-table-wrap">
+      <table class="lu-table">
+        <thead><tr>
+          <th>Puerto</th><th>Muelle</th><th>Buque</th><th>Carga</th>
+          <th style="text-align:right">Tons</th><th>Cliente</th><th>ETA</th><th>Fuente</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function _luPuerto(r) {
+  if (r.source_id === 'ISA_LINEUP') return r.sector || '—';
+  // PDF: sector puede ser NORTE/SUR/blank — mostrar con label (PDF)
+  return r.sector ? r.sector + ' (PDF)' : 'SAN NICOLAS (PDF)';
+}
+
+function _luSetFilter(key, val) {
+  _luFilters[key] = val;
+  renderLineup();
+}
 
 // =============================================================================
 // FRESHNESS BANNER
@@ -3328,15 +3716,17 @@ let LINEUP_DATA          = [];  // fertilizer rows for latest PDF
 let LINEUP_META          = {};  // {latest_source_date, latest_source_id, row_count, total_tons}
 let TRACK_RECORD_DATA    = {};  // accuracy metrics   — overwritten by /api/track_record
 let CHANGELOG_DATA       = {};  // lineup changelog   — overwritten by /api/changelog/latest
+let STATUS_DATA          = {};  // /api/status snapshot — used by renderResumen()
 
 async function init() {
   // ── Fetch data from Flask API ─────────────────────────────────────────────
   try {
-    const [shipmentsRes, candidatesRes, lineupRes, trackRes] = await Promise.all([
+    const [shipmentsRes, candidatesRes, lineupRes, trackRes, statusRes] = await Promise.all([
       fetch('/api/shipments'),
       fetch('/api/vessel_candidates'),
       fetch('/api/lineup_confirmed'),
       fetch('/api/track_record'),
+      fetch('/api/status'),
     ]);
     if (!shipmentsRes.ok)  throw new Error('/api/shipments returned '          + shipmentsRes.status);
     if (!candidatesRes.ok) throw new Error('/api/vessel_candidates returned '  + candidatesRes.status);
@@ -3351,6 +3741,7 @@ async function init() {
                             total_tons:         lineupPayload.total_tons };
     LINEUP_DATA         = lineupPayload.rows || [];
     TRACK_RECORD_DATA   = await trackRes.json();
+    if (statusRes.ok) STATUS_DATA = await statusRes.json();
 
     // ── Freshness banner (uses data already in memory — no extra fetch) ──
     renderFreshnessBanner(LINEUP_META.latest_source_date, lineupPayload.quality || null);
@@ -3422,9 +3813,14 @@ async function init() {
   // Populate Tab 7 filter dropdowns
   populateDatosFilters();
 
-  // First render
+  // First render — start on Resumen tab
   renderTopbarKPIs();
-  renderSemana();
+  activeTab = 'resumen';  // ensure correct initial state
+  renderResumen();
+
+  // Hide global filter bar initially (Resumen doesn't need it)
+  const filtersEl = document.getElementById('topbar-filters');
+  if (filtersEl) filtersEl.style.display = 'none';
 
   // Show app
   document.getElementById('loading').style.display = 'none';

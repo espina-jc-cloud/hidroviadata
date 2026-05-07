@@ -1175,12 +1175,30 @@ def api_admin_publish_lineup() -> Response:
         latest_source_date = latest_source_id = None
 
     _clear_preview()   # migrate.py --reset already wiped quality_reports; this is a no-op but safe
-    return jsonify({
+
+    # ── Optional: auto-scrape ISA after successful publish ─────────────────
+    isa_result: dict | None = None
+    if os.environ.get('ISA_ENABLE') == '1':
+        try:
+            isa_result = _isa_run_scrape(db_path=DATABASE)
+            print(
+                f'[publish] ISA auto-scrape ok — new={isa_result["new_rows"]}  '
+                f'dup={isa_result["duplicates"]}  total_fert={isa_result["total_fertilizer_rows"]}',
+                flush=True,
+            )
+        except Exception as _isa_exc:
+            print(f'[publish] ISA auto-scrape FAILED (non-fatal): {_isa_exc}', flush=True)
+            isa_result = {'error': str(_isa_exc)}
+
+    resp: dict = {
         'ok':                 True,
         'git_sha':            _git_sha(),
         'latest_source_date': latest_source_date,
         'latest_source_id':   latest_source_id,
-    })
+    }
+    if isa_result is not None:
+        resp['isa_auto_scrape'] = isa_result
+    return jsonify(resp)
 
 
 @app.route('/api/admin/last_preview')

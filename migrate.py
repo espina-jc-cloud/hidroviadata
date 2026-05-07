@@ -133,6 +133,16 @@ CREATE TABLE IF NOT EXISTS fertilizer_prices (
     source     TEXT DEFAULT 'seed',
     as_of      TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS arg_fert_prices (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    material    TEXT NOT NULL,
+    region      TEXT NOT NULL DEFAULT 'Rosario',
+    price_ars   REAL,
+    price_usd   REAL,
+    source_text TEXT,
+    as_of       TEXT NOT NULL
+);
 """
 
 DROP_DDL = """

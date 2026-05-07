@@ -1620,6 +1620,72 @@ def api_admin_update_prices() -> Response:
     return jsonify({'ok': True, 'material': material, 'price_usd': price_usd, 'as_of': as_of})
 
 
+# ── Argentina local fertilizer price endpoints ───────────────────────────────
+
+@app.route('/api/market/arg_fert_prices')
+def api_market_arg_fert_prices() -> Response:
+    """Latest Argentina local price per (material, region) from arg_fert_prices table."""
+    try:
+        rows = get_db().execute(
+            '''SELECT material, region, price_ars, price_usd, source_text, as_of
+               FROM   arg_fert_prices
+               ORDER  BY material, region, as_of DESC'''
+        ).fetchall()
+        # Keep only the most recent row per (material, region)
+        seen: set = set()
+        result = []
+        for r in rows:
+            key = (r['material'], r['region'])
+            if key not in seen:
+                seen.add(key)
+                result.append({
+                    'material':    r['material'],
+                    'region':      r['region'],
+                    'price_ars':   r['price_ars'],
+                    'price_usd':   r['price_usd'],
+                    'source_text': r['source_text'],
+                    'as_of':       r['as_of'],
+                })
+        return jsonify(result)
+    except Exception as exc:
+        return jsonify({'ok': False, 'error': str(exc)}), 500
+
+
+@app.route('/api/admin/update_arg_prices', methods=['POST'])
+def api_admin_update_arg_prices() -> Response:
+    """
+    Upsert Argentina local price row.
+    Body JSON: {material, region?, price_ars?, price_usd?, source_text?, as_of?}
+    """
+    if not _check_admin_token():
+        return jsonify({'error': 'Unauthorized'}), 401
+    body       = request.get_json(force=True, silent=True) or {}
+    material   = (body.get('material')   or '').strip().upper()
+    region     = (body.get('region')     or 'Rosario').strip()
+    source_txt = (body.get('source_text') or 'manual').strip()
+    as_of      = (body.get('as_of')      or datetime.now().strftime('%Y-%m-%d')).strip()
+    if not material:
+        return jsonify({'error': 'material required'}), 400
+    try:
+        price_ars = float(body['price_ars']) if body.get('price_ars') is not None else None
+    except (KeyError, TypeError, ValueError):
+        price_ars = None
+    try:
+        price_usd = float(body['price_usd']) if body.get('price_usd') is not None else None
+    except (KeyError, TypeError, ValueError):
+        price_usd = None
+    if price_ars is None and price_usd is None:
+        return jsonify({'error': 'price_ars or price_usd required'}), 400
+    db = get_db()
+    db.execute(
+        'INSERT INTO arg_fert_prices (material, region, price_ars, price_usd, source_text, as_of) '
+        'VALUES (?, ?, ?, ?, ?, ?)',
+        (material, region, price_ars, price_usd, source_txt, as_of),
+    )
+    db.commit()
+    return jsonify({'ok': True, 'material': material, 'region': region, 'as_of': as_of})
+
+
 # ── CSV export endpoints ──────────────────────────────────────────────────────
 
 @app.route('/api/export/shipments.csv')

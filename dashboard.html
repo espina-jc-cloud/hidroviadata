@@ -13,24 +13,28 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --bg:       #0a0f1e;
-      --panel:    #0d1626;
-      --panel2:   #0f1b30;
-      --border:   #1a2744;
-      --border2:  #243560;
-      --primary:  #1e3a8a;
-      --cyan:     #00d4ff;
-      --cyan-dim: rgba(0,212,255,0.12);
-      --green:    #00ff88;
-      --green-dim:rgba(0,255,136,0.12);
-      --orange:   #ff6b35;
-      --orange-dim:rgba(255,107,53,0.12);
-      --red:      #ff4455;
-      --yellow:   #fbbf24;
-      --text:     #e8f2ff;
-      --text2:    #a8bdd4;
-      --text3:    #6b7f99;
-      --font:     'Inter', system-ui, -apple-system, sans-serif;
+      --bg:        #f8fafc;
+      --panel:     #ffffff;
+      --panel2:    #f1f5f9;
+      --border:    #e2e8f0;
+      --border2:   #cbd5e1;
+      --primary:   #1e40af;
+      --cyan:      #2563eb;
+      --cyan-dim:  rgba(37,99,235,0.09);
+      --green:     #16a34a;
+      --green-dim: rgba(22,163,74,0.10);
+      --orange:    #d97706;
+      --orange-dim:rgba(217,119,6,0.10);
+      --red:       #dc2626;
+      --yellow:    #ca8a04;
+      --text:      #0f172a;
+      --text1:     #1e293b;
+      --text2:     #475569;
+      --text3:     #94a3b8;
+      --font:      'Inter', system-ui, -apple-system, sans-serif;
+      /* shadow tokens */
+      --shadow-sm: 0 1px 3px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.04);
+      --shadow:    0 4px 6px rgba(15,23,42,0.07), 0 2px 4px rgba(15,23,42,0.05);
     }
 
     html, body {
@@ -99,8 +103,9 @@
       flex: 1;
     }
     .tb-kpi {
-      background: rgba(30,58,138,0.18);
+      background: var(--panel2);
       border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
       border-radius: 6px;
       padding: 5px 14px;
       display: flex;
@@ -152,7 +157,7 @@
       transition: border-color 0.15s;
     }
     select:hover, select:focus { border-color: var(--cyan); }
-    option { background: #0d1626; color: var(--text); }
+    option { background: var(--panel); color: var(--text); }
 
     /* ── TAB NAV ──────────────────────────────────────────────────── */
     #tab-nav {
@@ -216,6 +221,7 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 16px 20px;
+      box-shadow: var(--shadow-sm);
     }
     .card + .card { margin-top: 16px; }
 
@@ -289,34 +295,34 @@
       font-size: 12px;
     }
     .dtbl thead th {
-      background: rgba(30,58,138,0.35);
-      color: var(--cyan);
+      background: var(--panel2);
+      color: var(--primary);
       padding: 8px 11px;
       text-align: left;
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       white-space: nowrap;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 2px solid var(--border);
       position: sticky;
       top: 0;
       user-select: none;
     }
     .dtbl thead th.sortable { cursor: pointer; }
-    .dtbl thead th.sortable:hover { background: rgba(30,58,138,0.55); }
-    .dtbl thead th.sort-asc::after  { content: ' ↑'; color: var(--cyan); }
-    .dtbl thead th.sort-desc::after { content: ' ↓'; color: var(--cyan); }
+    .dtbl thead th.sortable:hover { background: rgba(37,99,235,0.07); }
+    .dtbl thead th.sort-asc::after  { content: ' ↑'; color: var(--primary); }
+    .dtbl thead th.sort-desc::after { content: ' ↓'; color: var(--primary); }
 
     .dtbl tbody td {
       padding: 7px 11px;
-      border-bottom: 1px solid rgba(26,39,68,0.45);
+      border-bottom: 1px solid var(--border);
       color: var(--text);
       white-space: nowrap;
     }
-    .dtbl tbody tr:hover td { background: rgba(0,212,255,0.04); }
-    .dtbl tbody tr.row-today td { background: rgba(0,255,136,0.06); }
-    .dtbl tbody tr.row-week  td { background: rgba(30,100,255,0.05); }
+    .dtbl tbody tr:hover td { background: var(--panel2); }
+    .dtbl tbody tr.row-today td { background: rgba(22,163,74,0.07); }
+    .dtbl tbody tr.row-week  td { background: rgba(37,99,235,0.04); }
     .dtbl .right { text-align: right; }
     .dtbl .muted { color: var(--text3); }
     .dtbl .bold  { font-weight: 600; }
@@ -369,7 +375,7 @@
       height: 4px;
       border-radius: 2px;
       flex: 1;
-      background: rgba(26,39,68,0.8);
+      background: var(--border);
       min-width: 50px;
       position: relative;
     }
@@ -377,12 +383,12 @@
     .score-fill.high   { background: var(--green); }
     .score-fill.medium { background: var(--orange); }
     .score-fill.low    { background: var(--text3); }
-    .reason-row td { background: rgba(0,0,0,0.06) !important; }
+    .reason-row td { background: rgba(0,0,0,0.03) !important; }
 
     /* ── PROGRESS BAR ─────────────────────────────────────────────── */
     .prog-wrap {
       height: 5px;
-      background: rgba(26,39,68,0.8);
+      background: var(--border);
       border-radius: 3px;
       min-width: 60px;
     }
@@ -413,7 +419,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 6px 0;
-      border-bottom: 1px solid rgba(26,39,68,0.4);
+      border-bottom: 1px solid var(--border);
       font-size: 12px;
     }
     .stat-row:last-child { border-bottom: none; }
@@ -532,22 +538,22 @@
     /* ── QUALITY GATE BANNER ───────────────────────────────────────── */
     #quality-banner { display:none; padding:7px 20px; font-size:11.5px;
                       font-weight:500; line-height:1.7; }
-    #quality-banner.qb-warning { background:rgba(255,185,0,0.10);
-      border-bottom:2px solid rgba(255,185,0,0.40); color:#f0c040; }
-    #quality-banner.qb-block   { background:rgba(220,50,50,0.12);
-      border-bottom:2px solid rgba(220,50,50,0.50); color:#ff7070; }
+    #quality-banner.qb-warning { background:rgba(202,138,4,0.08);
+      border-bottom:2px solid rgba(202,138,4,0.35); color: var(--yellow); }
+    #quality-banner.qb-block   { background:rgba(220,38,38,0.07);
+      border-bottom:2px solid rgba(220,38,38,0.35); color: var(--red); }
 
     /* ── FRESHNESS BANNER ────────────────────────────────────────── */
     #freshness-banner {
       display:none; padding:5px 20px;
-      background:rgba(15,23,42,0.85); border-bottom:1px solid #1e2d45;
-      font-size:12px; color:#94a3b8;
+      background: var(--panel); border-bottom:1px solid var(--border);
+      font-size:12px; color: var(--text2);
       display:flex; align-items:center; gap:14px; flex-wrap:wrap;
     }
     #freshness-banner .fb-dot {
       width:8px; height:8px; border-radius:50%; flex-shrink:0; display:inline-block;
     }
-    #freshness-banner .fb-stale { color:#f87171; font-weight:700; letter-spacing:.02em; }
+    #freshness-banner .fb-stale { color: var(--red); font-weight:700; letter-spacing:.02em; }
 
     /* ── IMPORTER BAR ROW ─────────────────────────────────────────── */
     .imp-bar-row {
@@ -556,7 +562,7 @@
       align-items: center;
       gap: 10px;
       padding: 7px 0;
-      border-bottom: 1px solid rgba(26,39,68,0.4);
+      border-bottom: 1px solid var(--border);
       font-size: 12px;
     }
     .imp-bar-row:last-child { border-bottom: none; }
@@ -633,21 +639,22 @@
     /* ── ADMIN PANEL ──────────────────────────────────────────────── */
     .admin-btn {
       background: var(--primary);
-      border: 1px solid rgba(0,212,255,0.3);
-      color: var(--cyan);
-      border-radius: 5px;
+      border: 1px solid transparent;
+      color: #ffffff;
+      border-radius: 6px;
       padding: 8px 18px;
       font-size: 12px;
       font-family: var(--font);
       font-weight: 600;
       cursor: pointer;
       transition: all 0.15s;
+      box-shadow: var(--shadow-sm);
     }
-    .admin-btn:hover { background: #1e4aaa; }
-    .admin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .admin-btn:hover { background: #1d4ed8; }
+    .admin-btn:disabled { opacity: 0.45; cursor: not-allowed; }
     .admin-btn.success {
-      background: rgba(0,255,136,0.10);
-      border-color: rgba(0,255,136,0.3);
+      background: rgba(22,163,74,0.10);
+      border-color: rgba(22,163,74,0.3);
       color: var(--green);
     }
     /* ── Market context cards ─────────────────────────────────────────── */
@@ -655,17 +662,19 @@
     .mkt-card {
       flex: 1 1 220px; min-width:180px; max-width:300px;
       background: var(--panel);
-      border: 1px solid #1a2744;
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 12px 14px;
+      box-shadow: var(--shadow-sm);
     }
     .mkt-card-title {
       font-size:9px; font-weight:700; text-transform:uppercase;
-      letter-spacing:.8px; color:var(--cyan); margin-bottom:8px;
+      letter-spacing:.8px; color:var(--primary); margin-bottom:8px;
+      border-bottom: 1px solid var(--border); padding-bottom: 6px;
     }
     .mkt-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; }
     .mkt-label { font-size:10px; color:var(--text3); }
-    .mkt-val   { font-size:13px; font-weight:700; color:var(--text1); }
+    .mkt-val   { font-size:13px; font-weight:700; color:var(--text); }
     .mkt-sub   { font-size:9px; color:var(--text3); margin-top:4px; }
     .mkt-badge-stale {
       display:inline-block; font-size:8px; padding:1px 5px;
@@ -741,9 +750,9 @@
     .lu-table-wrap { overflow-x: auto; }
     .lu-table { width: 100%; border-collapse: collapse; font-size: 11px; }
     .lu-table th {
-      text-align: left; padding: 8px 10px; background: var(--panel2); color: var(--text3);
+      text-align: left; padding: 8px 10px; background: var(--panel2); color: var(--primary);
       font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
-      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1;
+      border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 1;
     }
     .lu-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: middle; }
     .lu-table tbody tr:hover td { background: var(--panel2); }
@@ -764,19 +773,21 @@
     .res-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; margin-bottom: 24px; }
     .res-card {
       background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-      padding: 18px 16px; transition: border-color .15s;
+      padding: 18px 16px; transition: border-color .15s, box-shadow .15s;
+      box-shadow: var(--shadow-sm);
     }
-    .res-card.ac-cyan   { border-color: rgba(0,212,255,.3); }
-    .res-card.ac-green  { border-color: rgba(0,255,136,.3); }
-    .res-card.ac-yellow { border-color: rgba(251,191,36,.3); }
-    .res-card.ac-orange { border-color: rgba(255,107,53,.3); }
-    .res-card.ac-red    { border-color: rgba(255,68,85,.3);  }
+    .res-card:hover { box-shadow: var(--shadow); }
+    .res-card.ac-cyan   { border-color: rgba(37,99,235,.35);  border-top: 3px solid var(--cyan); }
+    .res-card.ac-green  { border-color: rgba(22,163,74,.35);  border-top: 3px solid var(--green); }
+    .res-card.ac-yellow { border-color: rgba(202,138,4,.35);  border-top: 3px solid var(--yellow); }
+    .res-card.ac-orange { border-color: rgba(217,119,6,.35);  border-top: 3px solid var(--orange); }
+    .res-card.ac-red    { border-color: rgba(220,38,38,.35);  border-top: 3px solid var(--red); }
     .res-val   { font-size: 30px; font-weight: 800; line-height: 1.1; margin-bottom: 4px; }
     .res-label { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--text3); font-weight: 600; }
     .res-sub   { font-size: 11px; color: var(--text2); margin-top: 8px; }
-    .badge-pass  { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; background:rgba(0,255,136,.15); color:var(--green); }
-    .badge-warn  { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; background:rgba(251,191,36,.15); color:var(--yellow); }
-    .badge-block { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; background:rgba(255,68,85,.15); color:var(--red); }
+    .badge-pass  { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; background:rgba(22,163,74,.12);  color:var(--green); }
+    .badge-warn  { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; background:rgba(202,138,4,.12);  color:var(--yellow); }
+    .badge-block { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; background:rgba(220,38,38,.10);  color:var(--red); }
   </style>
 </head>
 <body>
@@ -858,6 +869,7 @@
         <div class="sb-section-title">Principal</div>
         <button class="sb-item active" data-tab="resumen"    onclick="switchTab('resumen')"><span class="sb-icon">📋</span> Resumen</button>
         <button class="sb-item"        data-tab="lineup"     onclick="switchTab('lineup')"><span class="sb-icon">🚢</span> Line-up</button>
+        <button class="sb-item"        data-tab="portes"     onclick="switchTab('portes')"><span class="sb-icon">🏭</span> Puertos ISA</button>
         <button class="sb-item"        data-tab="mercado"    onclick="switchTab('mercado')"><span class="sb-icon">📊</span> Mercado</button>
         <button class="sb-item"        data-tab="admin"      onclick="switchTab('admin')"><span class="sb-icon">⚙</span> Admin</button>
       </div>
@@ -909,6 +921,11 @@
 
         <!-- NEW: LINE-UP filtrable -->
         <div id="tab-lineup" class="tab-panel">
+          <div class="no-data">Cargando line-up…</div>
+        </div>
+
+        <!-- NEW: PUERTOS ISA -->
+        <div id="tab-portes" class="tab-panel">
           <div class="no-data">Cargando line-up…</div>
         </div>
 
@@ -1109,26 +1126,27 @@ function destroyChart(id) {
 }
 
 // Chart.js global defaults for dark theme
-function darkDefaults() {
+function darkDefaults() {   // name kept for compatibility; now produces light-theme chart defaults
   return {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
         labels: {
-          color: '#8899aa',
+          color: '#475569',
           font: { size: 11, family: "'Inter', system-ui" },
           boxWidth: 10, boxHeight: 10,
           padding: 14
         }
       },
       tooltip: {
-        backgroundColor: '#0d1626',
-        borderColor: '#1a2744',
+        backgroundColor: '#ffffff',
+        borderColor: '#e2e8f0',
         borderWidth: 1,
-        titleColor: '#00d4ff',
-        bodyColor: '#e8f2ff',
+        titleColor: '#1e40af',
+        bodyColor: '#0f172a',
         padding: 10,
+        boxShadow: '0 4px 6px rgba(15,23,42,0.08)',
         callbacks: {
           label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y ?? ctx.parsed)}`
         }
@@ -1136,12 +1154,12 @@ function darkDefaults() {
     },
     scales: {
       x: {
-        grid: { color: 'rgba(26,39,68,0.6)' },
-        ticks: { color: '#6b7f99', font: { size: 11 } }
+        grid: { color: 'rgba(226,232,240,0.8)' },
+        ticks: { color: '#94a3b8', font: { size: 11 } }
       },
       y: {
-        grid: { color: 'rgba(26,39,68,0.6)' },
-        ticks: { color: '#6b7f99', font: { size: 11 },
+        grid: { color: 'rgba(226,232,240,0.8)' },
+        ticks: { color: '#94a3b8', font: { size: 11 },
           callback: v => fmtK(v)
         }
       }
@@ -1249,6 +1267,7 @@ function renderActiveTab() {
   switch (activeTab) {
     case 'resumen':      renderResumen();      break;
     case 'lineup':       renderLineup();       break;
+    case 'portes':       renderPortes();       break;
     case 'semana':       renderSemana();       break;
     case 'mercado':      renderMercado();      break;
     case 'importadores': renderImportadores(); break;
@@ -1595,6 +1614,100 @@ function _luSetFilter(key, val) {
 }
 
 // =============================================================================
+// TAB: PUERTOS ISA — Oferta por puerto (ISA_LINEUP rows only)
+// =============================================================================
+
+let _portesVentana = 60;  // days ahead
+
+function renderPortes() {
+  const panel = document.getElementById('tab-portes');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const cutoff = new Date(today.getTime() + _portesVentana * 86400000);
+
+  // ISA rows only, within window
+  const isaRows = ALL_DATA.filter(r => {
+    if (r.source_id !== 'ISA_LINEUP') return false;
+    if (!isFert(r)) return false;
+    const eta = parseETA(r.eta);
+    return eta && eta >= today && eta <= cutoff;
+  });
+
+  // Aggregate by port (sector)
+  const KEY_MATS = ['UREA','MAP','DAP','MOP','TSP','AMSUL'];
+  const byPort = {};
+  isaRows.forEach(r => {
+    const port = r.sector || '(sin puerto)';
+    if (!byPort[port]) byPort[port] = { tons: 0, vessels: new Set(), mats: {} };
+    const p = byPort[port];
+    p.tons += (r.tons || 0);
+    if (r.buque) p.vessels.add(r.buque);
+    const matKey = (r.material || 'OTROS').toUpperCase();
+    p.mats[matKey] = (p.mats[matKey] || 0) + (r.tons || 0);
+  });
+
+  const ports = Object.entries(byPort).sort((a, b) => b[1].tons - a[1].tons);
+  const total30 = isaRows.reduce((s, r) => s + (r.tons || 0), 0);
+
+  const tableRows = ports.map(([port, d]) => {
+    const matCells = KEY_MATS.map(m =>
+      `<td style="text-align:right;color:${d.mats[m] ? 'var(--text)' : 'var(--text3)'}">${d.mats[m] ? Math.round(d.mats[m]/1000) + 'k' : '—'}</td>`
+    ).join('');
+    return `<tr>
+      <td style="font-weight:600">${port}</td>
+      <td style="text-align:right;font-weight:700;color:var(--primary)">${Math.round(d.tons/1000)}k t</td>
+      ${matCells}
+      <td style="text-align:right;color:var(--text2)">${d.vessels.size}</td>
+    </tr>`;
+  }).join('');
+
+  const empty = ports.length === 0
+    ? `<tr><td colspan="${7 + KEY_MATS.length}" class="lu-empty">Sin datos ISA para los próximos ${_portesVentana} días. Correr scrape ISA en Admin para cargar datos.</td></tr>`
+    : '';
+
+  panel.innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700;margin-bottom:2px">Oferta por Puerto (ISA)</div>
+      <div style="font-size:11px;color:var(--text3)">Fuente: ISA Agents lineup · solo registros con source_id='ISA_LINEUP'</div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap">
+      <div style="display:flex;gap:6px">
+        ${[30, 60].map(d => `
+          <button onclick="_portesVentana=${d};renderPortes()"
+            style="padding:5px 14px;border-radius:5px;cursor:pointer;font-size:12px;font-family:var(--font);
+            background:${_portesVentana===d ? 'var(--primary)' : 'var(--panel2)'};
+            color:${_portesVentana===d ? '#fff' : 'var(--text2)'};
+            border:1px solid ${_portesVentana===d ? 'var(--primary)' : 'var(--border)'};
+            font-weight:${_portesVentana===d ? '600' : '400'}">
+            ${d} días
+          </button>`).join('')}
+      </div>
+      <span style="font-size:11px;color:var(--text3);margin-left:auto">
+        ${isaRows.length} registros · ${Math.round(total30/1000)}k t total
+      </span>
+    </div>
+
+    <div class="lu-table-wrap">
+      <table class="lu-table">
+        <thead><tr>
+          <th>Puerto</th>
+          <th style="text-align:right">Tons total</th>
+          ${KEY_MATS.map(m => `<th style="text-align:right">${m}</th>`).join('')}
+          <th style="text-align:right">#Buques</th>
+        </tr></thead>
+        <tbody>${tableRows}${empty}</tbody>
+      </table>
+    </div>
+
+    ${ports.length === 0 ? `
+    <div style="margin-top:16px">
+      <button onclick="switchTab('admin')" style="padding:6px 16px;background:var(--primary);border:none;color:#fff;border-radius:5px;cursor:pointer;font-size:12px;font-family:var(--font)">
+        ⚙ Ir a Admin → Cargar ISA
+      </button>
+    </div>` : ''}`;
+}
+
+// =============================================================================
 // FRESHNESS BANNER
 // =============================================================================
 
@@ -1630,7 +1743,7 @@ function renderFreshnessBanner(sourceDate, quality) {
 
   el.innerHTML = `
     <span class="fb-dot" style="background:${dotColor}"></span>
-    <span>Datos actualizados al: <strong style="color:#e2e8f0">${dateFmt}</strong>
+    <span>Datos actualizados al: <strong style="color:var(--text)">${dateFmt}</strong>
       <span style="color:#64748b;font-size:11px"> (hace ${ageDays}d)</span>${staleMsg}
     </span>
     ${qualPill}`;
@@ -1674,17 +1787,17 @@ function renderChangelogCard() {
     const TOP = 10;
     const renderGroup = ([buque, { lines, totalTons }]) => {
       const linesHtml = lines.map(r => `
-        <div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid #1e2d45">
+        <div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid var(--border)">
           ${matChip(r.material)}
           <span style="color:#94a3b8;font-size:11px;flex:1">${r.cliente || '<em style="opacity:.5">sin cliente</em>'}</span>
-          <span style="color:#e2e8f0;font-size:11px;white-space:nowrap">${fmtT(r.tons)} t</span>
+          <span style="color:var(--text);font-size:11px;white-space:nowrap">${fmtT(r.tons)} t</span>
         </div>`).join('');
       return `
         <details style="margin-bottom:4px">
-          <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:5px;background:#162033;user-select:none">
-            <span style="color:#e2e8f0;font-size:12px;font-weight:600;flex:1">${buque}</span>
+          <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:5px;background:var(--panel2);user-select:none">
+            <span style="color:var(--text);font-size:12px;font-weight:600;flex:1">${buque}</span>
             <span style="color:#64748b;font-size:11px">${lines.length} línea${lines.length !== 1 ? 's' : ''}</span>
-            <span style="color:#93c5fd;font-size:11px;font-weight:600;white-space:nowrap">${fmtT(totalTons)} t</span>
+            <span style="color:var(--primary);font-size:11px;font-weight:600;white-space:nowrap">${fmtT(totalTons)} t</span>
           </summary>
           <div style="padding:4px 6px 2px 6px">${linesHtml}</div>
         </details>`;
@@ -1694,7 +1807,7 @@ function renderChangelogCard() {
     const hasMore      = sorted.length > TOP;
     nuevosHtml = `
       <div style="margin-top:10px">
-        <div style="font-size:11px;font-weight:700;color:#93c5fd;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">
+        <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">
           Nuevos buques / líneas
         </div>
         <div style="max-height:260px;overflow-y:auto;padding-right:2px">${visibleHtml}</div>
@@ -1705,7 +1818,7 @@ function renderChangelogCard() {
           const b=this;
           if(w.style.display==='none'){w.style.display='block';b.textContent='Ocultar (${sorted.length} buques)'}
           else{w.style.display='none';b.textContent='Ver todos (${sorted.length} buques)'}"
-          style="margin-top:6px;background:none;border:1px solid #2a5298;color:#93c5fd;border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer">
+          style="margin-top:6px;background:none;border:1px solid var(--border);color:var(--primary);border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer">
           Ver todos (${sorted.length} buques)
         </button>` : ''}
       </div>`;
@@ -1717,7 +1830,7 @@ function renderChangelogCard() {
   if (removed.length) {
     const TOP_R = 10;
     const renderRow = r => `
-      <div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;background:#162033;margin-bottom:3px">
+      <div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;background:var(--panel2);margin-bottom:3px">
         ${matChip(r.material)}
         <span style="color:#fca5a5;font-size:12px;font-weight:600;flex:1">${r.buque || '—'}</span>
         <span style="color:#64748b;font-size:11px">${r.cliente || ''}</span>
@@ -1727,7 +1840,7 @@ function renderChangelogCard() {
     const moreR  = removed.length > TOP_R;
     eliminadosHtml = `
       <div style="margin-top:10px">
-        <div style="font-size:11px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">
+        <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">
           Eliminados
         </div>
         ${visR}
@@ -1738,7 +1851,7 @@ function renderChangelogCard() {
           const b=this;
           if(w.style.display==='none'){w.style.display='block';b.textContent='Ocultar'}
           else{w.style.display='none';b.textContent='Ver todos (${removed.length})'}"
-          style="margin-top:4px;background:none;border:1px solid #7f1d1d;color:#f87171;border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer">
+          style="margin-top:4px;background:none;border:1px solid rgba(220,38,38,.3);color:var(--red);border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer">
           Ver todos (${removed.length})
         </button>` : ''}
       </div>`;
@@ -1752,9 +1865,9 @@ function renderChangelogCard() {
       <div style="margin-top:10px">
         <div style="font-size:11px;font-weight:700;color:#fbbf24;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">ETA modificada</div>
         ${etaCh.map(r => `
-          <div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;background:#162033;margin-bottom:3px">
+          <div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;background:var(--panel2);margin-bottom:3px">
             ${matChip(r.material)}
-            <span style="color:#e2e8f0;font-size:12px;font-weight:600;flex:1">${r.buque || '—'}</span>
+            <span style="color:var(--text);font-size:12px;font-weight:600;flex:1">${r.buque || '—'}</span>
             <span style="color:#94a3b8;font-size:11px">${(r.old_eta||'').slice(0,10)}</span>
             <span style="color:#64748b;font-size:11px">→</span>
             <span style="color:#fbbf24;font-size:11px;font-weight:600">${(r.new_eta||'').slice(0,10)}</span>
@@ -1769,14 +1882,14 @@ function renderChangelogCard() {
   if (tonsCh.length) {
     tonsHtml = `
       <div style="margin-top:10px">
-        <div style="font-size:11px;font-weight:700;color:#c084fc;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Toneladas cambiadas</div>
+        <div style="font-size:11px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Toneladas cambiadas</div>
         ${tonsCh.map(r => `
-          <div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;background:#162033;margin-bottom:3px">
+          <div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;background:var(--panel2);margin-bottom:3px">
             ${matChip(r.material)}
-            <span style="color:#e2e8f0;font-size:12px;font-weight:600;flex:1">${r.buque || '—'}</span>
+            <span style="color:var(--text);font-size:12px;font-weight:600;flex:1">${r.buque || '—'}</span>
             <span style="color:#94a3b8;font-size:11px">${fmtT(r.old_tons)} t</span>
             <span style="color:#64748b;font-size:11px">→</span>
-            <span style="color:#c084fc;font-size:11px;font-weight:600">${fmtT(r.new_tons)} t</span>
+            <span style="color:#7c3aed;font-size:11px;font-weight:600">${fmtT(r.new_tons)} t</span>
             <span style="color:${r.delta > 0 ? '#4ade80' : '#f87171'};font-size:11px">${r.delta > 0 ? '+' : ''}${fmtT(r.delta)}</span>
           </div>`).join('')}
       </div>`;
@@ -1785,9 +1898,9 @@ function renderChangelogCard() {
   const noChanges = !s.new && !s.removed && !s.eta_changed && !s.tons_changed;
 
   return `
-    <div style="background:#111c2e;border:1px solid #2a5298;border-radius:8px;padding:14px 16px;margin-bottom:16px">
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px;box-shadow:var(--shadow-sm)">
       <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-        <span style="font-size:13px;color:#93c5fd;font-weight:700">📋 Novedades del último lineup</span>
+        <span style="font-size:13px;color:var(--primary);font-weight:700">📋 Novedades del último lineup</span>
         <span style="color:#475569;font-size:11px">${cl.latest_date} vs ${cl.prev_date}</span>
       </div>
       <div style="margin-bottom:4px">
@@ -1891,7 +2004,9 @@ function renderSemana() {
   });
   const tyTons = tyFert.reduce((s, r) => s + (r.tons || 0), 0);
   const lyTons = lyFert.reduce((s, r) => s + (r.tons || 0), 0);
-  const yoyPct = lyTons > 0 ? ((tyTons - lyTons) / lyTons * 100).toFixed(1) : null;
+  // YoY: only show if prior-year base is substantial (≥ 5 000 t) and change < ±200 %
+  const _yoyRaw = lyTons >= 5000 ? (tyTons - lyTons) / lyTons * 100 : null;
+  const yoyPct  = _yoyRaw !== null && Math.abs(_yoyRaw) <= 200 ? _yoyRaw.toFixed(1) : null;
   const yoyCls = yoyPct !== null ? (parseFloat(yoyPct) >= 0 ? 'up' : 'down') : '';
   const yoyStr = yoyPct !== null
     ? `<span class="${yoyCls}">${parseFloat(yoyPct) >= 0 ? '+' : ''}${yoyPct}% vs año ant.</span>`
@@ -2039,7 +2154,12 @@ function computeMarketSignals(fert) {
     arr.forEach(r => { const k = r[key]; if (k) acc[k] = (acc[k] || 0) + (Number(r.tons) || 0); });
     return Object.entries(acc).sort((a, b) => b[1] - a[1]);
   };
-  const pctChg = (cur, prev) => prev === 0 ? null : Math.round((cur - prev) / prev * 100);
+  // Safe % change: returns null when prev is 0, tiny (< 5 000 t), or result would be absurd (>±200%)
+  const pctChg = (cur, prev) => {
+    if (!prev || prev < 5000) return null;
+    const pct = Math.round((cur - prev) / prev * 100);
+    return Math.abs(pct) > 200 ? null : pct;  // cap at ±200 % — beyond that show abs tons only
+  };
 
   // ── Signal 1 (YoY): Volume change for top 3 materials ────────────────────
   const matCur  = Object.fromEntries(topBy(current,  'material'));
@@ -2291,16 +2411,16 @@ function renderMercado() {
   destroyChart('merc-donut');
   chartReg['merc-donut'] = new Chart(document.getElementById('ch-merc-donut').getContext('2d'), {
     type: 'doughnut',
-    data: { labels: doughLabels, datasets: [{ data: doughData, backgroundColor: doughColors, borderWidth: 1, borderColor: '#0a0f1e' }] },
+    data: { labels: doughLabels, datasets: [{ data: doughData, backgroundColor: doughColors, borderWidth: 1, borderColor: '#ffffff' }] },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       cutout: '62%',
       plugins: {
-        legend: { position: 'right', labels: { color: '#8899aa', font: { size: 10 }, boxWidth: 8, boxHeight: 8, padding: 10 } },
+        legend: { position: 'right', labels: { color: '#475569', font: { size: 10 }, boxWidth: 8, boxHeight: 8, padding: 10 } },
         tooltip: {
-          backgroundColor: '#0d1626', borderColor: '#1a2744', borderWidth: 1,
-          titleColor: '#00d4ff', bodyColor: '#e8f2ff', padding: 10,
+          backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderWidth: 1,
+          titleColor: '#1e40af', bodyColor: '#0f172a', padding: 10,
           callbacks: { label: ctx => ` ${ctx.label}: ${fmtK(ctx.parsed)} t (${(ctx.parsed / tons * 100).toFixed(1)}%)` }
         }
       }
@@ -2337,11 +2457,12 @@ async function _loadMarketContext() {
 
   // Fetch all four in parallel (all non-fatal)
   console.debug('[market-ctx] fetching dolar, bcra, fertilizer_prices, macro…');
-  const [dolarRes, bcraRes, fertRes, macroRes] = await Promise.allSettled([
+  const [dolarRes, bcraRes, fertRes, macroRes, argRes] = await Promise.allSettled([
     fetch('/api/market/dolar'),
     fetch('/api/market/bcra'),
     fetch('/api/market/fertilizer_prices'),
     fetch('/api/market/macro'),
+    fetch('/api/market/arg_fert_prices'),
   ]);
   console.debug('[market-ctx] settled:',
     dolarRes.status, bcraRes.status, fertRes.status, macroRes.status);
@@ -2474,7 +2595,27 @@ async function _loadMarketContext() {
     </div>`;
   }
 
-  const combined = macroHtml + dolarHtml + bcraHtml + fertHtml;
+  // ── Argentina local prices card ────────────────────────────────────────────
+  let argHtml = '';
+  try {
+    const argData = argRes.status === 'fulfilled' && argRes.value.ok
+      ? await argRes.value.json() : null;
+    if (Array.isArray(argData) && argData.length) {
+      const aRows = argData.map(p => `<div class="mkt-row">
+        <span class="mkt-label" style="max-width:120px;overflow:hidden;text-overflow:ellipsis">${p.material} <span style="color:var(--text3);font-size:9px">${p.region}</span></span>
+        <span class="mkt-val">${p.price_ars != null ? '$' + Number(p.price_ars).toLocaleString('es-AR') : (p.price_usd != null ? 'USD ' + Number(p.price_usd).toLocaleString('es-AR') : '—')}</span>
+      </div>`).join('');
+      const asOf = argData[0]?.as_of || '';
+      argHtml = `<div class="mkt-card">
+        <div class="mkt-card-title">🇦🇷 Precios ARG (referencia)</div>
+        ${aRows}
+        <div class="mkt-sub" style="margin-top:6px">${asOf ? 'al ' + asOf : ''}</div>
+        <div class="mkt-sub" style="font-style:italic;color:var(--text3)">Precio de referencia, no precio de cierre.</div>
+      </div>`;
+    }
+  } catch (_) {}
+
+  const combined = macroHtml + argHtml + dolarHtml + bcraHtml + fertHtml;
   if (combined) {
     el.innerHTML = combined;
     _mktCtxLastFetch = Date.now();
@@ -2672,15 +2813,15 @@ function renderImpProfile() {
       type: 'doughnut',
       data: {
         labels: matEntries.map(([m]) => m),
-        datasets: [{ data: matEntries.map(([, t]) => t), backgroundColor: matEntries.map(([m]) => matColor(m)), borderWidth: 1, borderColor: '#0a0f1e' }]
+        datasets: [{ data: matEntries.map(([, t]) => t), backgroundColor: matEntries.map(([m]) => matColor(m)), borderWidth: 1, borderColor: '#ffffff' }]
       },
       options: {
         responsive: true, maintainAspectRatio: false, cutout: '62%',
         plugins: {
-          legend: { position: 'right', labels: { color: '#8899aa', font: { size: 10 }, boxWidth: 8, padding: 8 } },
+          legend: { position: 'right', labels: { color: '#475569', font: { size: 10 }, boxWidth: 8, padding: 8 } },
           tooltip: {
-            backgroundColor: '#0d1626', borderColor: '#1a2744', borderWidth: 1,
-            titleColor: '#00d4ff', bodyColor: '#e8f2ff', padding: 10,
+            backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderWidth: 1,
+            titleColor: '#1e40af', bodyColor: '#0f172a', padding: 10,
             callbacks: { label: ctx => ` ${ctx.label}: ${fmtK(ctx.parsed)} t (${(ctx.parsed / totalImpTons * 100).toFixed(1)}%)` }
           }
         }
@@ -3088,8 +3229,8 @@ function renderTimeline() {
       responsive: true, maintainAspectRatio: false,
       plugins: ddMain.plugins,
       scales: {
-        x: { grid: { color: 'rgba(26,39,68,0.6)' }, ticks: { color: '#6b7f99', font: { size: 11 } } },
-        y: { beginAtZero: true, grid: { color: 'rgba(26,39,68,0.6)' }, ticks: { color: '#6b7f99', font: { size: 11 }, callback: v => fmtK(v) } }
+        x: { grid: { color: 'rgba(226,232,240,0.8)' }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+        y: { beginAtZero: true, grid: { color: 'rgba(226,232,240,0.8)' }, ticks: { color: '#94a3b8', font: { size: 11 }, callback: v => fmtK(v) } }
       }
     }
   });
@@ -3112,8 +3253,8 @@ function renderTimeline() {
       responsive: true, maintainAspectRatio: false,
       plugins: ddImps.plugins,
       scales: {
-        x: { grid: { color: 'rgba(26,39,68,0.6)' }, ticks: { color: '#6b7f99', font: { size: 11 } } },
-        y: { beginAtZero: true, grid: { color: 'rgba(26,39,68,0.6)' }, ticks: { color: '#6b7f99', font: { size: 11 }, callback: v => fmtK(v) } }
+        x: { grid: { color: 'rgba(226,232,240,0.8)' }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+        y: { beginAtZero: true, grid: { color: 'rgba(226,232,240,0.8)' }, ticks: { color: '#94a3b8', font: { size: 11 }, callback: v => fmtK(v) } }
       }
     }
   });
@@ -3785,7 +3926,7 @@ function renderBuquesEnRuta() {
         </button>
         <button onclick="adminResetCandidates()"
           style="font-size:11px;padding:6px 14px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);
-                 color:#f87171;border-radius:5px;cursor:pointer">
+                 color:var(--red);border-radius:5px;cursor:pointer">
           🗑 Reset candidatos
         </button>
       </div>
@@ -4017,9 +4158,82 @@ function renderAdmin() {
       <button class="admin-btn" onclick="doScrapeISAAdmin()">📡 Cargar ISA ahora</button>
       <div id="adm-isa-result" style="margin-top:12px"></div>
     </div>
+
+    <div class="card" style="max-width:700px;margin-top:16px">
+      <div class="card-header">
+        <span class="card-title">🇦🇷 Precios ARG Fertilizantes — Actualizar</span>
+        <span class="card-sub">Precio de referencia, no precio de cierre</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:14px">
+        Estos precios aparecen en la tarjeta "Precios ARG" del tab Mercado.<br>
+        Fuente recomendada: Agrofy, La Nación Agro, Bioceres, CIDEF.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div>
+          <div class="section-label">Material</div>
+          <input id="adm-arg-mat" class="search-input" placeholder="UREA" style="width:100%">
+        </div>
+        <div>
+          <div class="section-label">Región</div>
+          <input id="adm-arg-reg" class="search-input" placeholder="Rosario" value="Rosario" style="width:100%">
+        </div>
+        <div>
+          <div class="section-label">Precio ARS ($/t)</div>
+          <input id="adm-arg-ars" class="search-input" type="number" placeholder="ej: 850000" style="width:100%">
+        </div>
+        <div>
+          <div class="section-label">Precio USD/t (opcional)</div>
+          <input id="adm-arg-usd" class="search-input" type="number" placeholder="ej: 850" style="width:100%">
+        </div>
+        <div>
+          <div class="section-label">Fuente (texto libre)</div>
+          <input id="adm-arg-src" class="search-input" placeholder="Agrofy 07-may-2026" style="width:100%">
+        </div>
+        <div>
+          <div class="section-label">Fecha</div>
+          <input id="adm-arg-date" class="search-input" type="date" style="width:100%">
+        </div>
+      </div>
+      <button class="admin-btn" onclick="doUpdateArgPrices()">💾 Guardar precio ARG</button>
+      <div id="adm-arg-result" style="margin-top:12px"></div>
+    </div>
   `;
   if (_adminPreview) _renderAdminPreview(_adminPreview);
   renderReviewQueue();
+  // Set today as default date in arg prices form
+  const dateInput = document.getElementById('adm-arg-date');
+  if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
+}
+
+async function doUpdateArgPrices() {
+  const token = document.getElementById('adm-token')?.value
+                || sessionStorage.getItem('admin_token') || '';
+  if (!token) { alert('Ingresá el ADMIN_TOKEN primero.'); return; }
+  const mat = (document.getElementById('adm-arg-mat')?.value || '').trim().toUpperCase();
+  if (!mat) { alert('Material requerido.'); return; }
+  const reg    = (document.getElementById('adm-arg-reg')?.value   || 'Rosario').trim();
+  const arsVal = document.getElementById('adm-arg-ars')?.value;
+  const usdVal = document.getElementById('adm-arg-usd')?.value;
+  const src    = document.getElementById('adm-arg-src')?.value  || 'manual';
+  const asOf   = document.getElementById('adm-arg-date')?.value || new Date().toISOString().slice(0,10);
+  if (!arsVal && !usdVal) { alert('Ingresá al menos price_ars o price_usd.'); return; }
+  const body = { material: mat, region: reg, source_text: src, as_of: asOf };
+  if (arsVal) body.price_ars = parseFloat(arsVal);
+  if (usdVal) body.price_usd = parseFloat(usdVal);
+  const resultDiv = document.getElementById('adm-arg-result');
+  try {
+    const res  = await fetch('/api/admin/update_arg_prices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.status);
+    if (resultDiv) resultDiv.innerHTML = `<div style="color:var(--green);font-size:12px;padding:6px 0">✅ Guardado — ${mat} · ${reg} · ${asOf}</div>`;
+    _mktCtxLastFetch = 0;  // force re-render of market cards next tab switch
+  } catch (err) {
+    if (resultDiv) resultDiv.innerHTML = `<div class="alert-banner">❌ ${err.message}</div>`;
+  }
 }
 
 async function doScrapeISAAdmin() {
